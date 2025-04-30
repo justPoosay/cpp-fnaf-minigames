@@ -1,0 +1,717 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Pliki źródłowe">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Pliki nagłówkowe">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Pliki zasobów">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Pliki zasobów\audio">
+      <UniqueIdentifier>{7060fcd1-0ed3-4d84-9ddb-e1f6a4dcdad3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\audio\sfx">
+      <UniqueIdentifier>{4b9f3b69-cf3e-41d9-842d-4cba97911c35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\audio\voice">
+      <UniqueIdentifier>{aa1f788d-395f-48d3-bf28-e0535ec2f93d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\textures">
+      <UniqueIdentifier>{11c8ac87-7260-42dd-933e-1c264416c328}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\textures\butterfly">
+      <UniqueIdentifier>{a6a67a05-075e-4535-bca4-7e0168fd4a0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\textures\laser">
+      <UniqueIdentifier>{d7dc8215-acb0-4d44-a05c-cb10513535a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\textures\misc">
+      <UniqueIdentifier>{0d0956b5-ac86-4c45-9cff-b2e8d2fc0db5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\textures\sprites">
+      <UniqueIdentifier>{d2aedb0a-c765-483c-832a-305c95aac5c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\textures\sunflower">
+      <UniqueIdentifier>{e9f6fc1c-ac05-42c0-b6e7-5172bf56836d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\textures\text">
+      <UniqueIdentifier>{7ca6c735-8ab5-4d3d-a53a-343e9e19b942}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\textures\laser\bttr_beam">
+      <UniqueIdentifier>{1ec4ab28-23de-4b0f-8cc8-82a71b90b05d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\textures\laser\rnbw_beam">
+      <UniqueIdentifier>{837efc4d-098d-4744-bb2f-1932667d0a58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\textures\sprites\chica">
+      <UniqueIdentifier>{85ad53c6-2733-4add-922e-a1bc243acc32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\textures\sprites\rainbow">
+      <UniqueIdentifier>{1f098671-cf60-4307-aa2d-1864c4aa839b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\textures\sprites\rainbow\rainbow_eyes">
+      <UniqueIdentifier>{12861480-dab3-463a-b2f4-b8d498a74fb2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Menu.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemies.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="Animations.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="Levels.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="Resources.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\background.png">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="resources\textures\butterfly\Animation-0 Direction-0 Frame-0.png">
+      <Filter>Pliki zasobów\textures\butterfly</Filter>
+    </Image>
+    <Image Include="resources\textures\butterfly\Animation-0 Direction-0 Frame-1.png">
+      <Filter>Pliki zasobów\textures\butterfly</Filter>
+    </Image>
+    <Image Include="resources\textures\butterfly\Animation-0 Direction-0 Frame-2.png">
+      <Filter>Pliki zasobów\textures\butterfly</Filter>
+    </Image>
+    <Image Include="resources\textures\butterfly\Animation-0 Direction-0 Frame-3.png">
+      <Filter>Pliki zasobów\textures\butterfly</Filter>
+    </Image>
+    <Image Include="resources\textures\butterfly\Animation-0 Direction-0 Frame-4.png">
+      <Filter>Pliki zasobów\textures\butterfly</Filter>
+    </Image>
+    <Image Include="resources\textures\butterfly\Animation-0 Direction-0 Frame-5.png">
+      <Filter>Pliki zasobów\textures\butterfly</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-0 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-1 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-2 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-3 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-4 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-5 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-6 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-7 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-8 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-9 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-10 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-11 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-12 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-13 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-14 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-15 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-16 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-17 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-18 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-19 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-20 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-21 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-22 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-23 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-24 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-25 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-26 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-27 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-28 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-29 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-30 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-31 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\bttr_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-0 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-1 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-2 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-3 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-4 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-5 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-6 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-7 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-8 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-9 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-10 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-11 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-12 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-13 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-14 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-15 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-16 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-17 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-18 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-19 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-20 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-21 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-22 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-23 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-24 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-25 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-26 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-27 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-28 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-29 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-30 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-31 Frame-0.png">
+      <Filter>Pliki zasobów\textures\laser\rnbw_beam</Filter>
+    </Image>
+    <Image Include="resources\textures\misc\blood_particle.png">
+      <Filter>Pliki zasobów\textures\misc</Filter>
+    </Image>
+    <Image Include="resources\textures\misc\checkpoint_flag.png">
+      <Filter>Pliki zasobów\textures\misc</Filter>
+    </Image>
+    <Image Include="resources\textures\misc\decoration_flower_big.png">
+      <Filter>Pliki zasobów\textures\misc</Filter>
+    </Image>
+    <Image Include="resources\textures\misc\decoration_flower_small.png">
+      <Filter>Pliki zasobów\textures\misc</Filter>
+    </Image>
+    <Image Include="resources\textures\misc\dirt_tile.png">
+      <Filter>Pliki zasobów\textures\misc</Filter>
+    </Image>
+    <Image Include="resources\textures\misc\fence.png">
+      <Filter>Pliki zasobów\textures\misc</Filter>
+    </Image>
+    <Image Include="resources\textures\misc\log.png">
+      <Filter>Pliki zasobów\textures\misc</Filter>
+    </Image>
+    <Image Include="resources\textures\misc\platform_tile.png">
+      <Filter>Pliki zasobów\textures\misc</Filter>
+    </Image>
+    <Image Include="resources\textures\misc\spikes_down.png">
+      <Filter>Pliki zasobów\textures\misc</Filter>
+    </Image>
+    <Image Include="resources\textures\misc\spikes_up.png">
+      <Filter>Pliki zasobów\textures\misc</Filter>
+    </Image>
+    <Image Include="resources\textures\misc\voices_mark.png">
+      <Filter>Pliki zasobów\textures\misc</Filter>
+    </Image>
+    <Image Include="resources\textures\text\control_keys_tutorial.png">
+      <Filter>Pliki zasobów\textures\text</Filter>
+    </Image>
+    <Image Include="resources\textures\text\great_job.png">
+      <Filter>Pliki zasobów\textures\text</Filter>
+    </Image>
+    <Image Include="resources\textures\text\voices_off.png">
+      <Filter>Pliki zasobów\textures\text</Filter>
+    </Image>
+    <Image Include="resources\textures\text\voices_on.png">
+      <Filter>Pliki zasobów\textures\text</Filter>
+    </Image>
+    <Image Include="resources\textures\text\you_suck.png">
+      <Filter>Pliki zasobów\textures\text</Filter>
+    </Image>
+    <Image Include="..\..\..\Downloads\checkpoint.gif">
+      <Filter>Pliki zasobów\textures\text</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-0 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-1 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-2 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-3 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-4 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-5 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-6 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-7 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-8 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-9 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-10 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-11 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-12 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-13 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-14 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-15 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-16 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-17 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-18 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-19 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-20 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-21 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-22 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-23 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-24 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-25 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-26 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-27 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-28 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-29 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-30 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-31 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sunflower\deadly_flower.png">
+      <Filter>Pliki zasobów\textures\sunflower</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-4 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-5 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-6 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-7 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-8 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-9 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-10 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-11 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-12 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-13 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-14 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-15 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-16 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-17 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-18 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-19 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-20 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-21 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-22 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-23 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-24 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-25 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-26 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-27 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-28 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-29 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-30 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-31 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-0 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-1 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-2 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-3 Frame-0.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow\rainbow_eyes</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\chica_rainbow_pissed.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\rainbow\chica_rainbow.png">
+      <Filter>Pliki zasobów\textures\sprites\rainbow</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\chica\chica_jump_left.png">
+      <Filter>Pliki zasobów\textures\sprites\chica</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\chica\chica_jump_right.png">
+      <Filter>Pliki zasobów\textures\sprites\chica</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\chica\chica_walk_left.png">
+      <Filter>Pliki zasobów\textures\sprites\chica</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\chica\chica_walk_left_old.png">
+      <Filter>Pliki zasobów\textures\sprites\chica</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\chica\chica_walk_right.png">
+      <Filter>Pliki zasobów\textures\sprites\chica</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\chica\player_sprites_16frames.png">
+      <Filter>Pliki zasobów\textures\sprites\chica</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\chica\chica_idle_left.png">
+      <Filter>Pliki zasobów\textures\sprites\chica</Filter>
+    </Image>
+    <Image Include="resources\textures\sprites\chica\chica_idle_right.png">
+      <Filter>Pliki zasobów\textures\sprites\chica</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="resources\BRLNSDB.TTF">
+      <Filter>Pliki zasobów</Filter>
+    </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="resources\rainbow.mp3">
+      <Filter>Pliki zasobów</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\checkpoint.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\eye.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\jump.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\leaser2.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\logs.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\petal.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\poof2.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\imgonnakillyou.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\lastchance.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice_off_dialogue.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice01.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice02.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice03.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice04.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice05.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice06.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice07.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice08.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice09.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice10.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice11.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice12.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice13.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice14.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice15.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice16.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice17.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice18.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice19.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice20.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice21.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice22.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice23.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice24.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice25.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice26.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice27.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice28.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice29.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice30.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice31.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\voice32.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+  </ItemGroup>
+</Project>
