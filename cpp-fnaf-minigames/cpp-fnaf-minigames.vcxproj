@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{2e21626c-fc83-491c-9121-0569545256fa}</ProjectGuid>
+    <RootNamespace>cpp_fnaf_minigames</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\OscarStaniszewski\raylib\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\OscarStaniszewski\raylib\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\OscarStaniszewski\raylib\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\OscarStaniszewski\raylib\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\OscarStaniszewski\raylib\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\OscarStaniszewski\raylib\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\OscarStaniszewski\raylib\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\OscarStaniszewski\raylib\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Animations.h" />
+    <ClInclude Include="Enemies.h" />
+    <ClInclude Include="Levels.h" />
+    <ClInclude Include="Menu.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="Resources.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Resources.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\Downloads\checkpoint.gif" />
+    <Image Include="resources\background.png" />
+    <Image Include="resources\textures\butterfly\Animation-0 Direction-0 Frame-0.png" />
+    <Image Include="resources\textures\butterfly\Animation-0 Direction-0 Frame-1.png" />
+    <Image Include="resources\textures\butterfly\Animation-0 Direction-0 Frame-2.png" />
+    <Image Include="resources\textures\butterfly\Animation-0 Direction-0 Frame-3.png" />
+    <Image Include="resources\textures\butterfly\Animation-0 Direction-0 Frame-4.png" />
+    <Image Include="resources\textures\butterfly\Animation-0 Direction-0 Frame-5.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-0 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-1 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-10 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-11 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-12 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-13 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-14 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-15 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-16 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-17 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-18 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-19 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-2 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-20 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-21 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-22 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-23 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-24 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-25 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-26 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-27 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-28 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-29 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-3 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-30 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-31 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-4 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-5 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-6 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-7 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-8 Frame-0.png" />
+    <Image Include="resources\textures\laser\butterfly_beam\Animation-0 Direction-9 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-0 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-1 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-10 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-11 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-12 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-13 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-14 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-15 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-16 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-17 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-18 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-19 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-2 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-20 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-21 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-22 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-23 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-24 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-25 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-26 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-27 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-28 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-29 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-3 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-30 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-31 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-4 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-5 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-6 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-7 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-8 Frame-0.png" />
+    <Image Include="resources\textures\laser\rainbow_beam\Animation-0 Direction-9 Frame-0.png" />
+    <Image Include="resources\textures\misc\blood_particle.png" />
+    <Image Include="resources\textures\misc\checkpoint_flag.png" />
+    <Image Include="resources\textures\misc\decoration_flower_big.png" />
+    <Image Include="resources\textures\misc\decoration_flower_small.png" />
+    <Image Include="resources\textures\misc\dirt_tile.png" />
+    <Image Include="resources\textures\misc\fence.png" />
+    <Image Include="resources\textures\misc\log.png" />
+    <Image Include="resources\textures\misc\platform_tile.png" />
+    <Image Include="resources\textures\misc\spikes_down.png" />
+    <Image Include="resources\textures\misc\spikes_up.png" />
+    <Image Include="resources\textures\misc\voices_mark.png" />
+    <Image Include="resources\textures\sprites\chica\chica_idle_left.png" />
+    <Image Include="resources\textures\sprites\chica\chica_idle_right.png" />
+    <Image Include="resources\textures\sprites\chica\chica_jump_left.png" />
+    <Image Include="resources\textures\sprites\chica\chica_jump_right.png" />
+    <Image Include="resources\textures\sprites\chica\chica_walk_left.png" />
+    <Image Include="resources\textures\sprites\chica\chica_walk_left_old.png" />
+    <Image Include="resources\textures\sprites\chica\chica_walk_right.png" />
+    <Image Include="resources\textures\sprites\chica\player_sprites_16frames.png" />
+    <Image Include="resources\textures\sprites\rainbow\chica_rainbow.png" />
+    <Image Include="resources\textures\sprites\rainbow\chica_rainbow_pissed.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-0 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-1 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-10 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-11 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-12 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-13 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-14 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-15 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-16 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-17 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-18 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-19 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-2 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-20 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-21 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-22 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-23 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-24 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-25 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-26 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-27 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-28 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-29 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-3 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-30 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-31 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-4 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-5 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-6 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-7 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-8 Frame-0.png" />
+    <Image Include="resources\textures\sprites\rainbow\rainbow_eyes\Animation-0 Direction-9 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-0 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-1 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-10 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-11 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-12 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-13 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-14 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-15 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-16 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-17 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-18 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-19 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-2 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-20 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-21 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-22 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-23 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-24 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-25 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-26 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-27 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-28 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-29 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-3 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-30 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-31 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-4 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-5 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-6 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-7 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-8 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\Animation-0 Direction-9 Frame-0.png" />
+    <Image Include="resources\textures\sunflower\deadly_flower.png" />
+    <Image Include="resources\textures\text\control_keys_tutorial.png" />
+    <Image Include="resources\textures\text\great_job.png" />
+    <Image Include="resources\textures\text\voices_off.png" />
+    <Image Include="resources\textures\text\voices_on.png" />
+    <Image Include="resources\textures\text\you_suck.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="resources\BRLNSDB.TTF" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="resources\audio\sfx\checkpoint.wav" />
+    <Media Include="resources\audio\sfx\eye.wav" />
+    <Media Include="resources\audio\sfx\jump.wav" />
+    <Media Include="resources\audio\sfx\leaser2.wav" />
+    <Media Include="resources\audio\sfx\logs.wav" />
+    <Media Include="resources\audio\sfx\petal.wav" />
+    <Media Include="resources\audio\sfx\poof2.wav" />
+    <Media Include="resources\audio\voice\imgonnakillyou.mp3" />
+    <Media Include="resources\audio\voice\lastchance.mp3" />
+    <Media Include="resources\audio\voice\voice01.mp3" />
+    <Media Include="resources\audio\voice\voice02.mp3" />
+    <Media Include="resources\audio\voice\voice03.mp3" />
+    <Media Include="resources\audio\voice\voice04.mp3" />
+    <Media Include="resources\audio\voice\voice05.mp3" />
+    <Media Include="resources\audio\voice\voice06.mp3" />
+    <Media Include="resources\audio\voice\voice07.mp3" />
+    <Media Include="resources\audio\voice\voice08.mp3" />
+    <Media Include="resources\audio\voice\voice09.mp3" />
+    <Media Include="resources\audio\voice\voice10.mp3" />
+    <Media Include="resources\audio\voice\voice11.mp3" />
+    <Media Include="resources\audio\voice\voice12.mp3" />
+    <Media Include="resources\audio\voice\voice13.mp3" />
+    <Media Include="resources\audio\voice\voice14.mp3" />
+    <Media Include="resources\audio\voice\voice15.mp3" />
+    <Media Include="resources\audio\voice\voice16.mp3" />
+    <Media Include="resources\audio\voice\voice17.mp3" />
+    <Media Include="resources\audio\voice\voice18.mp3" />
+    <Media Include="resources\audio\voice\voice19.mp3" />
+    <Media Include="resources\audio\voice\voice20.mp3" />
+    <Media Include="resources\audio\voice\voice21.mp3" />
+    <Media Include="resources\audio\voice\voice22.mp3" />
+    <Media Include="resources\audio\voice\voice23.mp3" />
+    <Media Include="resources\audio\voice\voice24.mp3" />
+    <Media Include="resources\audio\voice\voice25.mp3" />
+    <Media Include="resources\audio\voice\voice26.mp3" />
+    <Media Include="resources\audio\voice\voice27.mp3" />
+    <Media Include="resources\audio\voice\voice28.mp3" />
+    <Media Include="resources\audio\voice\voice29.mp3" />
+    <Media Include="resources\audio\voice\voice30.mp3" />
+    <Media Include="resources\audio\voice\voice31.mp3" />
+    <Media Include="resources\audio\voice\voice32.mp3" />
+    <Media Include="resources\audio\voice\voice_off_dialogue.mp3" />
+    <Media Include="resources\rainbow.mp3" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
