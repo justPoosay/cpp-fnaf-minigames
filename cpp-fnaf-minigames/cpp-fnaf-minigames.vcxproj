@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -76,12 +76,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\OscarStaniszewski\raylib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\oscar\raylib\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\OscarStaniszewski\raylib\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\oscar\raylib\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -93,14 +93,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\OscarStaniszewski\raylib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\oscar\raylib\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\OscarStaniszewski\raylib\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\oscar\raylib\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -110,12 +110,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\OscarStaniszewski\raylib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\oscar\raylib\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\OscarStaniszewski\raylib\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\oscar\raylib\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -127,28 +127,33 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\OscarStaniszewski\raylib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\oscar\raylib\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\OscarStaniszewski\raylib\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\oscar\raylib\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Animations.h" />
     <ClInclude Include="Enemies.h" />
+    <ClInclude Include="GameSettings.h" />
     <ClInclude Include="Levels.h" />
     <ClInclude Include="Menu.h" />
+    <ClInclude Include="MotoristResources.h" />
     <ClInclude Include="Player.h" />
-    <ClInclude Include="Resources.h" />
+    <ClInclude Include="RainbowLandResources.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ChicasMagicRainbowLand.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Resources.cpp" />
+    <ClCompile Include="MidnightMotorist.cpp" />
+    <ClCompile Include="MotoristResources.cpp" />
+    <ClCompile Include="RainbowLandResources.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\Downloads\checkpoint.gif" />
@@ -319,13 +324,18 @@
     <Font Include="resources\BRLNSDB.TTF" />
   </ItemGroup>
   <ItemGroup>
+    <Media Include="resources\audio\sfx\blaser.wav" />
     <Media Include="resources\audio\sfx\checkpoint.wav" />
+    <Media Include="resources\audio\sfx\die.wav" />
     <Media Include="resources\audio\sfx\eye.wav" />
     <Media Include="resources\audio\sfx\jump.wav" />
-    <Media Include="resources\audio\sfx\leaser2.wav" />
     <Media Include="resources\audio\sfx\logs.wav" />
     <Media Include="resources\audio\sfx\petal.wav" />
-    <Media Include="resources\audio\sfx\poof2.wav" />
+    <Media Include="resources\audio\sfx\poof.wav" />
+    <Media Include="resources\audio\sfx\respawn.wav" />
+    <Media Include="resources\audio\sfx\rlaser.wav" />
+    <Media Include="resources\audio\sfx\spikes.wav" />
+    <Media Include="resources\audio\voice\HA.wav" />
     <Media Include="resources\audio\voice\imgonnakillyou.mp3" />
     <Media Include="resources\audio\voice\lastchance.mp3" />
     <Media Include="resources\audio\voice\voice01.mp3" />
@@ -360,7 +370,7 @@
     <Media Include="resources\audio\voice\voice30.mp3" />
     <Media Include="resources\audio\voice\voice31.mp3" />
     <Media Include="resources\audio\voice\voice32.mp3" />
-    <Media Include="resources\audio\voice\voice_off_dialogue.mp3" />
+    <Media Include="resources\audio\voice\voiceOff.mp3" />
     <Media Include="resources\rainbow.mp3" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
