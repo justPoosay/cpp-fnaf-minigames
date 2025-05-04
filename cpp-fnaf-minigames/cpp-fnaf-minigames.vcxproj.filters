@@ -75,15 +75,30 @@
     <ClInclude Include="Levels.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="Resources.h">
+    <ClInclude Include="RainbowLandResources.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="MotoristResources.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSettings.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="ChicasMagicRainbowLand.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="Resources.cpp">
+    <ClCompile Include="RainbowLandResources.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="MotoristResources.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="MidnightMotorist.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>
@@ -596,16 +611,10 @@
     <Media Include="resources\audio\sfx\jump.wav">
       <Filter>Pliki zasobów\audio\sfx</Filter>
     </Media>
-    <Media Include="resources\audio\sfx\leaser2.wav">
-      <Filter>Pliki zasobów\audio\sfx</Filter>
-    </Media>
     <Media Include="resources\audio\sfx\logs.wav">
       <Filter>Pliki zasobów\audio\sfx</Filter>
     </Media>
     <Media Include="resources\audio\sfx\petal.wav">
-      <Filter>Pliki zasobów\audio\sfx</Filter>
-    </Media>
-    <Media Include="resources\audio\sfx\poof2.wav">
       <Filter>Pliki zasobów\audio\sfx</Filter>
     </Media>
     <Media Include="resources\audio\voice\imgonnakillyou.mp3">
@@ -614,7 +623,7 @@
     <Media Include="resources\audio\voice\lastchance.mp3">
       <Filter>Pliki zasobów\audio\voice</Filter>
     </Media>
-    <Media Include="resources\audio\voice\voice_off_dialogue.mp3">
+    <Media Include="resources\audio\voice\voiceOff.mp3">
       <Filter>Pliki zasobów\audio\voice</Filter>
     </Media>
     <Media Include="resources\audio\voice\voice01.mp3">
@@ -711,6 +720,27 @@
       <Filter>Pliki zasobów\audio\voice</Filter>
     </Media>
     <Media Include="resources\audio\voice\voice32.mp3">
+      <Filter>Pliki zasobów\audio\voice</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\poof.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\respawn.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\rlaser.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\blaser.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\spikes.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\sfx\die.wav">
+      <Filter>Pliki zasobów\audio\sfx</Filter>
+    </Media>
+    <Media Include="resources\audio\voice\HA.wav">
       <Filter>Pliki zasobów\audio\voice</Filter>
     </Media>
   </ItemGroup>
