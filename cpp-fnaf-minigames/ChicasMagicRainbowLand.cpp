@@ -45,17 +45,25 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     const float bgScrollFactor = 0.3f;
 
     const float virtualAspectRatio = (float)virtualScreenWidth / (float)virtualScreenHeight;
-    //SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    //InitWindow(virtualScreenWidth, virtualScreenHeight, "Magic Rainbow Land >:3");
-    //SetWindowMinSize(virtualScreenWidth / 2, virtualScreenHeight / 2);
-    //SetTargetFPS(60);
-    //InitAudioDevice();
 
-// --------- RESOURCE LOADER ---------s
+// --------- RESOURCE LOADER ---------
     RainbowLandGameResources resources = LoadRainbowLandResources(quality);
 
     RenderTexture2D target = LoadRenderTexture(virtualScreenWidth, virtualScreenHeight);
     SetTextureFilter(target.texture, TEXTURE_FILTER_BILINEAR);
+
+    // props specs
+    const float fenceWidth = resources.fenceProp.id > 0 ? (float)resources.fenceProp.width : 159.0f;
+    const float fenceHeight = resources.fenceProp.id > 0 ? (float)resources.fenceProp.height : 43.0f;
+
+    const float flowerSmallWidth = resources.flowerSmallProp.id > 0 ? (float)resources.flowerSmallProp.width : 60.0f;
+    const float flowerSmallHeight = resources.flowerSmallProp.id > 0 ? (float)resources.flowerSmallProp.height : 60.0f;
+
+    const float flowerBigWidth = resources.flowerBigProp.id > 0 ? (float)resources.flowerBigProp.width : 100.0f;
+    const float flowerBigHeight = resources.flowerBigProp.id > 0 ? (float)resources.flowerBigProp.height : 100.0f;
+
+    const float checkpointFlagWidth = resources.checkpointFlag.id > 0 ? (float)resources.checkpointFlag.width : 49.0f;
+    const float checkpointFlagHeight = resources.checkpointFlag.id > 0 ? (float)resources.checkpointFlag.height : 51.0f;
 
     // platform specs
     const float platformWidth = resources.platformTexture.id > 0 ? (float)resources.platformTexture.width : 80.0f;
@@ -141,6 +149,24 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     Texture2D currentButtonTexture = resources.buttonVoicesOn;
 
 
+// --------- POLOZENIE PROPSOW NA MAPIE!! ---------
+    std::vector<Rectangle> fenceProps;
+    fenceProps.push_back({ 275.0f, groundLevelY - 43.0f, fenceWidth, fenceHeight });
+    fenceProps.push_back({ 434.0f, groundLevelY - 43.0f, fenceWidth, fenceHeight });
+
+
+    std::vector<Rectangle> checkpointFlags;
+    checkpointFlags.push_back({ 100.0f, groundLevelY - 51.0f, checkpointFlagWidth, checkpointFlagHeight });
+
+
+    std::vector<Rectangle> flowerSmallProps;
+    flowerSmallProps.push_back({ 600.0f, groundLevelY - 60.0f, flowerSmallWidth, flowerSmallHeight });
+    flowerSmallProps.push_back({ 700.0f, groundLevelY - 60.0f, flowerSmallWidth, flowerSmallHeight });
+
+
+    std::vector<Rectangle> flowerBigProps;
+    flowerBigProps.push_back({ 1000.0f, groundLevelY - 100.0f, flowerBigWidth, flowerBigHeight });
+
 // --------- POLOZENIE PLATFORM NA MAPIE!! ---------
     std::vector<Rectangle> platforms;
     platforms.push_back({ 300.0f, groundLevelY - 80.0f, platformWidth, platformHeight });
@@ -156,6 +182,14 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         SetMusicVolume(resources.backgroundMusic, 0.5f);
     }
 
+
+// -------- PLAYING RAINBOW DIALOGUES --------
+    if (!resources.rbowDialogues.empty() && resources.rbowDialogues[0].frameCount > 0) {
+        TraceLog(LOG_INFO, "RAINBOW LAND: Playing first dialogue line.");
+        PlaySound(resources.rbowDialogues[0]); // Odtwórz pierwszy dŸwiêk z wektora
+    }
+
+    // TODO: while() loop that plays every next voiceline after death
 
 // --------------- MAIN GAME LOOP ---------------
     while (!WindowShouldClose())
@@ -305,6 +339,14 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
+        for (const auto& flag : checkpointFlags) {
+            Rectangle flagRect = flag;
+            if (CheckCollisionRecs(playerCurrentHitbox, flagRect)) {
+                //tutaj daj kod do wyswietlenia CHECKPOINT
+                break;
+            }
+        }
+
 
     // Ground collision handler
         if (!isGrounded && playerVel.y >= 0) {
@@ -428,6 +470,35 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
+
+        // --- Props draw ---
+        if (resources.fenceProp.id > 0) {
+            for (const auto& fence : fenceProps) {
+                if (fence.x - scrollX + fence.width > 0 && fence.x - scrollX < virtualScreenWidth)
+                    DrawTexture(resources.fenceProp, (int)(fence.x - scrollX), (int)fence.y, WHITE);
+            }
+        }
+
+        if (resources.flowerSmallProp.id > 0) {
+            for (const auto& flowerSmall : flowerSmallProps) {
+                if (flowerSmall.x - scrollX + flowerSmall.width > 0 && flowerSmall.x - scrollX < virtualScreenWidth)
+                    DrawTexture(resources.flowerSmallProp, (int)(flowerSmall.x - scrollX), (int)flowerSmall.y, WHITE);
+            }
+        }
+
+        if (resources.flowerBigProp.id > 0) {
+            for (const auto& flowerBig : flowerBigProps) {
+                if (flowerBig.x - scrollX + flowerBig.width > 0 && flowerBig.x - scrollX < virtualScreenWidth)
+                    DrawTexture(resources.flowerBigProp, (int)(flowerBig.x - scrollX), (int)flowerBig.y, WHITE);
+            }
+        }
+
+        if (resources.checkpointFlag.id > 0) {
+            for (const auto& flag : checkpointFlags) {
+                if (flag.x - scrollX + flag.width > 0 && flag.x - scrollX < virtualScreenWidth)
+                    DrawTexture(resources.checkpointFlag, (int)(flag.x - scrollX), (int)flag.y, WHITE);
+            }
+        }
 
         // --- Platform draw ---
         if (resources.platformTexture.id > 0) {
@@ -590,13 +661,6 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         DrawTexturePro(target.texture, src, dst, { 0, 0 }, 0.0f, WHITE);
         EndDrawing();
     }
-
-//// --- Resource Unload ---
-    //UnloadRenderTexture(target);
-    //UnloadGameResources(resources);
-
-    //CloseAudioDevice();
-    //CloseWindow();
 
     return 0;
 }

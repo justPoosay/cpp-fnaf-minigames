@@ -62,6 +62,11 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
 // Background, Tiles & UI
     resources.bg = LoadTexture("resources/cmrl/background.png");
     resources.tile = LoadTexture("resources/cmrl/textures/misc/dirt_tile.png");
+    resources.fenceProp = LoadTexture("resources/cmrl/textures/misc/fence.png");
+    resources.flowerBigProp = LoadTexture("resources/cmrl/textures/misc/decoration_flower_big.png");
+    resources.flowerSmallProp = LoadTexture("resources/cmrl/textures/misc/decoration_flower_small.png");
+    resources.checkpointFlag = LoadTexture("resources/cmrl/textures/misc/checkpoint_flag.png");
+
     resources.platformTexture = LoadTexture("resources/cmrl/textures/misc/platform_tile.png");
     resources.buttonVoicesOn = LoadTexture("resources/cmrl/textures/text/voices_on.png");
     resources.buttonVoicesOff = LoadTexture("resources/cmrl/textures/text/voices_off.png");
@@ -156,6 +161,10 @@ void UnloadRainbowLandResources(RainbowLandGameResources& resources) {
 
     if (resources.bg.id > 0) UnloadTexture(resources.bg);
     if (resources.tile.id > 0) UnloadTexture(resources.tile);
+    if (resources.fenceProp.id > 0) UnloadTexture(resources.fenceProp);
+    if (resources.flowerBigProp.id > 0) UnloadTexture(resources.flowerBigProp);
+    if (resources.flowerSmallProp.id > 0) UnloadTexture(resources.flowerSmallProp);
+    if (resources.checkpointFlag.id > 0) UnloadTexture(resources.checkpointFlag);
     if (resources.platformTexture.id > 0) UnloadTexture(resources.platformTexture);
     if (resources.buttonVoicesOn.id > 0) UnloadTexture(resources.buttonVoicesOn);
     if (resources.buttonVoicesOff.id > 0) UnloadTexture(resources.buttonVoicesOff);

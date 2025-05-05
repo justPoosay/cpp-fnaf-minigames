@@ -26,6 +26,10 @@ struct RainbowLandGameResources { // Store game resources
 // Background, Tiles, UI
     Texture2D bg;
     Texture2D tile;
+    Texture2D fenceProp;
+    Texture2D flowerBigProp;
+    Texture2D flowerSmallProp;
+    Texture2D checkpointFlag;
     Texture2D platformTexture;
     Texture2D buttonVoicesOn;
     Texture2D buttonVoicesOff;
