@@ -59,15 +59,37 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
     resources.rbowEyeTextures[31] = LoadTexture("resources/cmrl/textures/sprites/rainbow/rainbow_eyes/Animation-0 Direction-31 Frame-0.png");
 
 
+// Butterfly
+    resources.butterfly = LoadTexture("resources/cmrl/textures/butterfly/butterfly.png");
+    resources.bflyLaser = LoadTexture("resources/cmrl/textures/laser/bflyBeam.png");
+
 // Background, Tiles & UI
     resources.bg = LoadTexture("resources/cmrl/background.png");
     resources.tile = LoadTexture("resources/cmrl/textures/misc/dirt_tile.png");
+    resources.platformTexture = LoadTexture("resources/cmrl/textures/misc/platform_tile.png");
+
+    resources.sunflower = LoadTexture("resources/cmrl/textures/sunflower/deadly_flower.png");
+
+    resources.sunflowerPettles.resize(resources.numPettles);
+    resources.sunflowerPettles[0] = LoadTexture("resources/cmrl/textures/sunflower/pettleN.png");
+    resources.sunflowerPettles[1] = LoadTexture("resources/cmrl/textures/sunflower/pettleNE.png");
+    resources.sunflowerPettles[2] = LoadTexture("resources/cmrl/textures/sunflower/pettleE.png");
+    resources.sunflowerPettles[3] = LoadTexture("resources/cmrl/textures/sunflower/pettleSE.png");
+    resources.sunflowerPettles[4] = LoadTexture("resources/cmrl/textures/sunflower/pettleS.png");
+    resources.sunflowerPettles[5] = LoadTexture("resources/cmrl/textures/sunflower/pettleSW.png");
+    resources.sunflowerPettles[6] = LoadTexture("resources/cmrl/textures/sunflower/pettleW.png");
+    resources.sunflowerPettles[7] = LoadTexture("resources/cmrl/textures/sunflower/pettleNW.png");
+
     resources.fenceProp = LoadTexture("resources/cmrl/textures/misc/fence.png");
     resources.flowerBigProp = LoadTexture("resources/cmrl/textures/misc/decoration_flower_big.png");
     resources.flowerSmallProp = LoadTexture("resources/cmrl/textures/misc/decoration_flower_small.png");
     resources.checkpointFlag = LoadTexture("resources/cmrl/textures/misc/checkpoint_flag.png");
 
-    resources.platformTexture = LoadTexture("resources/cmrl/textures/misc/platform_tile.png");
+    resources.log = LoadTexture("resources/cmrl/textures/misc/log.png");
+    resources.spikesUp = LoadTexture("resources/cmrl/textures/misc/spikes_up.png");
+    resources.spikesDown = LoadTexture("resources/cmrl/textures/misc/spikes_down.png");
+
+    resources.bloodParticle = LoadTexture("resources/cmrl/textures/misc/blood_particle.png");
     resources.buttonVoicesOn = LoadTexture("resources/cmrl/textures/text/voices_on.png");
     resources.buttonVoicesOff = LoadTexture("resources/cmrl/textures/text/voices_off.png");
     resources.checkpoint = LoadTexture("resources/cmrl/textures/text/checkpoint.gif");
@@ -159,13 +181,33 @@ void UnloadRainbowLandResources(RainbowLandGameResources& resources) {
     if (resources.rbowBodyTexture.id > 0) UnloadTexture(resources.rbowBodyTexture);
     if (resources.rbowVoiceOffBodyTexture.id > 0) UnloadTexture(resources.rbowVoiceOffBodyTexture);
 
+    if (resources.butterfly.id > 0) UnloadTexture(resources.butterfly);
+    if (resources.bflyLaser.id > 0) UnloadTexture(resources.bflyLaser);
+
     if (resources.bg.id > 0) UnloadTexture(resources.bg);
     if (resources.tile.id > 0) UnloadTexture(resources.tile);
+    if (resources.platformTexture.id > 0) UnloadTexture(resources.platformTexture);
+
+    if (resources.sunflower.id > 0) UnloadTexture(resources.sunflower);
+
+    if (resources.sunflowerPettles[0].id > 0) UnloadTexture(resources.sunflowerPettles[0]);
+    if (resources.sunflowerPettles[1].id > 0) UnloadTexture(resources.sunflowerPettles[1]);
+    if (resources.sunflowerPettles[2].id > 0) UnloadTexture(resources.sunflowerPettles[2]);
+    if (resources.sunflowerPettles[3].id > 0) UnloadTexture(resources.sunflowerPettles[3]);
+    if (resources.sunflowerPettles[4].id > 0) UnloadTexture(resources.sunflowerPettles[4]);
+    if (resources.sunflowerPettles[5].id > 0) UnloadTexture(resources.sunflowerPettles[5]);
+    if (resources.sunflowerPettles[6].id > 0) UnloadTexture(resources.sunflowerPettles[6]);
+    if (resources.sunflowerPettles[7].id > 0) UnloadTexture(resources.sunflowerPettles[7]);
+
     if (resources.fenceProp.id > 0) UnloadTexture(resources.fenceProp);
     if (resources.flowerBigProp.id > 0) UnloadTexture(resources.flowerBigProp);
     if (resources.flowerSmallProp.id > 0) UnloadTexture(resources.flowerSmallProp);
     if (resources.checkpointFlag.id > 0) UnloadTexture(resources.checkpointFlag);
-    if (resources.platformTexture.id > 0) UnloadTexture(resources.platformTexture);
+    if (resources.log.id > 0) UnloadTexture(resources.log);
+    if (resources.spikesUp.id > 0) UnloadTexture(resources.spikesUp);
+    if (resources.spikesDown.id > 0) UnloadTexture(resources.spikesDown);
+
+    if (resources.bloodParticle.id > 0) UnloadTexture(resources.bloodParticle);
     if (resources.buttonVoicesOn.id > 0) UnloadTexture(resources.buttonVoicesOn);
     if (resources.buttonVoicesOff.id > 0) UnloadTexture(resources.buttonVoicesOff);
     if (resources.checkpoint.id > 0) UnloadTexture(resources.checkpoint);

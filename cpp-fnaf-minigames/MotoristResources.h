@@ -20,17 +20,22 @@ struct MotoristGameResources { // Store game resources
 	Texture2D goal;
 
 	Music backgroundMusic;
+	Music bgNoise;
 	Sound countdown;
+	Sound ctdwnGo;
 	Sound carCrash;
 	Sound lapReached;
 	Sound goalReached;
 
 	bool backgroundMusicLoaded = false;
+	bool bgNoiseLoaded = false;
 	bool countdownSoundLoaded = false;
+	bool goSoundLoaded = false;
 	bool carCrashSoundLoaded = false;
 	bool lapSoundLoaded = false;
 	bool goalSoundLoaded = false;
 
+	Font gameFont;
 };
 
 // Loading Resources

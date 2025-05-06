@@ -23,7 +23,7 @@ int runMagicRainbowLand(GraphicsQuality quality);
 void StopAndUnloadMusic(Music& music, bool& loadedFlag);
 
 // --- UI Functions ---
-bool GuiButton(Rectangle bounds, const char* text) {
+static bool GuiButton(Rectangle bounds, const char* text) {
     bool clicked = false;
     Vector2 mousePoint = GetMousePosition();
     const int logicalWidth = 1280;
@@ -42,7 +42,7 @@ bool GuiButton(Rectangle bounds, const char* text) {
     } else 
         DrawRectangleRec(bounds, DARKGRAY);
 
-    int textWidth = MeasureText(text, 20);
+    float textWidth = MeasureText(text, 20);
     DrawText(text, bounds.x + (bounds.width / 2) - (textWidth / 2), bounds.y + (bounds.height / 2) - 10, 20, WHITE);
     return clicked;
 }

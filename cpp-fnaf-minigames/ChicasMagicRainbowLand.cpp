@@ -12,6 +12,15 @@
 #define PI 3.14159265358979323846f
 #endif
 
+struct Butterfly {
+    Vector2 position;        // Aktualna pozycja w œwiecie gry
+    Vector2 startPosition;   // Pozycja pocz¹tkowa, wokó³ której bêdzie siê porusza³
+    int animCurrentFrame;
+    int animFrameCounter;
+    float movementPhase;     // Faza ruchu (0 do 2*PI) do obliczeñ sin/cos
+    float movementSpeedOffset; // Niewielkie przesuniêcie prêdkoœci dla ró¿norodnoœci
+};
+
 // Define animations :p
 static void UpdatePlayerAnimation(bool isGrounded, bool isMoving, bool facingRight, Texture2D& currentTexture, int& currentFrame, int animUpdateRate, int maxFrames, int& frameCounter, Texture2D idleRight, Texture2D idleLeft, Texture2D walkRight, Texture2D walkLeft, Texture2D jumpRight, Texture2D jumpLeft)
 {
@@ -31,6 +40,30 @@ static void UpdatePlayerAnimation(bool isGrounded, bool isMoving, bool facingRig
     else {
         currentTexture = facingRight ? idleRight : idleLeft;
     }
+}
+
+// Butterfly animation function
+static void UpdateButterflyAnimation(
+    Texture2D& currentDisplayTexture, // Output: The texture to use for drawing (will be set to butterflySpriteSheet)
+    int& currentFrame,                // Input/Output: The current frame index of the animation (0 to maxFrames-1)
+    int animUpdateRate,               // Input: How many game frames to wait before advancing the animation frame
+    int totalFramesInSheet,           // Input: The total number of frames in the butterfly spritesheet (e.g., 6)
+    int& frameCounter,                // Input/Output: A counter to manage animation timing
+    Texture2D butterfly)              // Input: The spritesheet texture containing all butterfly frames
+{
+    frameCounter++;
+    if (frameCounter >= animUpdateRate) {
+        frameCounter = 0; // Reset the counter
+        currentFrame++;   // Move to the next animation frame
+        if (currentFrame >= totalFramesInSheet) {
+            currentFrame = 0; // Loop back to the first frame
+        }
+    }
+
+    // Set the texture to be displayed. For the butterfly, it's always its single spritesheet.
+    // This line makes the function's signature and usage pattern similar to 
+    // UpdatePlayerAnimation, where 'currentTexture' is an output parameter.
+    currentDisplayTexture = butterfly;
 }
 
 int runMagicRainbowLand(GraphicsQuality quality) {
@@ -65,9 +98,14 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     const float checkpointFlagWidth = resources.checkpointFlag.id > 0 ? (float)resources.checkpointFlag.width : 49.0f;
     const float checkpointFlagHeight = resources.checkpointFlag.id > 0 ? (float)resources.checkpointFlag.height : 51.0f;
 
+    // sunflower specs
+    const float sunflowerWidth = resources.sunflower.id > 0 ? (float)resources.sunflower.width : 250.0f;
+    const float sunflowerHeight = resources.sunflower.id > 0 ? (float)resources.sunflower.height : 300.0f;
+
     // platform specs
     const float platformWidth = resources.platformTexture.id > 0 ? (float)resources.platformTexture.width : 80.0f;
     const float platformHeight = resources.platformTexture.id > 0 ? (float)resources.platformTexture.height : 21.0f;
+
 
 
 // --------- REGULACJA LOGIKI RUCHU ---------
@@ -111,7 +149,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 // --------- DOSTOSUJ FIZYKE RUCHU RAINBOWA!! ---------
     const float rainbowTargetY = 5.0f;
     const float rainbowPaddingX = 60.0f;
-    const float rainbowSpeed = playerSpeed / 2.5f;
+    const float rainbowSpeed = playerSpeed / 1.75f;
     Vector2 rainbowPos = { 0.0f, rainbowTargetY };
     int currentEyeIndex = 0;
     const float rainbowLeftEyeOffsetX = 90.0f;
@@ -121,6 +159,17 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     float rainbowTargetX = 0.0f;
     bool israinbowInDialogue = false;
     bool buttonCanBeClicked = true;
+
+
+// --------- DOSTOSUJ FIZYKE RUCHU MOTYLKA!! ---------
+     // Example for one butterfly
+     Texture2D currentButterflySprite; // This will be set by UpdateButterflyAnimation
+     int butterflyCurrentAnimFrame = 0;
+     int butterflyAnimFrameCounter = 0;
+
+     // If you have the texture in your resources struct:
+     Texture2D butterflySheet = resources.butterfly; // Assuming it's loaded
+
 
     // logika przewijania tla
     float scrollX = 0.0f;
@@ -150,38 +199,94 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
 
 // --------- POLOZENIE PROPSOW NA MAPIE!! ---------
-    std::vector<Rectangle> fenceProps;
+    std::vector<Rectangle> fenceProps; // fence
     fenceProps.push_back({ 275.0f, groundLevelY - 43.0f, fenceWidth, fenceHeight });
     fenceProps.push_back({ 434.0f, groundLevelY - 43.0f, fenceWidth, fenceHeight });
+    fenceProps.push_back({ 593.0f, groundLevelY - 43.0f, fenceWidth, fenceHeight });
+    fenceProps.push_back({ 752.0f, groundLevelY - 43.0f, fenceWidth, fenceHeight });
+    fenceProps.push_back({ 911.0f, groundLevelY - 43.0f, fenceWidth, fenceHeight });
 
 
-    std::vector<Rectangle> checkpointFlags;
+    std::vector<Rectangle> checkpointFlags; // flag
     checkpointFlags.push_back({ 100.0f, groundLevelY - 51.0f, checkpointFlagWidth, checkpointFlagHeight });
+    checkpointFlags.push_back({ 820.0f, groundLevelY - 51.0f, checkpointFlagWidth, checkpointFlagHeight });
 
 
-    std::vector<Rectangle> flowerSmallProps;
+    std::vector<Rectangle> flowerSmallProps; // small flower
     flowerSmallProps.push_back({ 600.0f, groundLevelY - 60.0f, flowerSmallWidth, flowerSmallHeight });
     flowerSmallProps.push_back({ 700.0f, groundLevelY - 60.0f, flowerSmallWidth, flowerSmallHeight });
 
 
-    std::vector<Rectangle> flowerBigProps;
+    std::vector<Rectangle> flowerBigProps; // big flower
     flowerBigProps.push_back({ 1000.0f, groundLevelY - 100.0f, flowerBigWidth, flowerBigHeight });
+
+
+// --------- POLOZENIE SLONECZNIKOW NA MAPIE!! ---------
+    std::vector<Rectangle> deadlySunflowers; // sunflower
+    deadlySunflowers.push_back({ 920.0f, groundLevelY - 300.0f, sunflowerWidth, sunflowerHeight });
+    deadlySunflowers.push_back({ 1220.0f, groundLevelY - 300.0f, sunflowerWidth, sunflowerHeight });
 
 // --------- POLOZENIE PLATFORM NA MAPIE!! ---------
     std::vector<Rectangle> platforms;
-    platforms.push_back({ 300.0f, groundLevelY - 80.0f, platformWidth, platformHeight });
-    platforms.push_back({ 550.0f, groundLevelY - 140.0f, platformWidth, platformHeight });
-    platforms.push_back({ 650.0f, groundLevelY - 240.0f, platformWidth, platformHeight });
-    platforms.push_back({ 900.0f, groundLevelY - 100.0f, platformWidth, platformHeight });
-    platforms.push_back({ 1200.0f, groundLevelY - 180.0f, platformWidth, platformHeight });
+    platforms.push_back({ 260.0f, groundLevelY - 180.0f, platformWidth, platformHeight });
+    platforms.push_back({ 360.0f, groundLevelY - 100.0f, platformWidth, platformHeight });
+    platforms.push_back({ 460.0f, groundLevelY - 180.0f, platformWidth, platformHeight });
+    platforms.push_back({ 560.0f, groundLevelY - 100.0f, platformWidth, platformHeight });
+    platforms.push_back({ 660.0f, groundLevelY - 180.0f, platformWidth, platformHeight });
 
 
-    if (resources.backgroundMusicLoaded)
-    {
+    if (resources.backgroundMusicLoaded) {
         PlayMusicStream(resources.backgroundMusic);
         SetMusicVolume(resources.backgroundMusic, 0.5f);
     }
 
+// ------- BUTTERFLY SETUP -------
+    std::vector<Butterfly> butterflies;
+    const int BUTTERFLY_TOTAL_FRAMES = 6;     // Zgodnie z poleceniem
+    const int BUTTERFLY_ANIM_UPDATE_RATE = 3; // Co ile klatek gry zmienia siê klatka animacji motyla
+    const float BUTTERFLY_MOVEMENT_RADIUS_X = 40.0f;
+    const float BUTTERFLY_MOVEMENT_RADIUS_Y = 20.0f;
+    const float BUTTERFLY_BASE_MOVEMENT_SPEED = 0.8f; // Radiany na sekundê (wp³ywa na szybkoœæ cyklu)
+    // Obliczanie szerokoœci/wysokoœci klatki motyla na podstawie za³adowanej tekstury
+    const float BUTTERFLY_SPRITE_WIDTH = (resources.butterfly.id > 0) ? (float)resources.butterfly.width / BUTTERFLY_TOTAL_FRAMES : 32.0f;
+    const float BUTTERFLY_SPRITE_HEIGHT = (resources.butterfly.id > 0) ? (float)resources.butterfly.height : 32.0f;
+
+
+    if (resources.butterfly.id > 0) { // Tylko jeœli tekstura jest za³adowana
+        // Dodaj motyle w ró¿nych miejscach
+
+        butterflies.push_back({
+                {350.0f, groundLevelY - 150.0f}, // Pozycja startowa (bêdzie te¿ centrum ruchu)
+                {350.0f, groundLevelY - 150.0f},
+                0, 0, 0.0f, // animFrame, animCounter, movementPhase
+                0.0f // movementSpeedOffset
+            });
+
+        butterflies.push_back({
+                {750.0f, groundLevelY - 200.0f},
+                {750.0f, groundLevelY - 200.0f},
+                GetRandomValue(0, BUTTERFLY_TOTAL_FRAMES - 1), 0, // Losowa klatka startowa animacji
+                (float)GetRandomValue(0, 628) / 100.0f, // Losowa faza ruchu (0 do 2*PI)
+                (float)GetRandomValue(-20, 20) / 100.0f // Losowe ma³e przesuniêcie prêdkoœci
+            });
+
+        butterflies.push_back({
+                {1100.0f, groundLevelY - 120.0f},
+                {1100.0f, groundLevelY - 120.0f},
+                GetRandomValue(0, BUTTERFLY_TOTAL_FRAMES - 1), 0,
+                (float)GetRandomValue(0, 628) / 100.0f,
+                (float)GetRandomValue(-20, 20) / 100.0f
+            });
+
+        butterflies.push_back({
+               {150.0f, groundLevelY - 70.0f},
+               {150.0f, groundLevelY - 70.0f},
+               GetRandomValue(0, BUTTERFLY_TOTAL_FRAMES - 1), 0,
+               (float)GetRandomValue(0, 628) / 100.0f,
+               (float)GetRandomValue(-20, 20) / 100.0f
+           });
+    }
+    // --- END BUTTERFLY SETUP ---
 
 // -------- PLAYING RAINBOW DIALOGUES --------
     if (!resources.rbowDialogues.empty() && resources.rbowDialogues[0].frameCount > 0) {
@@ -192,8 +297,8 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     // TODO: while() loop that plays every next voiceline after death
 
 // --------------- MAIN GAME LOOP ---------------
-    while (!WindowShouldClose())
-    {
+    while (!WindowShouldClose()) {
+        float dt = GetFrameTime();
         if (resources.backgroundMusicLoaded) {
             UpdateMusicStream(resources.backgroundMusic);
             if (GetMusicTimePlayed(resources.backgroundMusic) >= GetMusicTimeLength(resources.backgroundMusic) - 0.1f) {
@@ -274,6 +379,17 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
+
+       if (butterflySheet.id > 0) 
+           UpdateButterflyAnimation(
+           currentButterflySprite,          // Output texture for drawing
+           butterflyCurrentAnimFrame,       // Current frame
+           BUTTERFLY_ANIM_UPDATE_RATE,      // Speed
+           BUTTERFLY_TOTAL_FRAMES,          // Total frames
+           butterflyAnimFrameCounter,       // Frame counter
+           butterflySheet                   // The butterfly spritesheet
+        );
+    
 
     // ---------- FIZYKA GRACZA NA PLATFORMIE ----------
         jumpButtonHeld = IsKeyDown(KEY_W);
@@ -434,11 +550,45 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             // israinbowInDialogue = false;
         }
 
-        if (!isGrounded) maxFramesForCurrentAnim = jumpFrames;
-        else if (isMoving) maxFramesForCurrentAnim = walkFrames;
-        else maxFramesForCurrentAnim = idleFrames;
-        UpdatePlayerAnimation(isGrounded, isMoving, facingRight, currentTexture, currentFrame, animUpdateRate, maxFramesForCurrentAnim, frameCounter,
-            resources.idleRight, resources.idleLeft, resources.walkRight, resources.walkLeft, resources.jumpRight, resources.jumpLeft);
+
+
+
+    // --- BUTTERFLY LOGIC & ANIMATION UPDATE ---
+        if (resources.butterfly.id > 0) {
+            for (auto& butterfly : butterflies) {
+                // Aktualizacja fazy ruchu
+                float currentMovementSpeed = BUTTERFLY_BASE_MOVEMENT_SPEED + butterfly.movementSpeedOffset;
+                butterfly.movementPhase += currentMovementSpeed * dt; // dt dla p³ynnoœci
+                if (butterfly.movementPhase >= 2.0f * PI) {
+                    butterfly.movementPhase -= 2.0f * PI;
+                }
+
+                // Aktualizacja pozycji na podstawie ruchu cyklicznego
+                butterfly.position.x = butterfly.startPosition.x + BUTTERFLY_MOVEMENT_RADIUS_X * cosf(butterfly.movementPhase);
+                butterfly.position.y = butterfly.startPosition.y + BUTTERFLY_MOVEMENT_RADIUS_Y * sinf(butterfly.movementPhase);
+
+                // Aktualizacja animacji motyla
+                Texture2D dummyTextureForAnimFunc; // Funkcja tego oczekuje, ale nie u¿ywamy jej outputu tutaj
+                UpdateButterflyAnimation(
+                    dummyTextureForAnimFunc,
+                    butterfly.animCurrentFrame,
+                    BUTTERFLY_ANIM_UPDATE_RATE,
+                    BUTTERFLY_TOTAL_FRAMES,
+                    butterfly.animFrameCounter,
+                    resources.butterfly // Przekazujemy g³ówny arkusz sprite'ów motyla
+                );
+            }
+        }
+        // --- END BUTTERFLY LOGIC ---
+
+        
+        if (!isGrounded) 
+            maxFramesForCurrentAnim = jumpFrames;
+        else if (isMoving)
+            maxFramesForCurrentAnim = walkFrames;
+        else
+            maxFramesForCurrentAnim = idleFrames;
+        UpdatePlayerAnimation(isGrounded, isMoving, facingRight, currentTexture, currentFrame, animUpdateRate, maxFramesForCurrentAnim, frameCounter, resources.idleRight, resources.idleLeft, resources.walkRight, resources.walkLeft, resources.jumpRight, resources.jumpLeft);
 
         float actualPlayerVirtualDrawX;
         if (scrollX <= 0.0f) { actualPlayerVirtualDrawX = playerPos.x; }
@@ -456,6 +606,30 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             DrawTextureEx(resources.bg, { bgX + resources.bg.width, 0.0f }, 0.0f, 1.0f, WHITE);
             if (bgX + 2 * resources.bg.width < virtualScreenWidth) {
                 DrawTextureEx(resources.bg, { bgX + 2 * resources.bg.width, 0.0f }, 0.0f, 1.0f, WHITE);
+            }
+        }
+
+        // --- Rainbow draw ---
+        if (resources.rbowBodyTexture.id > 0) {
+            Vector2 rainbowDrawPos = { rainbowPos.x - scrollX, rainbowPos.y };
+            if (rainbowDrawPos.x + resources.rbowBodyTexture.width > 0 && rainbowDrawPos.x < virtualScreenWidth) {
+                Texture2D bodyToDraw = israinbowInDialogue ? resources.rbowVoiceOffBodyTexture : resources.rbowBodyTexture;
+
+                if (bodyToDraw.id == 0) 
+                    bodyToDraw = resources.rbowBodyTexture;
+
+                DrawTextureV(bodyToDraw, rainbowDrawPos, WHITE);
+
+                // --- Rainbow Eyes draw ---
+                if (!israinbowInDialogue) {
+                    if (currentEyeIndex >= 0 && currentEyeIndex < resources.numEyeSprites && resources.rbowEyeTextures[currentEyeIndex].id > 0) {
+                        Texture2D currentEyeTexture = resources.rbowEyeTextures[currentEyeIndex];
+                        Vector2 leftEyeDrawPos = { rainbowDrawPos.x + rainbowLeftEyeOffsetX, rainbowDrawPos.y + rainbowLeftEyeOffsetY };
+                        Vector2 rightEyeDrawPos = { rainbowDrawPos.x + rainbowRightEyeOffsetX, rainbowDrawPos.y + rainbowRightEyeOffsetY };
+                        DrawTextureV(currentEyeTexture, leftEyeDrawPos, WHITE);
+                        DrawTextureV(currentEyeTexture, rightEyeDrawPos, WHITE);
+                    }
+                }
             }
         }
 
@@ -500,6 +674,13 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
+        if (resources.sunflower.id > 0) {
+            for (const auto& sunflowers : deadlySunflowers) {
+                if (sunflowers.x - scrollX + sunflowers.width > 0 && sunflowers.x - scrollX < virtualScreenWidth)
+                    DrawTexture(resources.sunflower, (int)(sunflowers.x - scrollX), (int)sunflowers.y, WHITE);
+            }
+        }
+
         // --- Platform draw ---
         if (resources.platformTexture.id > 0) {
             for (const auto& platform : platforms) {
@@ -515,29 +696,34 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-        // --- Rainbow draw ---
-        if (resources.rbowBodyTexture.id > 0) {
-            Vector2 rainbowDrawPos = { rainbowPos.x - scrollX, rainbowPos.y };
-            if (rainbowDrawPos.x + resources.rbowBodyTexture.width > 0 && rainbowDrawPos.x < virtualScreenWidth) {
-                Texture2D bodyToDraw = israinbowInDialogue ? resources.rbowVoiceOffBodyTexture : resources.rbowBodyTexture;
 
-                if (bodyToDraw.id == 0) 
-                    bodyToDraw = resources.rbowBodyTexture;
 
-                DrawTextureV(bodyToDraw, rainbowDrawPos, WHITE);
+        // --- Butterfly draw ---
+        if (resources.butterfly.id > 0) {
+            // Szerokoœæ i wysokoœæ pojedynczej klatki motyla
+            float butterflyFrameActualWidth = (float)resources.butterfly.width / BUTTERFLY_TOTAL_FRAMES;
+            float butterflyFrameActualHeight = (float)resources.butterfly.height; // Zak³adaj¹c, ¿e wszystkie klatki s¹ w jednym rzêdzie
 
-                // --- Rainbow Eyes draw ---
-                if (!israinbowInDialogue) {
-                    if (currentEyeIndex >= 0 && currentEyeIndex < resources.numEyeSprites && resources.rbowEyeTextures[currentEyeIndex].id > 0) {
-                        Texture2D currentEyeTexture = resources.rbowEyeTextures[currentEyeIndex];
-                        Vector2 leftEyeDrawPos = { rainbowDrawPos.x + rainbowLeftEyeOffsetX, rainbowDrawPos.y + rainbowLeftEyeOffsetY };
-                        Vector2 rightEyeDrawPos = { rainbowDrawPos.x + rainbowRightEyeOffsetX, rainbowDrawPos.y + rainbowRightEyeOffsetY };
-                        DrawTextureV(currentEyeTexture, leftEyeDrawPos, WHITE);
-                        DrawTextureV(currentEyeTexture, rightEyeDrawPos, WHITE);
-                    }
+            for (const auto& butterfly : butterflies) {
+                Rectangle butterflySourceRect = {
+                    (float)butterfly.animCurrentFrame * butterflyFrameActualWidth, // X na arkuszu sprite'ów
+                    0.0f,                                                        // Y na arkuszu (zak³adaj¹c górny rz¹d)
+                    butterflyFrameActualWidth,
+                    butterflyFrameActualHeight
+                };
+                Vector2 butterflyDrawPos = { butterfly.position.x - scrollX, butterfly.position.y };
+
+                // Proste culling dla motyli
+                if (butterflyDrawPos.x + butterflyFrameActualWidth > 0 && butterflyDrawPos.x < virtualScreenWidth &&
+                    butterflyDrawPos.y + butterflyFrameActualHeight > 0 && butterflyDrawPos.y < virtualScreenHeight) {
+                    DrawTextureRec(resources.butterfly, butterflySourceRect, butterflyDrawPos, WHITE);
                 }
             }
         }
+        // --- END BUTTERFLY DRAW ---
+
+
+
 
         // --- Player draw ---
         Rectangle sourceRect = { (float)currentFrame * playerTextureWidth, 0, (float)playerTextureWidth, (float)playerTextureHeight };

@@ -37,22 +37,32 @@ MotoristGameResources LoadMotoristResources(GraphicsQuality quality) { // Loadin
 
     // Music & FX
     const char* musicPath = "resources/mm/motorist.mp3";
+    const char* noisePath = "resources/mm/bgNoise.wav";
     const char* countdownPath = "resources/mm/countdown.wav";
+    const char* goPath = "resources/mm/go.wav";
     const char* carCrashPath = "resources/mm/crash.wav";
     const char* lapPath = "resources/mm/lap.wav";
     const char* goalPath = "resources/mm/goal.wav";
 
     resources.backgroundMusic = LoadMusicStream(musicPath);
+    resources.bgNoise = LoadMusicStream(noisePath);
     resources.countdown = LoadSound(countdownPath);
+    resources.ctdwnGo = LoadSound(goPath);
     resources.carCrash = LoadSound(carCrashPath);
-    resources.lapReached = LoadSound(carCrashPath);
-    resources.goalReached = LoadSound(carCrashPath);
+    resources.lapReached = LoadSound(lapPath);
+    resources.goalReached = LoadSound(goalPath);
 
     resources.backgroundMusicLoaded = (GetMusicTimeLength(resources.backgroundMusic) > 0);
+    resources.bgNoiseLoaded = (GetMusicTimeLength(resources.bgNoise) > 0);
     resources.countdownSoundLoaded = (resources.countdown.frameCount > 0);
+    resources.goSoundLoaded = (resources.ctdwnGo.frameCount > 0);
     resources.carCrashSoundLoaded = (resources.carCrash.frameCount > 0);
     resources.lapSoundLoaded = (resources.lapReached.frameCount > 0);
     resources.goalSoundLoaded = (resources.goalReached.frameCount > 0);
+
+    resources.gameFont = LoadFont("resources/BRLNSDB.TTF");
+
+    SetTextureFilter(resources.gameFont.texture, TEXTURE_FILTER_BILINEAR);
 
     TraceLog(LOG_INFO, "Game resources loaded successfully.");
 
@@ -80,7 +90,10 @@ void UnloadMotoristResources(MotoristGameResources& resources) {
     if (resources.goal.id > 0) UnloadTexture(resources.goal);
 
     if (resources.backgroundMusicLoaded) UnloadMusicStream(resources.backgroundMusic);
+    if (resources.bgNoiseLoaded) UnloadMusicStream(resources.bgNoise);
     if (resources.countdownSoundLoaded) UnloadSound(resources.countdown);
     if (resources.carCrashSoundLoaded) UnloadSound(resources.goalReached);
     if (resources.lapSoundLoaded) UnloadSound(resources.lapReached);
+
+    UnloadFont(resources.gameFont);
 }
