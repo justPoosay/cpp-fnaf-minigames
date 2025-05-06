@@ -23,14 +23,29 @@ struct RainbowLandGameResources { // Store game resources
     std::vector<Texture2D> rbowEyeTextures;
     const int numEyeSprites = 32;
 
+// Butterfly
+    Texture2D butterfly;
+    Texture2D bflyLaser;
+
 // Background, Tiles, UI
     Texture2D bg;
     Texture2D tile;
+    Texture2D platformTexture;
+
+    Texture2D sunflower;
+    std::vector<Texture2D> sunflowerPettles;
+    const int numPettles = 8;
+
     Texture2D fenceProp;
     Texture2D flowerBigProp;
     Texture2D flowerSmallProp;
     Texture2D checkpointFlag;
-    Texture2D platformTexture;
+
+    Texture2D log;
+    Texture2D spikesUp;
+    Texture2D spikesDown;
+
+    Texture2D bloodParticle;
     Texture2D buttonVoicesOn;
     Texture2D buttonVoicesOff;
     Texture2D checkpoint;

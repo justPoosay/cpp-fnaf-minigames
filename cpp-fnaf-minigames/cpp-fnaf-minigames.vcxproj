@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Animations.h" />
+    <ClInclude Include="const.h" />
     <ClInclude Include="Enemies.h" />
     <ClInclude Include="GameSettings.h" />
     <ClInclude Include="Levels.h" />

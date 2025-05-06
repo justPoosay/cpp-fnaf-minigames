@@ -1,73 +1,83 @@
 #version 330 core
 
-// Input vertex attributes (from vertex shader)
 in vec2 fragTexCoord;
 in vec4 fragColor;
 
-// Uniforms passed from your C++ code
-uniform sampler2D texture0; // This will be our RenderTexture
-uniform vec2 resolution;   // The resolution of the RenderTexture (e.g., 1280x720)
-uniform float time;        // Game time in seconds, for potential animation
+uniform sampler2D texture0;
+uniform vec2 resolution;
+uniform float time;
 
-// Output color for the fragment
 out vec4 finalColor;
 
-const float hardScan = -8.0;
-const float hardPix = -3.0;
+// --- CRT Effect Parameters ---
+// Curvature (parametry pozostają, ale efekt będzie zakomentowany w main)
 const float warpX = 0.031;
 const float warpY = 0.041;
-const float maskDark = 0.3;
-const float maskLight = 1.5;
-const float scanlineWeight = 2.0;
+
+// Scanlines
+const float scanline_thickness_ratio = 0.4;
+const float scanline_frequency_scale = 1.0;
+const float scanline_brightness_multiplier = 1.05;
+const float scanline_darkness_multiplier = 0.75;
+
+// Vignette (parametry pozostają, ale efekt będzie zakomentowany w main)
 const float vignetteIntensity = 0.5;
 
+// Global brightness boost (opcjonalny)
+const float global_brightness_boost = 1.0;
 
-// Function to apply barrel distortion (screen curvature)
+
+// --- Helper Functions (pozostają zdefiniowane, na wypadek gdybyś chciał je włączyć z powrotem) ---
 vec2 Warp(vec2 pos)
 {
-    pos = pos * 2.0 - 1.0; // Remap to -1 to 1
+    pos = pos * 2.0 - 1.0;
     pos.x *= 1.0 + (pos.y * pos.y) * warpX;
     pos.y *= 1.0 + (pos.x * pos.x) * warpY;
-    return pos * 0.5 + 0.5; // Remap back to 0 to 1
+    return pos * 0.5 + 0.5;
 }
 
-// Function to calculate vignette darkening
-float vignette(vec2 uv) {
-    uv = (uv - 0.5) * 2.0; // Remap to -1..1
-    // Smoothly decrease brightness towards the edges
-    // Using PI constant (approx) directly
-    return clamp(pow(cos(uv.x * 0.5 * 3.14159) * cos(uv.y * 0.5 * 3.14159), vignetteIntensity), 0.0, 1.0);
+float Vignette(vec2 uv) {
+    uv = (uv - 0.5) * 2.0;
+    return clamp(pow(cos(uv.x * 0.5 * 3.14159265) * cos(uv.y * 0.5 * 3.14159265), vignetteIntensity), 0.0, 1.0);
+}
+
+float ScanlineEffect(vec2 uv, vec2 screen_resolution) {
+    float line_cycle_height = 4.0 / scanline_frequency_scale;
+    float v_pos_in_cycle = mod(uv.y * screen_resolution.y, line_cycle_height);
+
+    if (v_pos_in_cycle < line_cycle_height * scanline_thickness_ratio) {
+        return scanline_brightness_multiplier;
+    } else {
+        return scanline_darkness_multiplier;
+    }
 }
 
 void main()
 {
-    // Apply screen curvature to texture coordinates
-    vec2 warpedCoord = Warp(fragTexCoord);
+    // vec2 warpedCoord = Warp(fragTexCoord); // ZAKOMENTOWANE - brak zniekształcenia beczkowego
+    vec2 currentTexCoord = fragTexCoord; // Używamy oryginalnych koordynat tekstury
 
-    vec3 res = vec3(0.0); // Initialize result color
+    vec3 sampledColor = vec3(0.0);
 
-    // Check if warped coordinates are within the valid texture range [0, 1]
-    if (warpedCoord.x >= 0.0 && warpedCoord.x <= 1.0 && warpedCoord.y >= 0.0 && warpedCoord.y <= 1.0)
+    // Sprawdzamy koordynaty (choć bez Warpa jest to mniej krytyczne, ale dobra praktyka)
+    if (currentTexCoord.x >= 0.0 && currentTexCoord.x <= 1.0 && currentTexCoord.y >= 0.0 && currentTexCoord.y <= 1.0)
     {
-        // Sample the original texture using the warped coordinates
-        res = texture(texture0, warpedCoord).rgb * fragColor.rgb;
+        // sampledColor = texture(texture0, warpedCoord).rgb * fragColor.rgb; // Oryginalnie z warpedCoord
+        sampledColor = texture(texture0, currentTexCoord).rgb * fragColor.rgb; // Używamy currentTexCoord
 
-        // Calculate scanline effect
-        float scanline = sin((fragTexCoord.y * resolution.y * scanlineWeight) * 3.14159 * 2.0);
-        scanline = ((scanline * hardScan - maskDark) + 1.0); // Adjust intensity and darkness
-        scanline = clamp(scanline, 0.0, 2.0); // Clamp scanline factor
+        // Zastosuj tylko Scanlines
+        float scanlineFactor = ScanlineEffect(currentTexCoord, resolution); // Używamy currentTexCoord dla prostych linii
+        sampledColor *= scanlineFactor;
 
-        // Apply scanlines
-        res *= scanline * maskLight;
+        // sampledColor *= Vignette(fragTexCoord); // ZAKOMENTOWANE - brak winiety
 
-        // Apply vignette using original UVs
-        res *= vignette(fragTexCoord);
+        // (Opcjonalny) Zastosuj globalny mnożnik jasności
+        // sampledColor *= global_brightness_boost;
 
     } else {
-        // Color outside the warped screen area
-        res = vec3(0.0);
+        // Kolor poza obszarem tekstury (mniej prawdopodobne bez warp)
+        sampledColor = vec3(0.0, 0.0, 0.0);
     }
 
-    // Output the final color with full alpha
-    finalColor = vec4(clamp(res, 0.0, 1.0), 1.0);
+    finalColor = vec4(clamp(sampledColor, 0.0, 1.0), fragColor.a);
 }
