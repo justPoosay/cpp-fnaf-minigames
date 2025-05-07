@@ -42,20 +42,4 @@ void InitializeGameSettings() {
 
     // Set initial screen dimensions based on default resolution
     UpdateScreenDimensionsFromSettings();
-
-    // Initialize other settings if added to the struct...
-    // g_settings.menuBackgroundColor = RAYWHITE;
-    // g_settings.settingsBackgroundColor = LIGHTGRAY;
 }
-
-// Optional helper implementation
-
-//Vector2 GetResolutionDimensions(ScreenResolution res) {
-//    switch (res) {
-//        case RES_640x360: return (Vector2){ 640, 360 };
-//        case RES_854x480: return (Vector2){ 854, 480 };
-//        case RES_1280x720: return (Vector2){ 1280, 720 };
-//        case RES_1920x1080: return (Vector2){ 1920, 1080 };
-//        default: return (Vector2){ 1280, 720 };
-//    }
-//}

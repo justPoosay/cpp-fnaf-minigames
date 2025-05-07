@@ -34,16 +34,16 @@ static bool GuiButton(Rectangle bounds, const char* text) {
 
     if (CheckCollisionPointRec(scaledMousePoint, bounds)) {
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) 
-            DrawRectangleRec(bounds, LIGHTGRAY);
-        else 
             DrawRectangleRec(bounds, GRAY);
+        else 
+            DrawRectangleRec(bounds, LIGHTGRAY);
         if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
             clicked = true;
     } else 
-        DrawRectangleRec(bounds, DARKGRAY);
+        DrawRectangleRec(bounds, WHITE);
 
     float textWidth = MeasureText(text, 20);
-    DrawText(text, bounds.x + (bounds.width / 2) - (textWidth / 2), bounds.y + (bounds.height / 2) - 10, 20, WHITE);
+    DrawText(text, bounds.x + (bounds.width / 2) - (textWidth / 2), bounds.y + (bounds.height / 2) - 10, 20, BLACK);
     return clicked;
 }
 
@@ -108,6 +108,8 @@ int main(void) {
 // --- Asset Variables ---
     Image bgGifImage = { 0 };
     Texture2D bgTexture = { 0 };
+    Image settingsBgImage = { 0 };
+    Texture2D settingsBgTexture = { 0 };
     int animFrames = 0;
     int currentAnimFrame = 0;
     float frameDelay = 1.0f / 15.0f;
@@ -115,6 +117,9 @@ int main(void) {
     bool gifLoaded = false;
     bool gifLoadAttempted = false;
     const char* gifPath = "resources/menuBg.gif";
+    const char* settingsBgPath = "resources/settingsBg.png";
+
+    Font guiFont = LoadFont("resources/ARCADECLASSIC.TTF");
 
     Music menuMusic = { 0 };
     Music settingsMusic = { 0 };
@@ -162,7 +167,8 @@ int main(void) {
                     bgGifImage = LoadImageAnim(gifPath, &animFrames);
                     if (bgGifImage.data != NULL && animFrames > 0) {
                         bgTexture = LoadTextureFromImage(bgGifImage);
-                        if (bgTexture.id > 0) { 
+                        settingsBgTexture = LoadTexture(settingsBgPath);
+                        if (bgTexture.id > 0) {
                             gifLoaded = true;
                             SetTextureFilter(bgTexture, TEXTURE_FILTER_BILINEAR); 
                         }
@@ -466,7 +472,8 @@ int main(void) {
                     float buttonSpacing = 70; 
                     float lastButtonY = buttonStartY + 3 * buttonSpacing + 50; 
                     float overlayHeight = (lastButtonY - overlayY) + 20;
-                    DrawRectangleRec({ overlayX, overlayY, overlayWidth, overlayHeight }, Fade(BLACK, 0.70f)); DrawText("GAME LAUNCHER", logicalWidth / 2 - MeasureText("GAME LAUNCHER", 40) / 2, 80, 40, WHITE);
+                    DrawRectangleRec({ overlayX, overlayY, overlayWidth, overlayHeight }, Fade(BLACK, 0.70f)); 
+                    DrawText("FNaF Minigames in C++", logicalWidth / 2 - MeasureText("FNaF Minigames in C++", 40) / 2, 80, 40, WHITE);
                     float buttonX = logicalWidth / 2.0f - 150;
                     GuiButton({ buttonX, buttonStartY + 0 * buttonSpacing, 300, 50 }, "Midnight Motorist"); 
                     GuiButton({ buttonX, buttonStartY + 1 * buttonSpacing, 300, 50 }, "Chica's Magic Rainbow Land");
@@ -475,33 +482,34 @@ int main(void) {
                 } break;
 
                 case SETTINGS: {
-                    ClearBackground(LIGHTGRAY); 
-                    DrawText("SETTINGS", logicalWidth / 2 - MeasureText("SETTINGS", 40) / 2, 80, 40, DARKGRAY);
-                    DrawText("Volume:", 100, 180, 20, DARKGRAY);
+                    DrawTexturePro(settingsBgTexture, { 0.0f, 0.0f, (float)settingsBgTexture.width, (float)settingsBgTexture.height }, { 0.0f, 0.0f, (float)logicalWidth, (float)logicalHeight }, { 0, 0 }, 0.0f, WHITE);
+
+                    DrawText("SETTINGS", logicalWidth / 2 - MeasureText("SETTINGS", 40) / 2, 80, 40, WHITE);
+                    DrawText("Volume:", 100, 180, 23, WHITE);
                     Rectangle volumeSliderRect = { 250, 175, 300, 30 };
-                    DrawRectangleRec(volumeSliderRect, GRAY); 
-                    DrawRectangleRec({ volumeSliderRect.x, volumeSliderRect.y, volumeSliderRect.width * g_settings.masterVolume, volumeSliderRect.height }, RED);
-                    DrawRectangleLinesEx(volumeSliderRect, 2, DARKGRAY);
-                    DrawText(TextFormat("%.0f%%", g_settings.masterVolume * 100), volumeSliderRect.x + volumeSliderRect.width + 15, 180, 20, DARKGRAY);
-                    DrawText("Resolution:", 100, 240, 20, DARKGRAY);
+                    DrawRectangleRec(volumeSliderRect, WHITE); 
+                    DrawRectangleRec({ volumeSliderRect.x, volumeSliderRect.y, volumeSliderRect.width * g_settings.masterVolume, volumeSliderRect.height }, PURPLE);
+                    DrawRectangleLinesEx(volumeSliderRect, 5, WHITE);
+                    DrawText(TextFormat("%.0f%%", g_settings.masterVolume * 100), volumeSliderRect.x + volumeSliderRect.width + 15, 180, 23, WHITE);
+                    DrawText("Resolution:", 100, 240, 23, WHITE);
                     float resButtonY = 235;
                     float resButtonXStart = 250;
                     float resButtonSpacing = 110; GuiButton({ resButtonXStart, resButtonY, 100, 30 }, "640x360"); 
                     GuiButton({ resButtonXStart + resButtonSpacing, resButtonY, 100, 30 }, "854x480");
                     GuiButton({ resButtonXStart + 2 * resButtonSpacing, resButtonY, 120, 30 }, "1280x720"); 
                     GuiButton({ resButtonXStart + 2 * resButtonSpacing + 130, resButtonY, 120, 30 }, "1920x1080");
-                    DrawText("Quality:", 100, 300, 20, DARKGRAY); 
+                    DrawText("Quality:", 100, 300, 23, WHITE); 
                     float qualityButtonY = 295; 
                     float qualityButtonXStart = 250; 
                     float qualityButtonSpacing = 110; 
                     GuiButton({ qualityButtonXStart, qualityButtonY, 100, 30 }, "Low"); 
                     GuiButton({ qualityButtonXStart + qualityButtonSpacing, qualityButtonY, 100, 30 }, "Medium"); 
                     GuiButton({ qualityButtonXStart + 2 * qualityButtonSpacing, qualityButtonY, 100, 30 }, "High");
-                    DrawText("CRT Shader:", 100, 360, 20, DARKGRAY);
+                    DrawText("Shaders:", 100, 360, 23, WHITE);
                     Rectangle crtToggleButton = { qualityButtonXStart, 355, 100, 30 }; 
                     GuiButton(crtToggleButton, g_settings.useCRTShader ? "ON" : "OFF"); 
                     if (!shaderLoadedSuccessfully) 
-                        DrawText("(Shader N/A)", crtToggleButton.x + 110, 360, 20, GRAY);
+                        DrawText("(Shader N/A)", crtToggleButton.x + 110, 360, 23, WHITE);
                     Rectangle backButton = { logicalWidth / 2.0f - 100, logicalHeight - 100, 200, 50 }; 
                     GuiButton(backButton, "Back");
                 } break;

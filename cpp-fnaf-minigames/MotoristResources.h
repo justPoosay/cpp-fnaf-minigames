@@ -16,7 +16,9 @@ struct MotoristGameResources { // Store game resources
 	Texture2D two;
 	Texture2D three;
 	Texture2D go;
+	Texture2D wasd;
 	Texture2D lap;
+	Texture2D lapMark;
 	Texture2D goal;
 
 	Music backgroundMusic;
