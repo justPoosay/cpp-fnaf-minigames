@@ -31,26 +31,21 @@ MotoristGameResources LoadMotoristResources(GraphicsQuality quality) { // Loadin
     resources.two = LoadTexture("resources/mm/2.png");
     resources.three = LoadTexture("resources/mm/3.png");
     resources.go = LoadTexture("resources/mm/go.png");
+    resources.wasd = LoadTexture("resources/mm/wasd.png");
     resources.lap = LoadTexture("resources/mm/lap.png");
+    resources.lapMark = LoadTexture("resources/mm/lapMark.png");
     resources.goal = LoadTexture("resources/mm/goal.png");
+    resources.gameFont = LoadFont("resources/ARCADECLASSIC.TTF");
 
 
     // Music & FX
-    const char* musicPath = "resources/mm/motorist.mp3";
-    const char* noisePath = "resources/mm/bgNoise.wav";
-    const char* countdownPath = "resources/mm/countdown.wav";
-    const char* goPath = "resources/mm/go.wav";
-    const char* carCrashPath = "resources/mm/crash.wav";
-    const char* lapPath = "resources/mm/lap.wav";
-    const char* goalPath = "resources/mm/goal.wav";
-
-    resources.backgroundMusic = LoadMusicStream(musicPath);
-    resources.bgNoise = LoadMusicStream(noisePath);
-    resources.countdown = LoadSound(countdownPath);
-    resources.ctdwnGo = LoadSound(goPath);
-    resources.carCrash = LoadSound(carCrashPath);
-    resources.lapReached = LoadSound(lapPath);
-    resources.goalReached = LoadSound(goalPath);
+    resources.backgroundMusic = LoadMusicStream("resources/mm/motorist.mp3");
+    resources.bgNoise = LoadMusicStream("resources/mm/bgNoise.wav");
+    resources.countdown = LoadSound("resources/mm/countdown.wav");
+    resources.ctdwnGo = LoadSound("resources/mm/go.wav");
+    resources.carCrash = LoadSound("resources/mm/crash.wav");
+    resources.lapReached = LoadSound("resources/mm/lap.wav");
+    resources.goalReached = LoadSound("resources/mm/goal.wav");
 
     resources.backgroundMusicLoaded = (GetMusicTimeLength(resources.backgroundMusic) > 0);
     resources.bgNoiseLoaded = (GetMusicTimeLength(resources.bgNoise) > 0);
@@ -60,7 +55,6 @@ MotoristGameResources LoadMotoristResources(GraphicsQuality quality) { // Loadin
     resources.lapSoundLoaded = (resources.lapReached.frameCount > 0);
     resources.goalSoundLoaded = (resources.goalReached.frameCount > 0);
 
-    resources.gameFont = LoadFont("resources/BRLNSDB.TTF");
 
     SetTextureFilter(resources.gameFont.texture, TEXTURE_FILTER_BILINEAR);
 
@@ -86,7 +80,9 @@ void UnloadMotoristResources(MotoristGameResources& resources) {
     if (resources.two.id > 0) UnloadTexture(resources.two);
     if (resources.three.id > 0) UnloadTexture(resources.three);
     if (resources.go.id > 0) UnloadTexture(resources.go);
+    if (resources.wasd.id > 0) UnloadTexture(resources.wasd);
     if (resources.lap.id > 0) UnloadTexture(resources.lap);
+    if (resources.lapMark.id > 0) UnloadTexture(resources.lapMark);
     if (resources.goal.id > 0) UnloadTexture(resources.goal);
 
     if (resources.backgroundMusicLoaded) UnloadMusicStream(resources.backgroundMusic);

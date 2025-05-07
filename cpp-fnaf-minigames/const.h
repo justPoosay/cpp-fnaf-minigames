@@ -15,12 +15,14 @@ constexpr float virtualScreenHeight = 540.0f;
 constexpr float motoristRoadMargin = 25.0f;
 constexpr float motoristRoadYTop = motoristRoadMargin;
 constexpr float motoristRoadYBottom = virtualScreenHeight - motoristRoadMargin;
+constexpr float LAP_DISTANCE = 10000.0f;
 
 // --- Prêdkoœci gracza i œwiata ---
 constexpr float PLAYER_MOVE_SPEED = 250.0f;
 constexpr float VIRTUAL_SPEED_INITIAL = 0.0f;
 constexpr float VIRTUAL_SPEED_MAX = 1690.0f;
 constexpr float VIRTUAL_SPEED_ACCELERATION = 45.0f;
+constexpr float bgScrollMultiplier = 1.5f;
 constexpr float spinDurationPerFrame = 0.05f;
 
 // --- Prêdkoœci NPC ---
@@ -47,11 +49,9 @@ constexpr float laneCenterY7Ratio = 877.0f / defaultBackgroundHeight;
 constexpr float laneCenterY8Ratio = 981.0f / defaultBackgroundHeight;
 
 // --- Dystans okr¹¿enia i UI (dodane z poprzedniej wersji, jeœli by³y potrzebne) ---
-constexpr float LAP_DISTANCE = 10000.0f;
-constexpr float UI_TEXT_SIZE_INFO = 30.0f;
+constexpr float UI_TEXT_SIZE_INFO = 60.0f;
 constexpr float UI_TEXT_SPACING = 1.5f;
-constexpr float UI_MARGIN = 15.0f;
-constexpr float UI_LINE_SPACING = 5.0f;
+constexpr float UI_MARGIN = 10.0f;
 
 // --- Sta³e obliczeniowe dla wymiarów gracza ---
 constexpr float playerScaleFactor = 0.75f;
