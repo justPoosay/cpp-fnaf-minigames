@@ -62,7 +62,7 @@ struct RainbowLandGameResources { // Store game resources
     Sound eyePop;           // Rainbow Eye Shoot
     Sound checkpointSound;  // Checkpoint
     Sound logs;             // Logs Shoot
-    Sound petal;            // Sunflower Petal Shoot
+    Sound petalShoot;       // Sunflower Petal Shoot
     Sound rbowLaserShoot;   // Rainbow Laser (Single Tick)
     Sound bflyLaserShoot;   // Butterfly Laser (Single Tick)
 
