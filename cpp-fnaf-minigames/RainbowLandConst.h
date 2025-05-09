@@ -1,6 +1,13 @@
 #pragma once
 
 #include "raylib.h"
+#include "raymath.h"
+#include <cmath>
+
+
+const float PI_F = PI; // Use the PI defined by Raylib/raymath.h
+
+const float radiansToDegrees = PI_F / 180.0f;
 
 const int virtualScreenWidth = 800;
 const int virtualScreenHeight = 450;
@@ -102,15 +109,35 @@ const float petalLifespan = 0.75f;
 const float sunflowerDiscCenterX = 68.0f;
 const float sunflowerDiscCenterY = 67.0f;
 
+
+//Vector2 petalDirections[] = {
+//    {0.0f, -1.0f},          // 0: N
+//    {0.7071f, -0.7071f},    // 1: NE
+//    {1.0f, 0.0f},           // 2: E
+//    {0.7071f, 0.7071f},     // 3: SE
+//    {0.0f, 1.0f},           // 4: S
+//    {-0.7071f, 0.7071f},    // 5: SW
+//    {-1.0f, 0.0f},          // 6: W
+//    {-0.7071f, -0.7071f}    // 7: NW
+//};
+
 Vector2 petalDirections[] = {
-    {0.0f, -1.0f},    // 0: N
-    {0.7071f, -0.7071f}, // 1: NE
-    {1.0f, 0.0f},     // 2: E
-    {0.7071f, 0.7071f},  // 3: SE
-    {0.0f, 1.0f},     // 4: S
-    {-0.7071f, 0.7071f}, // 5: SW
-    {-1.0f, 0.0f},    // 6: W
-    {-0.7071f, -0.7071f} // 7: NW
+// N: Points towards -Y. Angle of -90 degrees (or 270 degrees)
+    {cosf(-90.0f * radiansToDegrees), sinf(-90.0f * radiansToDegrees)},     // (0, -1)
+// NE: Angle of -45 degrees (or 315 degrees)
+    {cosf(-45.0f * radiansToDegrees), sinf(-45.0f * radiansToDegrees)},     // (0.7071, -0.7071)
+// E: Points towards +X. Angle of 0 degrees
+    {cosf(0.0f * radiansToDegrees),   sinf(0.0f * radiansToDegrees)},       // (1, 0)
+// SE: Angle of 45 degrees
+    {cosf(45.0f * radiansToDegrees),  sinf(45.0f * radiansToDegrees)},      // (0.7071, 0.7071)
+// S: Points towards +Y. Angle of 90 degrees
+    {cosf(90.0f * radiansToDegrees),  sinf(90.0f * radiansToDegrees)},      // (0, 1)
+// SW: Angle of 135 degrees
+    {cosf(135.0f * radiansToDegrees), sinf(135.0f * radiansToDegrees)},     // (-0.7071, 0.7071)
+// W: Points towards -X. Angle of 180 degrees
+    {cosf(180.0f * radiansToDegrees), sinf(180.0f * radiansToDegrees)},     // (-1, 0)
+// NW: Angle of 225 degrees (or -135 degrees)
+    {cosf(225.0f * radiansToDegrees), sinf(225.0f * radiansToDegrees)}      // (-0.7071, -0.7071)
 };
 
 

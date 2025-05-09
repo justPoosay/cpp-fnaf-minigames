@@ -48,7 +48,13 @@ struct RainbowLandGameResources { // Store game resources
     Texture2D bloodParticle;
     Texture2D buttonVoicesOn;
     Texture2D buttonVoicesOff;
+
     Texture2D checkpoint;
+    Texture2D checkpointAnimTexture;
+    Image checkpointAnimImage;
+    int checkpointAnimNumFrames;
+    float checkpointAnimFrameDelay;
+
     Texture2D controlKeysInfo;
     Texture2D greatJob;
     Texture2D youSuck;
@@ -75,6 +81,7 @@ struct RainbowLandGameResources { // Store game resources
     std::vector<Sound> rbowDialogues;
     const int numRbowVoiceLines = 32;
 
+    bool checkpointAnimLoaded = false;
 
     bool backgroundMusicLoaded = false;
     bool respawnSoundLoaded = false;
@@ -92,6 +99,7 @@ struct RainbowLandGameResources { // Store game resources
     bool rbowLastChanceSoundLoaded = false;
     bool rbowHASoundLoaded = false;
     bool rbowDialoguesSoundLoaded = false;
+
 };
 
 // Loading Resources

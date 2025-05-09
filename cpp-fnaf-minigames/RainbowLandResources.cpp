@@ -92,7 +92,10 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
     resources.bloodParticle = LoadTexture("resources/cmrl/textures/misc/blood_particle.png");
     resources.buttonVoicesOn = LoadTexture("resources/cmrl/textures/text/voices_on.png");
     resources.buttonVoicesOff = LoadTexture("resources/cmrl/textures/text/voices_off.png");
-    resources.checkpoint = LoadTexture("resources/cmrl/textures/text/checkpoint.gif");
+
+    int animFrames = 0;
+    resources.checkpointAnimImage = LoadImageAnim("resources/textures/checkpoint_anim.gif", &animFrames);
+
     resources.controlKeysInfo = LoadTexture("resources/cmrl/textures/text/control_keys_tutorial.png");
     resources.greatJob = LoadTexture("resources/cmrl/textures/text/great_job.png");
     resources.youSuck = LoadTexture("resources/cmrl/textures/text/you_suck.png");
@@ -136,9 +139,9 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
     resources.eyePop = LoadSound(eyePopPath);
     resources.checkpointSound = LoadSound(checkpointPath);
     resources.logs = LoadSound(jumpPath);
-    resources.petalShoot = LoadSound(jumpPath);
-    resources.rbowLaserShoot = LoadSound(jumpPath);
-    resources.bflyLaserShoot = LoadSound(jumpPath);
+    resources.petalShoot = LoadSound(petalPath);
+    resources.rbowLaserShoot = LoadSound(rbowLaserShootPath);
+    resources.bflyLaserShoot = LoadSound(bflyLaserShootPath);
 
     resources.rbowVoiceOff = LoadSound(rbowVoiceOffPath);
     resources.rbowGonnaKillYou = LoadSound(rbowGonnaKillYouPath);
@@ -160,6 +163,22 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
     resources.rbowLastChanceSoundLoaded = (resources.rbowLastChance.frameCount > 0);
     resources.rbowHASoundLoaded = (resources.rbowHA.frameCount > 0);
     resources.rbowDialoguesSoundLoaded = (resources.rbowDialogues.size() > 0);
+
+
+    resources.checkpointAnimLoaded = false; // Initialize
+    resources.checkpointSoundLoaded = false; // Initialize
+    if (resources.checkpointAnimImage.data != NULL && animFrames > 0) {
+        resources.checkpointAnimTexture = LoadTextureFromImage(resources.checkpointAnimImage);
+
+        if (resources.checkpointAnimTexture.id > 0) {
+            resources.checkpointAnimNumFrames = animFrames;
+            resources.checkpointAnimFrameDelay = 0.15f; // Adjust as needed (seconds per frame)
+            resources.checkpointAnimLoaded = true;
+            TraceLog(LOG_INFO, "Loaded checkpoint animation (%d frames). Image W:%d H:%d. Texture W:%d H:%d",
+                animFrames, resources.checkpointAnimImage.width, resources.checkpointAnimImage.height,
+                resources.checkpointAnimTexture.width, resources.checkpointAnimTexture.height);
+        }
+    }
 
     TraceLog(LOG_INFO, "Game resources loaded successfully.");
 
@@ -215,6 +234,12 @@ void UnloadRainbowLandResources(RainbowLandGameResources& resources) {
     if (resources.greatJob.id > 0) UnloadTexture(resources.greatJob);
     if (resources.youSuck.id > 0) UnloadTexture(resources.youSuck);
 
+    if (resources.checkpointAnimLoaded) {
+        UnloadTexture(resources.checkpointAnimTexture);
+        UnloadImage(resources.checkpointAnimImage);
+    }
+        
+
     if (resources.rbowEyeTextures[0].id > 0) UnloadTexture(resources.rbowEyeTextures[0]);
     if (resources.rbowEyeTextures[1].id > 0) UnloadTexture(resources.rbowEyeTextures[1]);
     if (resources.rbowEyeTextures[2].id > 0) UnloadTexture(resources.rbowEyeTextures[2]);
@@ -258,6 +283,7 @@ void UnloadRainbowLandResources(RainbowLandGameResources& resources) {
     if (resources.petalSoundLoaded) UnloadSound(resources.petalShoot);
     if (resources.rbowLaserShootSoundLoaded) UnloadSound(resources.rbowLaserShoot);
     if (resources.bflyLaserShootSoundLoaded) UnloadSound(resources.bflyLaserShoot);
+
 
     if (resources.rbowVoiceOffSoundLoaded) UnloadSound(resources.rbowVoiceOff);
     if (resources.rbowGonnaKillYouSoundLoaded) UnloadSound(resources.rbowGonnaKillYou);

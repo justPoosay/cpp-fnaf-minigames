@@ -9,10 +9,6 @@
 #include <algorithm>
 #include <iostream>
 
-//#ifndef PI
-//#define PI 3.14159265358979323846f
-//#endif
-
 struct Butterfly {
     Vector2 position;        // Aktualna pozycja w œwiecie gry
     Vector2 startPosition;   // Pozycja pocz¹tkowa, wokó³ której bêdzie siê porusza³
@@ -471,6 +467,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             Rectangle flagRect = flag;
             if (CheckCollisionRecs(playerCollisionHitbox, flagRect)) {
                 //tutaj daj kod do wyswietlenia CHECKPOINT
+                PlaySound(resources.checkpointSound);
                 break;
             }
         }
