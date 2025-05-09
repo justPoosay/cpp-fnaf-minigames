@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "RainbowLandResources.h"
 #include "GameSettings.h"
+#include "RainbowLandConst.h"
 
 #include <cmath>
 #include <string>
@@ -8,9 +9,9 @@
 #include <algorithm>
 #include <iostream>
 
-#ifndef PI
-#define PI 3.14159265358979323846f
-#endif
+//#ifndef PI
+//#define PI 3.14159265358979323846f
+//#endif
 
 struct Butterfly {
     Vector2 position;        // Aktualna pozycja w œwiecie gry
@@ -19,6 +20,33 @@ struct Butterfly {
     int animFrameCounter;
     float movementPhase;     // Faza ruchu (0 do 2*PI) do obliczeñ sin/cos
     float movementSpeedOffset; // Niewielkie przesuniêcie prêdkoœci dla ró¿norodnoœci
+};
+
+// NOWOŒÆ: Struktura dla p³atka-pocisku
+struct PetalProjectile {
+    Vector2 position;
+    Vector2 velocity;
+    bool active;
+    float lifetime;
+    int textureIndex;
+};
+
+// Keep this structure (or adapt slightly)
+struct ShootingSunflower {
+    int id;
+    Vector2 position; // Sunflower center
+};
+
+struct SunflowerTriggerConfig {
+    int sunflowerId; // Sunflower index
+    float triggerX;
+};
+
+// NEW STRUCTURE for managing trigger events
+struct SunflowerActivationEvent {
+    float triggerX;                     // The X coordinate that activates this event
+    std::vector<int> sunflowerIdsToFire; // List of sunflower IDs (from your deadlySunflowers/shootingSunflowers vector)
+    bool hasBeenActivated;             // True if this specific trigger event has already occurred
 };
 
 // Define animations :p
@@ -67,17 +95,7 @@ static void UpdateButterflyAnimation(
 }
 
 int runMagicRainbowLand(GraphicsQuality quality) {
-    // Teraz masz dostêp do zmiennej 'quality' w tej funkcji
-    std::cout << "Uruchamiam Chica's Magic Rainbow z jakoœci¹: " << quality << std::endl;
-
-// ustawienia okna i przewijania tla TwT
-    const int virtualScreenWidth = 800;
-    const int virtualScreenHeight = 450;
-
-    const float levelLogicalWidth = 5000.0f;
-    const float bgScrollFactor = 0.3f;
-
-    const float virtualAspectRatio = (float)virtualScreenWidth / (float)virtualScreenHeight;
+    std::cout << "Launching Chica's Magic Rainbow with quality " << quality << std::endl;
 
 // --------- RESOURCE LOADER ---------
     RainbowLandGameResources resources = LoadRainbowLandResources(quality);
@@ -85,77 +103,26 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     RenderTexture2D target = LoadRenderTexture(virtualScreenWidth, virtualScreenHeight);
     SetTextureFilter(target.texture, TEXTURE_FILTER_BILINEAR);
 
-    // props specs
-    const float fenceWidth = resources.fenceProp.id > 0 ? (float)resources.fenceProp.width : 159.0f;
-    const float fenceHeight = resources.fenceProp.id > 0 ? (float)resources.fenceProp.height : 43.0f;
-
-    const float flowerSmallWidth = resources.flowerSmallProp.id > 0 ? (float)resources.flowerSmallProp.width : 60.0f;
-    const float flowerSmallHeight = resources.flowerSmallProp.id > 0 ? (float)resources.flowerSmallProp.height : 60.0f;
-
-    const float flowerBigWidth = resources.flowerBigProp.id > 0 ? (float)resources.flowerBigProp.width : 100.0f;
-    const float flowerBigHeight = resources.flowerBigProp.id > 0 ? (float)resources.flowerBigProp.height : 100.0f;
-
-    const float checkpointFlagWidth = resources.checkpointFlag.id > 0 ? (float)resources.checkpointFlag.width : 49.0f;
-    const float checkpointFlagHeight = resources.checkpointFlag.id > 0 ? (float)resources.checkpointFlag.height : 51.0f;
-
-    // sunflower specs
-    const float sunflowerWidth = resources.sunflower.id > 0 ? (float)resources.sunflower.width : 250.0f;
-    const float sunflowerHeight = resources.sunflower.id > 0 ? (float)resources.sunflower.height : 300.0f;
-
-    // platform specs
-    const float platformWidth = resources.platformTexture.id > 0 ? (float)resources.platformTexture.width : 80.0f;
-    const float platformHeight = resources.platformTexture.id > 0 ? (float)resources.platformTexture.height : 21.0f;
-
-
-
-// --------- REGULACJA LOGIKI RUCHU ---------
-
-    const float playerTextureHeight = 70.0f;
-    const float playerTextureWidth = 70.0f;
-
-    // dostosowanie rozmiary hitboxa playera
-    const float playerHitboxWidth = playerTextureWidth * 0.6f;
-    const float playerHitboxHeight = playerTextureHeight * 0.8f;
-    const float playerHitboxOffsetX = (playerTextureWidth - playerHitboxWidth) / 2.0f;
-    const float playerHitboxOffsetY = (playerTextureHeight - playerHitboxHeight);
-
-
-    const float groundLevelY = virtualScreenHeight - (resources.tile.id > 0 ? (float)resources.tile.height : 32.0f);
-    const float playerVirtualScreenX = virtualScreenWidth / 2.0f - playerTextureWidth / 2.0f;
-
+   
 
 // --------- DOSTOSUJ FIZYKE RUCHU CHICI!! ---------
     Vector2 playerPos = { 225.0f, groundLevelY - playerTextureHeight };
     Vector2 playerVel = { 0.0f, 0.0f };
-    const float playerSpeed = 3.8f;
-    const float jumpSpeed = -5.0f;
-    const float fallSpeed = 5.0f;
-    const float maxJumpHeight = 270.0f;
     float jumpStartY = 0.0f;
     bool isGrounded = true;
     bool isJumping = false;
     bool jumpButtonHeld = false;
     bool facingRight = true;
+
     Texture2D currentTexture = resources.idleRight;
     int currentFrame = 0;
     int frameCounter = 0;
-    const int animUpdateRate = 1;
-    const int idleFrames = 16;
-    const int walkFrames = 16;
-    const int jumpFrames = 1;
     int maxFramesForCurrentAnim = idleFrames;
 
 
 // --------- DOSTOSUJ FIZYKE RUCHU RAINBOWA!! ---------
-    const float rainbowTargetY = 5.0f;
-    const float rainbowPaddingX = 60.0f;
-    const float rainbowSpeed = playerSpeed / 1.75f;
     Vector2 rainbowPos = { 0.0f, rainbowTargetY };
     int currentEyeIndex = 0;
-    const float rainbowLeftEyeOffsetX = 90.0f;
-    const float rainbowLeftEyeOffsetY = 18.0f;
-    const float rainbowRightEyeOffsetX = 152.0f;
-    const float rainbowRightEyeOffsetY = 18.0f;
     float rainbowTargetX = 0.0f;
     bool israinbowInDialogue = false;
     bool buttonCanBeClicked = true;
@@ -174,7 +141,6 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     // logika przewijania tla
     float scrollX = 0.0f;
     float bgScroll = 0.0f;
-    const float maxScrollX = fmaxf(0.0f, levelLogicalWidth - virtualScreenWidth);
 
     // pozycjonowanie Rainbowa
     if (resources.rbowBodyTexture.id > 0) {
@@ -189,68 +155,72 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     bool showDebugInfo = false;
 
     // voices button
-    const float buttonPadding = 5.0f;
-    const float buttonTextureWidth = (resources.buttonVoicesOff.id > 0 ? (float)resources.buttonVoicesOff.width : 100.0f);
-    const float buttonTextureHeight = (resources.buttonVoicesOff.id > 0 ? (float)resources.buttonVoicesOff.height : 30.0f);
-    Vector2 buttonPos = { buttonPadding, (float)virtualScreenHeight - buttonTextureHeight - buttonPadding };
     Rectangle buttonRect = { buttonPos.x, buttonPos.y, buttonTextureWidth, buttonTextureHeight };
     bool isButtonClicked = false;
     Texture2D currentButtonTexture = resources.buttonVoicesOn;
 
 
 // --------- POLOZENIE PROPSOW NA MAPIE!! ---------
-    std::vector<Rectangle> fenceProps; // fence
-    fenceProps.push_back({ 275.0f, groundLevelY - 43.0f, fenceWidth, fenceHeight });
-    fenceProps.push_back({ 434.0f, groundLevelY - 43.0f, fenceWidth, fenceHeight });
-    fenceProps.push_back({ 593.0f, groundLevelY - 43.0f, fenceWidth, fenceHeight });
-    fenceProps.push_back({ 752.0f, groundLevelY - 43.0f, fenceWidth, fenceHeight });
-    fenceProps.push_back({ 911.0f, groundLevelY - 43.0f, fenceWidth, fenceHeight });
+
+    std::vector<Rectangle> fenceProps = { // fence
+		{ fence1, groundLevelY - 43.0f, fenceWidth, fenceHeight },
+		{ fence2, groundLevelY - 43.0f, fenceWidth, fenceHeight },
+		{ fence3, groundLevelY - 43.0f, fenceWidth, fenceHeight },
+		{ fence4, groundLevelY - 43.0f, fenceWidth, fenceHeight },
+		{ fence5, groundLevelY - 43.0f, fenceWidth, fenceHeight }
+    };
 
 
-    std::vector<Rectangle> checkpointFlags; // flag
-    checkpointFlags.push_back({ 100.0f, groundLevelY - 51.0f, checkpointFlagWidth, checkpointFlagHeight });
-    checkpointFlags.push_back({ 820.0f, groundLevelY - 51.0f, checkpointFlagWidth, checkpointFlagHeight });
+    std::vector<Rectangle> checkpointFlags = { // flags
+        { flag1, groundLevelY - 51.0f, checkpointFlagWidth, checkpointFlagHeight },
+        { flag2, groundLevelY - 51.0f, checkpointFlagWidth, checkpointFlagHeight }
+    };
 
 
-    std::vector<Rectangle> flowerSmallProps; // small flower
-    flowerSmallProps.push_back({ 600.0f, groundLevelY - 60.0f, flowerSmallWidth, flowerSmallHeight });
-    flowerSmallProps.push_back({ 700.0f, groundLevelY - 60.0f, flowerSmallWidth, flowerSmallHeight });
+    std::vector<Rectangle> flowerSmallProps = { // small flowers
+        { smalFlow1, groundLevelY - 60.0f, flowerSmallWidth, flowerSmallHeight },
+        { smalFlow2, groundLevelY - 60.0f, flowerSmallWidth, flowerSmallHeight }
+    };
 
 
-    std::vector<Rectangle> flowerBigProps; // big flower
-    flowerBigProps.push_back({ 1000.0f, groundLevelY - 100.0f, flowerBigWidth, flowerBigHeight });
+    std::vector<Rectangle> flowerBigProps = { // big flowers
+        { bigFlow1, groundLevelY - 100.0f, flowerBigWidth, flowerBigHeight }
+    };
 
 
-// --------- POLOZENIE SLONECZNIKOW NA MAPIE!! ---------
-    std::vector<Rectangle> deadlySunflowers; // sunflower
-    deadlySunflowers.push_back({ 920.0f, groundLevelY - 300.0f, sunflowerWidth, sunflowerHeight });
-    deadlySunflowers.push_back({ 1220.0f, groundLevelY - 300.0f, sunflowerWidth, sunflowerHeight });
+    std::vector<Rectangle> deadlySunflowers = { // sunflowers
+        { sunfl1, groundLevelY - 296.0f, sunflowerWidth, sunflowerHeight },
+        { sunfl2, groundLevelY - 296.0f, sunflowerWidth, sunflowerHeight },
+        { sunfl3, groundLevelY - 140.0f, sunflowerWidth, sunflowerHeight },
+    };
 
-// --------- POLOZENIE PLATFORM NA MAPIE!! ---------
-    std::vector<Rectangle> platforms;
-    platforms.push_back({ 260.0f, groundLevelY - 180.0f, platformWidth, platformHeight });
-    platforms.push_back({ 360.0f, groundLevelY - 100.0f, platformWidth, platformHeight });
-    platforms.push_back({ 460.0f, groundLevelY - 180.0f, platformWidth, platformHeight });
-    platforms.push_back({ 560.0f, groundLevelY - 100.0f, platformWidth, platformHeight });
-    platforms.push_back({ 660.0f, groundLevelY - 180.0f, platformWidth, platformHeight });
 
+
+    std::vector<SunflowerTriggerConfig> triggerConfigs = { // triggers
+        {0, 1150.0f},
+        {1, 1150.0f},
+
+        {1, 1420.0f},
+        {2, 1420.0f},
+        //{sunf[i], [triggerX]},
+    };
+
+
+    std::vector<Rectangle> platforms = { // platforms
+		{ 260.0f, groundLevelY - 180.0f, platformWidth, platformHeight },
+		{ 360.0f, groundLevelY - 100.0f, platformWidth, platformHeight },
+		{ 460.0f, groundLevelY - 180.0f, platformWidth, platformHeight },
+		{ 560.0f, groundLevelY - 100.0f, platformWidth, platformHeight },
+		{ 660.0f, groundLevelY - 180.0f, platformWidth, platformHeight }
+    };
 
     if (resources.backgroundMusicLoaded) {
         PlayMusicStream(resources.backgroundMusic);
-        SetMusicVolume(resources.backgroundMusic, 0.5f);
+        SetMusicVolume(resources.backgroundMusic, 0.6f);
     }
 
 // ------- BUTTERFLY SETUP -------
     std::vector<Butterfly> butterflies;
-    const int BUTTERFLY_TOTAL_FRAMES = 6;     // Zgodnie z poleceniem
-    const int BUTTERFLY_ANIM_UPDATE_RATE = 3; // Co ile klatek gry zmienia siê klatka animacji motyla
-    const float BUTTERFLY_MOVEMENT_RADIUS_X = 40.0f;
-    const float BUTTERFLY_MOVEMENT_RADIUS_Y = 20.0f;
-    const float BUTTERFLY_BASE_MOVEMENT_SPEED = 0.8f; // Radiany na sekundê (wp³ywa na szybkoœæ cyklu)
-    // Obliczanie szerokoœci/wysokoœci klatki motyla na podstawie za³adowanej tekstury
-    const float BUTTERFLY_SPRITE_WIDTH = (resources.butterfly.id > 0) ? (float)resources.butterfly.width / BUTTERFLY_TOTAL_FRAMES : 32.0f;
-    const float BUTTERFLY_SPRITE_HEIGHT = (resources.butterfly.id > 0) ? (float)resources.butterfly.height : 32.0f;
-
 
     if (resources.butterfly.id > 0) { // Tylko jeœli tekstura jest za³adowana
         // Dodaj motyle w ró¿nych miejscach
@@ -288,6 +258,47 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     }
     // --- END BUTTERFLY SETUP ---
 
+
+// NOWOŒÆ: Inicjalizacja strzelaj¹cych s³oneczników
+    std::vector<ShootingSunflower> shootingSunflowers;
+    // Populate shootingSunflowers based on deadlySunflowers (as you did before, but without triggerXPlayer or hasFired)
+    for (size_t i = 0; i < deadlySunflowers.size(); ++i) {
+        const auto& sfRect = deadlySunflowers[i];
+        ShootingSunflower ss;
+        ss.id = (int)i;
+        ss.position = {
+            sfRect.x + sunflowerDiscCenterX,
+            sfRect.y + sunflowerDiscCenterY
+        };
+        // ss.hasFired = false; // Not needed here anymore for basic triggering
+        // ss.triggerXPlayer = ...; // Not needed here anymore
+        shootingSunflowers.push_back(ss);
+    }
+
+    // NOWOŒÆ: Definiowanie zdarzeñ aktywacji s³oneczników
+    std::vector<SunflowerActivationEvent> sunflowerEvents;
+
+    // Example:
+    // Trigger 1: at X=1150, sunflower 0 and sunflower 1 fire
+    sunflowerEvents.push_back({
+        1150.0f,         // triggerX
+        {0, 1},          // sunflowerIdsToFire (sunflower with id 0, sunflower with id 1)
+        false            // hasBeenActivated
+        });
+
+    // Trigger 2: at X=1450, sunflower 1 (again) and sunflower 2 fire
+    sunflowerEvents.push_back({
+        1450.0f,         // triggerX
+        {1, 2},          // sunflowerIdsToFire (sunflower with id 1, sunflower with id 2)
+        false            // hasBeenActivated
+        });
+
+    // You can add more events as needed
+    // sunflowerEvents.push_back({ 2000.0f, {0, 2}, false }); // Example: Sunflower 0 and 2 fire at X=2000
+
+    std::vector<PetalProjectile> activePetals;
+    Vector2 playerStartPos = playerPos;
+
 // -------- PLAYING RAINBOW DIALOGUES --------
     if (!resources.rbowDialogues.empty() && resources.rbowDialogues[0].frameCount > 0) {
         TraceLog(LOG_INFO, "RAINBOW LAND: Playing first dialogue line.");
@@ -301,7 +312,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         float dt = GetFrameTime();
         if (resources.backgroundMusicLoaded) {
             UpdateMusicStream(resources.backgroundMusic);
-            if (GetMusicTimePlayed(resources.backgroundMusic) >= GetMusicTimeLength(resources.backgroundMusic) - 0.1f) {
+            if (GetMusicTimePlayed(resources.backgroundMusic) >= GetMusicTimeLength(resources.backgroundMusic)) {
                 SeekMusicStream(resources.backgroundMusic, 0.0f);
                 PlayMusicStream(resources.backgroundMusic);
             }
@@ -420,8 +431,9 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
         float potentialX = playerPos.x + playerVel.x;
         float potentialY = playerPos.y + playerVel.y;
+
         Rectangle playerNextHitbox = { potentialX + playerHitboxOffsetX, potentialY + playerHitboxOffsetY, playerHitboxWidth, playerHitboxHeight };
-        Rectangle playerCurrentHitbox = { playerPos.x + playerHitboxOffsetX, playerPos.y + playerHitboxOffsetY, playerHitboxWidth, playerHitboxHeight };
+        Rectangle playerCollisionHitbox = { playerPos.x + playerHitboxOffsetX, playerPos.y + playerHitboxOffsetY, playerHitboxWidth, playerHitboxHeight };
 
         bool resolvedY = false;
         isGrounded = false;
@@ -431,8 +443,8 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             Rectangle platformRect = platform;
 
             // I. platforma a ladowanie
-            if (playerVel.y > 0 && (playerCurrentHitbox.y + playerCurrentHitbox.height) <= platformRect.y + 1.0f) {
-                Rectangle playerNextHitboxYOnly = { playerCurrentHitbox.x, potentialY + playerHitboxOffsetY, playerHitboxWidth, playerHitboxHeight };
+            if (playerVel.y > 0 && (playerCollisionHitbox.y + playerCollisionHitbox.height) <= platformRect.y + 1.0f) {
+                Rectangle playerNextHitboxYOnly = { playerCollisionHitbox.x, potentialY + playerHitboxOffsetY, playerHitboxWidth, playerHitboxHeight };
                 if (CheckCollisionRecs(playerNextHitboxYOnly, platformRect)) {
                     potentialY = platformRect.y - playerTextureHeight;
                     playerVel.y = 0;
@@ -443,8 +455,8 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 }
             }
             // II. platforma a skakanie
-            else if (playerVel.y < 0 && playerCurrentHitbox.y >= (platformRect.y + platformRect.height - 1.0f)) {
-                Rectangle playerNextHitboxYOnly = { playerCurrentHitbox.x, potentialY + playerHitboxOffsetY, playerHitboxWidth, playerHitboxHeight };
+            else if (playerVel.y < 0 && playerCollisionHitbox.y >= (platformRect.y + platformRect.height - 1.0f)) {
+                Rectangle playerNextHitboxYOnly = { playerCollisionHitbox.x, potentialY + playerHitboxOffsetY, playerHitboxWidth, playerHitboxHeight };
                 if (CheckCollisionRecs(playerNextHitboxYOnly, platformRect)) {
                     potentialY = platformRect.y + platformRect.height - playerHitboxOffsetY;
                     playerVel.y = 0;
@@ -457,7 +469,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
         for (const auto& flag : checkpointFlags) {
             Rectangle flagRect = flag;
-            if (CheckCollisionRecs(playerCurrentHitbox, flagRect)) {
+            if (CheckCollisionRecs(playerCollisionHitbox, flagRect)) {
                 //tutaj daj kod do wyswietlenia CHECKPOINT
                 break;
             }
@@ -544,8 +556,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         }
 
         // --- rainbow atakuje jesli nacisnales voice off ---
-        if (israinbowInDialogue && resources.rbowVoiceOffSoundLoaded && !IsSoundPlaying(resources.rbowVoiceOff))
-        {
+        if (israinbowInDialogue && resources.rbowVoiceOffSoundLoaded && !IsSoundPlaying(resources.rbowVoiceOff)) {
             // TODO: dodaj atakowanie gracza
             // israinbowInDialogue = false;
         }
@@ -581,13 +592,120 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         }
         // --- END BUTTERFLY LOGIC ---
 
-        
+	// --- PETAL PROJECTILE LOGIC ---
+        bool petalShootSoundPlayedThisFrame = false; // To ensure sound plays only once per frame, even if multiple events trigger
+
+        for (auto& event : sunflowerEvents) { // Iterate through each defined activation event
+            if (event.hasBeenActivated) {
+                continue; // This event has already happened, skip it
+            }
+
+            // Pobieramy aktualne globalne wspó³rzêdne hitboxu gracza
+            Rectangle currentWorldPlayerHitbox = {
+                playerPos.x + playerHitboxOffsetX,
+                playerPos.y + playerHitboxOffsetY,
+                playerHitboxWidth,
+                playerHitboxHeight
+            };
+
+            // Sprawdzamy, czy prawa krawêdŸ hitboxu gracza jest za lini¹ triggera tego ZDARZENIA
+            if ((currentWorldPlayerHitbox.x + currentWorldPlayerHitbox.width) > event.triggerX) {
+                event.hasBeenActivated = true; // Mark THIS EVENT as done
+
+                bool soundPlayedForThisSpecificEvent = false; // Sound for *this* event group
+
+                for (int sunflowerIdToFire : event.sunflowerIdsToFire) {
+                    // Find the actual sunflower object by its ID
+                    ShootingSunflower* targetSunflower = nullptr;
+                    for (auto& ss : shootingSunflowers) {
+                        if (ss.id == sunflowerIdToFire) {
+                            targetSunflower = &ss;
+                            break;
+                        }
+                    }
+
+                    if (targetSunflower) { // If we found the sunflower
+                        if (resources.petalSoundLoaded && !soundPlayedForThisSpecificEvent && !petalShootSoundPlayedThisFrame) {
+                            PlaySound(resources.petalShoot);
+                            soundPlayedForThisSpecificEvent = true;
+                            petalShootSoundPlayedThisFrame = true; // Mark sound played for the entire frame
+                        }
+
+                        // Create 8 petals for this specific sunflower
+                        for (int i = 0; i < 8; ++i) {
+                            PetalProjectile petal;
+                            petal.position = targetSunflower->position; // Use the position of the found sunflower
+                            petal.velocity.x = petalDirections[i].x * petalSpeed;
+                            petal.velocity.y = petalDirections[i].y * petalSpeed;
+                            petal.active = true;
+                            petal.lifetime = petalLifespan;
+                            petal.textureIndex = i;
+                            activePetals.push_back(petal);
+                        }
+                    }
+                }
+            }
+        }
+
+        // NOWOŒÆ: Aktualizacja i kolizje p³atków
+        for (int i = (int)activePetals.size() - 1; i >= 0; --i) {
+            PetalProjectile& currentPetal = activePetals[i]; // Referencja do aktualnego p³atka
+
+            if (currentPetal.active) {
+                // Ruch p³atka
+                currentPetal.position.x += currentPetal.velocity.x * dt;
+                currentPetal.position.y += currentPetal.velocity.y * dt;
+                currentPetal.lifetime -= dt;
+
+                // Sprawdzenie, czy p³atek jest poza ekranem lub skoñczy³ mu siê czas ¿ycia
+                float petalScreenX = currentPetal.position.x - scrollX;
+                if (currentPetal.lifetime <= 0 ||
+                    petalScreenX < -20 || petalScreenX > virtualScreenWidth + 20 ||
+                    currentPetal.position.y < -20 || currentPetal.position.y > virtualScreenHeight + 20) {
+                    currentPetal.active = false;
+                }
+
+                // Kolizja p³atka z graczem
+                if (!showDebugInfo) { // GODMODE: Only check for player-petal collision if NOT in debug mode
+                    if (currentPetal.active) { // Check again, as it might have been deactivated by lifetime/bounds
+                        Rectangle petalHitbox = { currentPetal.position.x - 5, currentPetal.position.y - 5, 10, 10 };
+
+                        if (CheckCollisionRecs(playerCollisionHitbox, petalHitbox)) {
+                            currentPetal.active = false; // Dezaktywuj p³atek po trafieniu
+                            TraceLog(LOG_INFO, "PLAYER HIT BY PETAL!");
+
+                            playerPos = playerStartPos;
+                            playerVel = { 0.0f, 0.0f };
+                            isGrounded = true;
+                            isJumping = false;
+
+                            // Reset sunflower activation events
+                            for (auto& event : sunflowerEvents) { // Assuming you are using the SunflowerActivationEvent system
+                                event.hasBeenActivated = false;
+                            }
+                            // activePetals.clear(); // Optional: clear all petals on death
+                        }
+                    }
+                }
+                // If showDebugInfo IS true, the above block is skipped,
+                // so petals will not trigger a player reset. They will continue flying.
+                // The petal will still be deactivated by lifetime or going off-screen.
+            }
+
+            // Usuñ nieaktywne p³atki z wektora
+            if (!currentPetal.active) {
+                activePetals.erase(activePetals.begin() + i);
+            }
+        }
+
+
         if (!isGrounded) 
             maxFramesForCurrentAnim = jumpFrames;
         else if (isMoving)
             maxFramesForCurrentAnim = walkFrames;
         else
             maxFramesForCurrentAnim = idleFrames;
+
         UpdatePlayerAnimation(isGrounded, isMoving, facingRight, currentTexture, currentFrame, animUpdateRate, maxFramesForCurrentAnim, frameCounter, resources.idleRight, resources.idleLeft, resources.walkRight, resources.walkLeft, resources.jumpRight, resources.jumpLeft);
 
         float actualPlayerVirtualDrawX;
@@ -633,19 +751,11 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-        // --- Ground Tiles draw ---
-        if (resources.tile.id > 0) {
-            float startTileX = -fmodf(scrollX, (float)resources.tile.width);
-            int tilesToDraw = (virtualScreenWidth / resources.tile.width) + 2;
-            for (int i = 0; i < tilesToDraw; i++) {
-                float tileX = startTileX + i * resources.tile.width;
-                if (tileX + resources.tile.width > 0 && tileX < virtualScreenWidth) 
-                    DrawTexture(resources.tile, (int)tileX, (int)groundLevelY, WHITE);
-            }
-        }
 
 
-        // --- Props draw ---
+    // --- Props draw ---
+
+        // --- Fence draw ---
         if (resources.fenceProp.id > 0) {
             for (const auto& fence : fenceProps) {
                 if (fence.x - scrollX + fence.width > 0 && fence.x - scrollX < virtualScreenWidth)
@@ -653,6 +763,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
+        // --- Small flower draw ---
         if (resources.flowerSmallProp.id > 0) {
             for (const auto& flowerSmall : flowerSmallProps) {
                 if (flowerSmall.x - scrollX + flowerSmall.width > 0 && flowerSmall.x - scrollX < virtualScreenWidth)
@@ -660,6 +771,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
+        // --- Big flower draw ---
         if (resources.flowerBigProp.id > 0) {
             for (const auto& flowerBig : flowerBigProps) {
                 if (flowerBig.x - scrollX + flowerBig.width > 0 && flowerBig.x - scrollX < virtualScreenWidth)
@@ -667,6 +779,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
+        // --- Checkpoint flag draw ---
         if (resources.checkpointFlag.id > 0) {
             for (const auto& flag : checkpointFlags) {
                 if (flag.x - scrollX + flag.width > 0 && flag.x - scrollX < virtualScreenWidth)
@@ -674,6 +787,18 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
+        // --- Ground Tiles draw ---
+        if (resources.tile.id > 0) {
+            float startTileX = -fmodf(scrollX, (float)resources.tile.width);
+            int tilesToDraw = (virtualScreenWidth / resources.tile.width) + 2;
+            for (int i = 0; i < tilesToDraw; i++) {
+                float tileX = startTileX + i * resources.tile.width;
+                if (tileX + resources.tile.width > 0 && tileX < virtualScreenWidth)
+                    DrawTexture(resources.tile, (int)tileX, (int)groundLevelY, WHITE);
+            }
+        }
+
+        // --- Sunflower draw ---
         if (resources.sunflower.id > 0) {
             for (const auto& sunflowers : deadlySunflowers) {
                 if (sunflowers.x - scrollX + sunflowers.width > 0 && sunflowers.x - scrollX < virtualScreenWidth)
@@ -688,13 +813,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                     DrawTexture(resources.platformTexture, (int)(platform.x - scrollX), (int)platform.y, WHITE);
             }
         }
-        else {
-            for (const auto& platform : platforms) {
-                if (platform.x - scrollX + platform.width > 0 && platform.x - scrollX < virtualScreenWidth)
-                    DrawRectangleRec({ platform.x - scrollX, platform.y, platform.width, platform.height }, DARKGRAY);
-  
-            }
-        }
+
 
 
 
@@ -722,7 +841,24 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         }
         // --- END BUTTERFLY DRAW ---
 
-
+    // NOWOŒÆ: Rysowanie p³atków
+        for (const auto& petal : activePetals) {
+            if (petal.active) {
+                if (petal.textureIndex >= 0 && petal.textureIndex < 8) {
+                    Texture2D currentPetalTexture = resources.sunflowerPettles[petal.textureIndex];
+                    // Oblicz pozycjê rysowania tak, aby œrodek tekstury by³ w petal.position
+                    Vector2 petalDrawPos = {
+                        petal.position.x - scrollX - currentPetalTexture.width / 2.0f,
+                        petal.position.y - currentPetalTexture.height / 2.0f
+                    };
+                    DrawTextureV(currentPetalTexture, petalDrawPos, WHITE);
+                }
+                else {
+                    // Fallback, jeœli tekstura nie jest za³adowana lub indeks jest z³y
+                    DrawCircleV({ petal.position.x - scrollX, petal.position.y }, 4.0f, RED); // Czerwone kó³ko jako b³¹d
+                }
+            }
+        }
 
 
         // --- Player draw ---
@@ -735,6 +871,8 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
     // ------- DEBUG DRAW -------
         if (showDebugInfo) {
+            dt *= 0.5f; // All subsequent calculations using dt will be at half speed
+
             const int gridSpacing = 100;
             const int labelFontSize = 10;
             Color gridLineColor = Fade(DARKGRAY, 0.5f);
@@ -833,6 +971,51 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             Rectangle feetCheckRectDraw = { playerDrawVirtualPos.x + playerHitboxOffsetX, playerDrawVirtualPos.y + playerHitboxOffsetY + playerHitboxHeight, playerHitboxWidth, 1.0f }; // U¿yto playerDrawVirtualPos
             DrawRectangleRec(feetCheckRectDraw, YELLOW);
 
+
+            // NOWOŒÆ: Rysowanie hitboxów aktywnych p³atków
+            for (const auto& petal : activePetals) {
+                if (petal.active) {
+                    // Ten sam hitbox, który jest u¿ywany do kolizji
+                    Rectangle petalDebugHitbox = {
+                        petal.position.x - scrollX - 5, // -5 to offset X z definicji petalHitbox
+                        petal.position.y - 5,           // -5 to offset Y z definicji petalHitbox
+                        10,                             // 10 to szerokoœæ z definicji petalHitbox
+                        10                              // 10 to wysokoœæ z definicji petalHitbox
+                    };
+                    // Rysuj tylko jeœli hitbox jest widoczny na ekranie
+                    if (petalDebugHitbox.x + petalDebugHitbox.width > 0 && petalDebugHitbox.x < virtualScreenWidth &&
+                        petalDebugHitbox.y + petalDebugHitbox.height > 0 && petalDebugHitbox.y < virtualScreenHeight) {
+                        DrawRectangleLinesEx(petalDebugHitbox, 1.0f, RED); // Czerwony kontur dla hitboxu p³atka
+                    }
+                }
+            }
+
+            // NOWOŒÆ: Rysowanie pionowych linii dla triggerX ka¿dego SunflowerActivationEvent
+            for (const auto& event : sunflowerEvents) {
+                if (event.hasBeenActivated) continue; // Optionally don't draw lines for already activated events
+
+                float triggerScreenX = event.triggerX - scrollX;
+
+                if (triggerScreenX >= 0 && triggerScreenX < virtualScreenWidth) {
+                    DrawLineV({ triggerScreenX, 0.0f }, { triggerScreenX, (float)virtualScreenHeight }, Fade(MAGENTA, 0.7f));
+                    DrawText(TextFormat("%.0f (Ev)", event.triggerX), (int)triggerScreenX + 3, 30, 10, MAGENTA);
+
+                    // Optionally, draw indicators to the sunflowers this event triggers
+                    for (int sfId : event.sunflowerIdsToFire) {
+                        for (const auto& ss : shootingSunflowers) {
+                            if (ss.id == sfId) {
+                                Vector2 sunflowerShootPointScreen = { ss.position.x - scrollX, ss.position.y };
+                                if (sunflowerShootPointScreen.x >= 0 && sunflowerShootPointScreen.x < virtualScreenWidth &&
+                                    sunflowerShootPointScreen.y >= 0 && sunflowerShootPointScreen.y < virtualScreenHeight) {
+                                    DrawLineEx({ triggerScreenX, 40.0f }, sunflowerShootPointScreen, 1.0f, Fade(BLUE, 0.5f));
+                                    DrawCircleV(sunflowerShootPointScreen, 3, BLUE);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         EndTextureMode();

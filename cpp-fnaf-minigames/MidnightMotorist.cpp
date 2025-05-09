@@ -1,8 +1,10 @@
 #include "raylib.h"
 #include "raymath.h"
-#include "MotoristResources.h" // Upewnij siê, ¿e ta definicja jest poprawna i zawiera flagi loaded
+
+#include "MotoristResources.h"
 #include "GameSettings.h"
-#include "const.h" // Zak³adam, ¿e ten plik zawiera oryginalne sta³e
+#include "MotoristConst.h"
+
 #include <cmath>
 #include <string>
 #include <vector>
@@ -10,8 +12,6 @@
 #include <random>
 #include <iostream>
 #include <iomanip>
-
-// float backgroundScrollMultiplier = 1.5f; // Jeœli by³o globalne, inaczej lokalne w funkcji
 
 enum MotoristGameState {
     COUNTDOWN_INITIAL_DELAY,
@@ -189,7 +189,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
             countdownTimer -= dt;
             if (countdownTimer <= 0) {
                 currentGameState = PLAYING;
-                countdownTimer = 1.0f;
+                countdownTimer = 1.2f;
                 npcSpawnTimer = 0.0f;
                 motoristVirtualSpeed = VIRTUAL_SPEED_INITIAL;
                 for (size_t i = 0; i < currentLaneSpeeds.size(); ++i) {

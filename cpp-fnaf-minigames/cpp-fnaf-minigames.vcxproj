@@ -151,20 +151,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Animations.h" />
-    <ClInclude Include="const.h" />
+    <ClInclude Include="MotoristConst.h" />
     <ClInclude Include="Enemies.h" />
     <ClInclude Include="GameSettings.h" />
-    <ClInclude Include="Levels.h" />
-    <ClInclude Include="Menu.h" />
+    <ClInclude Include="MainMenuResources.h" />
     <ClInclude Include="MotoristResources.h" />
-    <ClInclude Include="Player.h" />
+    <ClInclude Include="RainbowLandConst.h" />
     <ClInclude Include="RainbowLandResources.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChicasMagicRainbowLand.cpp" />
     <ClCompile Include="GameSettings.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainMenuResources.cpp" />
     <ClCompile Include="MidnightMotorist.cpp" />
     <ClCompile Include="MotoristResources.cpp" />
     <ClCompile Include="RainbowLandResources.cpp" />

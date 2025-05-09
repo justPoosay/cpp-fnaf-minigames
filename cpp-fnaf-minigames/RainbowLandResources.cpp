@@ -136,7 +136,7 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
     resources.eyePop = LoadSound(eyePopPath);
     resources.checkpointSound = LoadSound(checkpointPath);
     resources.logs = LoadSound(jumpPath);
-    resources.petal = LoadSound(jumpPath);
+    resources.petalShoot = LoadSound(jumpPath);
     resources.rbowLaserShoot = LoadSound(jumpPath);
     resources.bflyLaserShoot = LoadSound(jumpPath);
 
@@ -151,7 +151,7 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
     resources.eyePopSoundLoaded = (resources.eyePop.frameCount > 0);
     resources.checkpointSoundLoaded = (resources.checkpointSound.frameCount > 0);
     resources.logsSoundLoaded = (resources.logs.frameCount > 0);
-    resources.petalSoundLoaded = (resources.petal.frameCount > 0);
+    resources.petalSoundLoaded = (resources.petalShoot.frameCount > 0);
     resources.bflyLaserShootSoundLoaded = (resources.bflyLaserShoot.frameCount > 0);
     resources.rbowLaserShootSoundLoaded = (resources.rbowLaserShoot.frameCount > 0);
 
@@ -255,7 +255,7 @@ void UnloadRainbowLandResources(RainbowLandGameResources& resources) {
     if (resources.eyePopSoundLoaded) UnloadSound(resources.eyePop);
     if (resources.checkpointSoundLoaded) UnloadSound(resources.checkpointSound);
     if (resources.logsSoundLoaded) UnloadSound(resources.logs);
-    if (resources.petalSoundLoaded) UnloadSound(resources.petal);
+    if (resources.petalSoundLoaded) UnloadSound(resources.petalShoot);
     if (resources.rbowLaserShootSoundLoaded) UnloadSound(resources.rbowLaserShoot);
     if (resources.bflyLaserShootSoundLoaded) UnloadSound(resources.bflyLaserShoot);
 
