@@ -5,10 +5,9 @@
 #include <string>
 
 struct MainMenuResources {
-    Image loadingGifImage;
-    Texture2D loadingGifTexture;
-    int loadingGifAnimFrames;
-    bool loadingGifLoaded;
+    Texture2D helpyLoadingScreenTexture;
+    //int loadingGifAnimFrames;
+    bool helpyLoadingTextureLoaded;
 
     // --- Rendering Variables ---
     Shader crtShader;
@@ -40,7 +39,7 @@ struct MainMenuResources {
     bool settingsMusicLoaded;
 
     // --- Paths (centralized for clarity) ---
-    const char* loadingGifPath = "resources/helpy/helpyLoadingScreen.gif";
+    const char* helpyLoadingScreenPath = "resources/helpy/helpyLoadingScreen.png";
     const char* iconPath = "resources/favicon.png";
     const char* crtShaderPathFS = "crt.fs";
     const char* gifPath = "resources/menuBg.gif";
@@ -56,7 +55,7 @@ struct MainMenuResources {
 
 bool LoadInitialLoadingScreenResources(MainMenuResources& res);
 
-bool LoadMainMenuResources(MainMenuResources& res, std::string& loadingStatus, int logicalWidth, int logicalHeight);
+bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logicalHeight);
 
 
 // Function to unload all main menu resources

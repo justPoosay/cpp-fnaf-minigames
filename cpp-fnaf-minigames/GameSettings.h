@@ -4,8 +4,8 @@
 
 // --- Enums for Settings ---
 typedef enum ScreenResolution {
-    RES_640x360,
-    RES_854x480,
+    //RES_640x360,
+    //RES_854x480,
     RES_1280x720,
     RES_1920x1080
 } ScreenResolution;
@@ -41,6 +41,21 @@ typedef struct GameSettingsData {
 // The actual definition will be in GameSettings.cpp
 extern GameSettingsData g_settings;
 
+
+
+const int logicalWidth = 1280;
+const int logicalHeight = 720;
+
+
+const int settingsTextFontSize = 25;
+const int settingsSelectorFontSize = 23;
+
+const float selectorWidth = 125;
+const float selectorHeight = 30;
+const float selectorX = 250;
+
+
+
 // --- Function Declarations ---
 
 // Call this once at the very beginning of main()
@@ -49,5 +64,4 @@ void InitializeGameSettings();
 // Call this whenever currentResolution changes to update screenWidth/Height
 void UpdateScreenDimensionsFromSettings();
 
-// Optional: Helper to get resolution dimensions directly
-// Vector2 GetResolutionDimensions(ScreenResolution res);
+

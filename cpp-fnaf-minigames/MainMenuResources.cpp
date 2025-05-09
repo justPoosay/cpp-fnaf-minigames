@@ -3,42 +3,17 @@
 #include <string> // Required for std::string
 #include <iostream> // For TraceLog, though raylib handles it
 
-// Helper to initialize only gif on loading screen
-static void InitializeLoadingScreenResourceStates(MainMenuResources& res) {
-    res.loadingGifImage = { 0 };
-    res.loadingGifTexture = { 0 };
-    res.loadingGifAnimFrames = 0;
-    res.loadingGifLoaded = false;
-}
 
 bool LoadInitialLoadingScreenResources(MainMenuResources& res) {
-    InitializeLoadingScreenResourceStates(res);
-    TraceLog(LOG_INFO, "RESOURCES: Attempting to load initial loading screen GIF from '%s'", res.loadingGifPath);
-    if (FileExists(res.loadingGifPath)) {
-        res.loadingGifImage = LoadImageAnim(res.loadingGifPath, &res.loadingGifAnimFrames);
-        if (res.loadingGifImage.data != NULL && res.loadingGifAnimFrames > 0) {
-            res.loadingGifTexture = LoadTextureFromImage(res.loadingGifImage);
-            if (res.loadingGifTexture.id > 0) {
-                res.loadingGifLoaded = true;
-                SetTextureFilter(res.loadingGifTexture, TEXTURE_FILTER_BILINEAR);
-                TraceLog(LOG_INFO, "RESOURCES: Initial loading screen GIF loaded ('%s', %d frames).", res.loadingGifPath, res.loadingGifAnimFrames);
+    if (FileExists(res.helpyLoadingScreenPath)) {
+            res.helpyLoadingScreenTexture = LoadTexture(res.helpyLoadingScreenPath);
+            if (res.helpyLoadingScreenTexture.id > 0) {
+                res.helpyLoadingTextureLoaded = true;
+                SetTextureFilter(res.helpyLoadingScreenTexture, TEXTURE_FILTER_BILINEAR);
+                TraceLog(LOG_INFO, "RESOURCES: Initial loading screen GIF loaded ('%s').", res.helpyLoadingScreenPath);
                 return true;
             }
-            else {
-                UnloadImage(res.loadingGifImage);
-                res.loadingGifImage = { 0 };
-                TraceLog(LOG_WARNING, "RESOURCES: Failed to create texture from initial loading screen GIF '%s'.", res.loadingGifPath);
-            }
-        }
-        else {
-            if (res.loadingGifImage.data) UnloadImage(res.loadingGifImage);
-            res.loadingGifImage = { 0 };
-            TraceLog(LOG_WARNING, "RESOURCES: Failed to load or process initial loading screen GIF data from '%s'. Frames: %d", res.loadingGifPath, res.loadingGifAnimFrames);
-        }
-    }
-    else {
-        TraceLog(LOG_WARNING, "RESOURCES: Initial loading screen GIF file not found: '%s'", res.loadingGifPath);
-    }
+        } 
     return false;
 }
 
@@ -75,12 +50,11 @@ static void InitializeResourceStates(MainMenuResources& res) {
     res.targetRenderTexture = { 0 };
 }
 
-bool LoadMainMenuResources(MainMenuResources& res, std::string& loadingStatus, int logicalWidth, int logicalHeight) {
+bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logicalHeight) {
     InitializeResourceStates(res);
     bool allCriticalLoaded = true;
 
     // --- Load Window Icon ---
-    loadingStatus = "Loading icon...";
     TraceLog(LOG_INFO, "RESOURCES: Attempting to load icon from '%s'", res.iconPath);
     if (FileExists(res.iconPath)) {
         Image icon = LoadImage(res.iconPath);
@@ -98,7 +72,6 @@ bool LoadMainMenuResources(MainMenuResources& res, std::string& loadingStatus, i
     }
 
     // --- Load Shader ---
-    loadingStatus = "Loading shaders...";
     TraceLog(LOG_INFO, "RESOURCES: Attempting to load CRT shader from '%s'", res.crtShaderPathFS);
     if (FileExists(res.crtShaderPathFS)) {
         res.crtShader = LoadShader(0, res.crtShaderPathFS);
@@ -110,16 +83,13 @@ bool LoadMainMenuResources(MainMenuResources& res, std::string& loadingStatus, i
         }
         else {
             TraceLog(LOG_WARNING, "RESOURCES: Failed to load CRT shader. Shader ID: %d", res.crtShader.id);
-            // g_settings.useCRTShader might be set to false by main if this fails
         }
     }
     else {
         TraceLog(LOG_WARNING, "RESOURCES: CRT Shader file not found: '%s'. CRT Shader will be unavailable.", res.crtShaderPathFS);
-        // g_settings.useCRTShader might be set to false by main
     }
 
     // --- Load GIF Background for Main Menu ---
-    loadingStatus = "Loading menu background...";
     TraceLog(LOG_INFO, "RESOURCES: Attempting to load menu GIF from '%s'", res.gifPath);
     if (FileExists(res.gifPath)) {
         res.bgGifImage = LoadImageAnim(res.gifPath, &res.animFrames);
@@ -148,7 +118,7 @@ bool LoadMainMenuResources(MainMenuResources& res, std::string& loadingStatus, i
 
 
     // --- Load Helpy GIF for Settings Screen ---
-    loadingStatus = "Loading Helpy animation...";
+    //loadingStatus = "Loading Helpy animation...";
     TraceLog(LOG_INFO, "RESOURCES: Attempting to load Helpy GIF from '%s'", res.helpyGifPath);
     if (FileExists(res.helpyGifPath)) {
         res.helpyGifImage = LoadImageAnim(res.helpyGifPath, &res.helpyAnimFrames);
@@ -176,7 +146,7 @@ bool LoadMainMenuResources(MainMenuResources& res, std::string& loadingStatus, i
     }
 
     // --- Load Settings Background ---
-    loadingStatus = "Loading settings background...";
+    //loadingStatus = "Loading settings background...";
     TraceLog(LOG_INFO, "RESOURCES: Attempting to load settings background from '%s'", res.settingsBgPath);
     if (FileExists(res.settingsBgPath)) {
         res.settingsBgTexture = LoadTexture(res.settingsBgPath);
@@ -193,7 +163,7 @@ bool LoadMainMenuResources(MainMenuResources& res, std::string& loadingStatus, i
     }
 
     // --- Load Custom Fonts ---
-    loadingStatus = "Loading special font...";
+    //loadingStatus = "Loading special font...";
     TraceLog(LOG_INFO, "RESOURCES: Attempting to load special font from '%s'", res.arcadeClassicFontPath);
     if (FileExists(res.arcadeClassicFontPath)) {
         res.arcadeClassicFont = LoadFont(res.arcadeClassicFontPath);
@@ -212,7 +182,7 @@ bool LoadMainMenuResources(MainMenuResources& res, std::string& loadingStatus, i
     }
 
     // --- Load Menu Music ---
-    loadingStatus = "Loading menu audio...";
+    //loadingStatus = "Loading menu audio...";
     TraceLog(LOG_INFO, "RESOURCES: Attempting to load menu music from '%s'", res.menuMusicPath);
     if (FileExists(res.menuMusicPath)) {
         res.menuMusic = LoadMusicStream(res.menuMusicPath);
@@ -230,7 +200,7 @@ bool LoadMainMenuResources(MainMenuResources& res, std::string& loadingStatus, i
     }
 
     // --- Load Settings Music ---
-    loadingStatus = "Loading settings audio...";
+    //loadingStatus = "Loading settings audio...";
     TraceLog(LOG_INFO, "RESOURCES: Attempting to load settings music from '%s'", res.settingsMusicPath);
     if (FileExists(res.settingsMusicPath)) {
         res.settingsMusic = LoadMusicStream(res.settingsMusicPath);
@@ -248,7 +218,7 @@ bool LoadMainMenuResources(MainMenuResources& res, std::string& loadingStatus, i
     }
 
     // --- Load Render Texture ---
-    loadingStatus = "Initializing render target...";
+    //loadingStatus = "Initializing render target...";
     TraceLog(LOG_INFO, "RESOURCES: Creating render texture (%dx%d).", logicalWidth, logicalHeight);
     res.targetRenderTexture = LoadRenderTexture(logicalWidth, logicalHeight);
     if (res.targetRenderTexture.id > 0) {
@@ -260,7 +230,7 @@ bool LoadMainMenuResources(MainMenuResources& res, std::string& loadingStatus, i
         allCriticalLoaded = false; // Render target is critical
     }
 
-    loadingStatus = "Finalizing...";
+    //loadingStatus = "Finalizing...";
     TraceLog(LOG_INFO, "RESOURCES: Main menu resource loading complete.");
     return allCriticalLoaded;
 }
@@ -268,10 +238,9 @@ bool LoadMainMenuResources(MainMenuResources& res, std::string& loadingStatus, i
 void UnloadMainMenuResources(MainMenuResources& res) {
     TraceLog(LOG_INFO, "RESOURCES: Unloading main menu resources...");
 
-    if (res.loadingGifLoaded) {
-        UnloadTexture(res.loadingGifTexture);
-        UnloadImage(res.loadingGifImage);
-        res.loadingGifLoaded = false;
+    if (res.helpyLoadingTextureLoaded) {
+        UnloadTexture(res.helpyLoadingScreenTexture);
+        res.helpyLoadingTextureLoaded = false;
     }
 
     if (res.menuMusicLoaded && res.menuMusic.stream.buffer) UnloadMusicStream(res.menuMusic);
