@@ -33,8 +33,8 @@ struct RainbowLandGameResources { // Store game resources
     Texture2D platformTexture;
 
     Texture2D sunflower;
-    std::vector<Texture2D> sunflowerPettles;
-    const int numPettles = 8;
+    std::vector<Texture2D> sunflowerPetals;
+    const int numPetals = 8;
 
     Texture2D fenceProp;
     Texture2D flowerBigProp;

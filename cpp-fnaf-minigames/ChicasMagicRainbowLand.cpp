@@ -93,6 +93,8 @@ static void UpdateButterflyAnimation(
 int runMagicRainbowLand(GraphicsQuality quality) {
     std::cout << "Launching Chica's Magic Rainbow with quality " << quality << std::endl;
 
+    Vector2 lastCheckpointPos;
+
 // --------- RESOURCE LOADER ---------
     RainbowLandGameResources resources = LoadRainbowLandResources(quality);
 
@@ -169,36 +171,44 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
     std::vector<Rectangle> checkpointFlags = { // flags
         { flag1, groundLevelY - 51.0f, checkpointFlagWidth, checkpointFlagHeight },
-        { flag2, groundLevelY - 51.0f, checkpointFlagWidth, checkpointFlagHeight }
+        { flag2, groundLevelY - 51.0f, checkpointFlagWidth, checkpointFlagHeight },
+        { flag3, groundLevelY - 51.0f, checkpointFlagWidth, checkpointFlagHeight },
     };
 
 
     std::vector<Rectangle> flowerSmallProps = { // small flowers
         { smalFlow1, groundLevelY - 60.0f, flowerSmallWidth, flowerSmallHeight },
-        { smalFlow2, groundLevelY - 60.0f, flowerSmallWidth, flowerSmallHeight }
     };
 
 
     std::vector<Rectangle> flowerBigProps = { // big flowers
-        { bigFlow1, groundLevelY - 100.0f, flowerBigWidth, flowerBigHeight }
+        { bigFlow1, groundLevelY - 100.0f, flowerBigWidth, flowerBigHeight },
+        { bigFlow2, groundLevelY - 100.0f, flowerBigWidth, flowerBigHeight },
+        { bigFlow3, groundLevelY - 100.0f, flowerBigWidth, flowerBigHeight },
+        { bigFlow4, groundLevelY - 100.0f, flowerBigWidth, flowerBigHeight },
     };
 
 
     std::vector<Rectangle> deadlySunflowers = { // sunflowers
-        { sunfl1, groundLevelY - 296.0f, sunflowerWidth, sunflowerHeight },
-        { sunfl2, groundLevelY - 296.0f, sunflowerWidth, sunflowerHeight },
-        { sunfl3, groundLevelY - 140.0f, sunflowerWidth, sunflowerHeight },
+        { sunfl1, groundLevelY - 296.0f, sunflowerWidth, sunflowerHeight },     // [0]
+        { sunfl2, groundLevelY - 296.0f, sunflowerWidth, sunflowerHeight },     // [1]
+        { sunfl3, groundLevelY - 145.0f, sunflowerWidth, sunflowerHeight },     // [2]
+
+		{ sunfl3_1, groundLevelY - 100.0f, sunflowerWidth, sunflowerHeight },   // [3]
+        { sunfl3_2, groundLevelY - 100.0f, sunflowerWidth, sunflowerHeight },   // [4]
+
+		{ sunfl4, groundLevelY - 296.0f, sunflowerWidth, sunflowerHeight },     // [5]
+		{ sunfl5, groundLevelY - 296.0f, sunflowerWidth, sunflowerHeight },     // [6]
+        { sunfl6, groundLevelY - 296.0f, sunflowerWidth, sunflowerHeight },     // [7]
+        { sunfl7, groundLevelY - 296.0f, sunflowerWidth, sunflowerHeight },     // [8]
     };
-
-
-
-    std::vector<SunflowerTriggerConfig> triggerConfigs = { // triggers
-        {0, 1150.0f},
-        {1, 1150.0f},
-
-        {1, 1420.0f},
-        {2, 1420.0f},
-        //{sunf[i], [triggerX]},
+    
+    std::vector<SunflowerActivationEvent> sunflowerEvents = { // sunflower tr9ggers
+        { CalculateTriggerX(deadlySunflowers[0], deadlySunflowers[1]), {0, 1}, false }, 
+        { CalculateTriggerX(deadlySunflowers[1], deadlySunflowers[2]), {1, 2}, false }, 
+        { CalculateTriggerX(deadlySunflowers[2], deadlySunflowers[3]), {2, 3, 4, 5, 6}, false },
+        { CalculateTriggerX(deadlySunflowers[3], deadlySunflowers[4]), {2, 3, 4, 5, 6}, false },
+        { sunfl7 + 20.0f, {2, 3, 4, 5, 6}, false },
     };
 
 
@@ -266,31 +276,8 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             sfRect.x + sunflowerDiscCenterX,
             sfRect.y + sunflowerDiscCenterY
         };
-        // ss.hasFired = false; // Not needed here anymore for basic triggering
-        // ss.triggerXPlayer = ...; // Not needed here anymore
         shootingSunflowers.push_back(ss);
     }
-
-    // NOWOŒÆ: Definiowanie zdarzeñ aktywacji s³oneczników
-    std::vector<SunflowerActivationEvent> sunflowerEvents;
-
-    // Example:
-    // Trigger 1: at X=1150, sunflower 0 and sunflower 1 fire
-    sunflowerEvents.push_back({
-        1150.0f,         // triggerX
-        {0, 1},          // sunflowerIdsToFire (sunflower with id 0, sunflower with id 1)
-        false            // hasBeenActivated
-        });
-
-    // Trigger 2: at X=1450, sunflower 1 (again) and sunflower 2 fire
-    sunflowerEvents.push_back({
-        1450.0f,         // triggerX
-        {1, 2},          // sunflowerIdsToFire (sunflower with id 1, sunflower with id 2)
-        false            // hasBeenActivated
-        });
-
-    // You can add more events as needed
-    // sunflowerEvents.push_back({ 2000.0f, {0, 2}, false }); // Example: Sunflower 0 and 2 fire at X=2000
 
     std::vector<PetalProjectile> activePetals;
     Vector2 playerStartPos = playerPos;
@@ -306,6 +293,8 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 // --------------- MAIN GAME LOOP ---------------
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
+        bool wasInCheckpointLastFrame = false;  
+
         if (resources.backgroundMusicLoaded) {
             UpdateMusicStream(resources.backgroundMusic);
             if (GetMusicTimePlayed(resources.backgroundMusic) >= GetMusicTimeLength(resources.backgroundMusic)) {
@@ -333,6 +322,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         float virtualMouseX = (mousePosWindow.x - offsetX) / scale;
         float virtualMouseY = (mousePosWindow.y - offsetY) / scale;
         Vector2 virtualMousePos = { virtualMouseX, virtualMouseY };
+
 
     // --------- PLAYER MOVEMENT INPUT ---------
         playerVel.x = 0.0f;
@@ -463,14 +453,25 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
+
+        bool isTouchingCheckpoint = false;
+
         for (const auto& flag : checkpointFlags) {
-            Rectangle flagRect = flag;
-            if (CheckCollisionRecs(playerCollisionHitbox, flagRect)) {
-                //tutaj daj kod do wyswietlenia CHECKPOINT
-                PlaySound(resources.checkpointSound);
-                break;
+            if (CheckCollisionRecs(playerCollisionHitbox, flag)) {
+                isTouchingCheckpoint = true;
+                //break;
             }
         }
+
+        // Jeœli w³aœnie wszed³ do checkpointa (a wczeœniej nie by³) => zagraj dŸwiêk
+        if (isTouchingCheckpoint && !wasInCheckpointLastFrame) {
+            PlaySound(resources.checkpointSound);
+            lastCheckpointPos = playerPos;
+        }
+
+        // Zapisz stan na kolejn¹ klatkê
+        wasInCheckpointLastFrame = isTouchingCheckpoint;
+
 
 
     // Ground collision handler
@@ -589,6 +590,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         }
         // --- END BUTTERFLY LOGIC ---
 
+
 	// --- PETAL PROJECTILE LOGIC ---
         bool petalShootSoundPlayedThisFrame = false; // To ensure sound plays only once per frame, even if multiple events trigger
 
@@ -609,7 +611,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             if ((currentWorldPlayerHitbox.x + currentWorldPlayerHitbox.width) > event.triggerX) {
                 event.hasBeenActivated = true; // Mark THIS EVENT as done
 
-                bool soundPlayedForThisSpecificEvent = false; // Sound for *this* event group
+                bool soundPlayedForThisSpecificEvent = false; 
 
                 for (int sunflowerIdToFire : event.sunflowerIdsToFire) {
                     // Find the actual sunflower object by its ID
@@ -670,8 +672,9 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                         if (CheckCollisionRecs(playerCollisionHitbox, petalHitbox)) {
                             currentPetal.active = false; // Dezaktywuj p³atek po trafieniu
                             TraceLog(LOG_INFO, "PLAYER HIT BY PETAL!");
-
-                            playerPos = playerStartPos;
+                            PlaySound(resources.death);
+                            WaitTime(0.5);
+                            playerPos = lastCheckpointPos;
                             playerVel = { 0.0f, 0.0f };
                             isGrounded = true;
                             isJumping = false;
@@ -680,13 +683,9 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                             for (auto& event : sunflowerEvents) { // Assuming you are using the SunflowerActivationEvent system
                                 event.hasBeenActivated = false;
                             }
-                            // activePetals.clear(); // Optional: clear all petals on death
                         }
                     }
                 }
-                // If showDebugInfo IS true, the above block is skipped,
-                // so petals will not trigger a player reset. They will continue flying.
-                // The petal will still be deactivated by lifetime or going off-screen.
             }
 
             // Usuñ nieaktywne p³atki z wektora
@@ -795,14 +794,6 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-        // --- Sunflower draw ---
-        if (resources.sunflower.id > 0) {
-            for (const auto& sunflowers : deadlySunflowers) {
-                if (sunflowers.x - scrollX + sunflowers.width > 0 && sunflowers.x - scrollX < virtualScreenWidth)
-                    DrawTexture(resources.sunflower, (int)(sunflowers.x - scrollX), (int)sunflowers.y, WHITE);
-            }
-        }
-
         // --- Platform draw ---
         if (resources.platformTexture.id > 0) {
             for (const auto& platform : platforms) {
@@ -810,9 +801,20 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                     DrawTexture(resources.platformTexture, (int)(platform.x - scrollX), (int)platform.y, WHITE);
             }
         }
+       
+        // --- Player draw ---
+        Rectangle sourceRect = { (float)currentFrame * playerTextureWidth, 0, (float)playerTextureWidth, (float)playerTextureHeight };
+        if (playerDrawVirtualPos.x + playerTextureWidth > 0 && playerDrawVirtualPos.x < virtualScreenWidth)
+            DrawTextureRec(currentTexture, sourceRect, playerDrawVirtualPos, WHITE);
 
 
-
+        // --- Sunflower draw ---
+        if (resources.sunflower.id > 0) {
+            for (const auto& sunflowers : deadlySunflowers) {
+                if (sunflowers.x - scrollX + sunflowers.width > 0 && sunflowers.x - scrollX < virtualScreenWidth)
+                    DrawTexture(resources.sunflower, (int)(sunflowers.x - scrollX), (int)sunflowers.y, WHITE);
+            }
+        }
 
         // --- Butterfly draw ---
         if (resources.butterfly.id > 0) {
@@ -842,7 +844,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         for (const auto& petal : activePetals) {
             if (petal.active) {
                 if (petal.textureIndex >= 0 && petal.textureIndex < 8) {
-                    Texture2D currentPetalTexture = resources.sunflowerPettles[petal.textureIndex];
+                    Texture2D currentPetalTexture = resources.sunflowerPetals[petal.textureIndex];
                     // Oblicz pozycjê rysowania tak, aby œrodek tekstury by³ w petal.position
                     Vector2 petalDrawPos = {
                         petal.position.x - scrollX - currentPetalTexture.width / 2.0f,
@@ -856,12 +858,6 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 }
             }
         }
-
-
-        // --- Player draw ---
-        Rectangle sourceRect = { (float)currentFrame * playerTextureWidth, 0, (float)playerTextureWidth, (float)playerTextureHeight };
-        if (playerDrawVirtualPos.x + playerTextureWidth > 0 && playerDrawVirtualPos.x < virtualScreenWidth)
-            DrawTextureRec(currentTexture, sourceRect, playerDrawVirtualPos, WHITE);
 
         // --- Voice Button draw ---
         DrawTextureV(currentButtonTexture, buttonPos, WHITE);

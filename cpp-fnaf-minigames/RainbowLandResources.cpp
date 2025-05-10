@@ -70,15 +70,15 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
 
     resources.sunflower = LoadTexture("resources/cmrl/textures/sunflower/deadly_flower.png");
 
-    resources.sunflowerPettles.resize(resources.numPettles);
-    resources.sunflowerPettles[0] = LoadTexture("resources/cmrl/textures/sunflower/pettleN.png");
-    resources.sunflowerPettles[1] = LoadTexture("resources/cmrl/textures/sunflower/pettleNE.png");
-    resources.sunflowerPettles[2] = LoadTexture("resources/cmrl/textures/sunflower/pettleE.png");
-    resources.sunflowerPettles[3] = LoadTexture("resources/cmrl/textures/sunflower/pettleSE.png");
-    resources.sunflowerPettles[4] = LoadTexture("resources/cmrl/textures/sunflower/pettleS.png");
-    resources.sunflowerPettles[5] = LoadTexture("resources/cmrl/textures/sunflower/pettleSW.png");
-    resources.sunflowerPettles[6] = LoadTexture("resources/cmrl/textures/sunflower/pettleW.png");
-    resources.sunflowerPettles[7] = LoadTexture("resources/cmrl/textures/sunflower/pettleNW.png");
+    resources.sunflowerPetals.resize(resources.numPetals);
+    resources.sunflowerPetals[0] = LoadTexture("resources/cmrl/textures/sunflower/pettleN.png");
+    resources.sunflowerPetals[1] = LoadTexture("resources/cmrl/textures/sunflower/pettleNE.png");
+    resources.sunflowerPetals[2] = LoadTexture("resources/cmrl/textures/sunflower/pettleE.png");
+    resources.sunflowerPetals[3] = LoadTexture("resources/cmrl/textures/sunflower/pettleSE.png");
+    resources.sunflowerPetals[4] = LoadTexture("resources/cmrl/textures/sunflower/pettleS.png");
+    resources.sunflowerPetals[5] = LoadTexture("resources/cmrl/textures/sunflower/pettleSW.png");
+    resources.sunflowerPetals[6] = LoadTexture("resources/cmrl/textures/sunflower/pettleW.png");
+    resources.sunflowerPetals[7] = LoadTexture("resources/cmrl/textures/sunflower/pettleNW.png");
 
     resources.fenceProp = LoadTexture("resources/cmrl/textures/misc/fence.png");
     resources.flowerBigProp = LoadTexture("resources/cmrl/textures/misc/decoration_flower_big.png");
@@ -209,14 +209,14 @@ void UnloadRainbowLandResources(RainbowLandGameResources& resources) {
 
     if (resources.sunflower.id > 0) UnloadTexture(resources.sunflower);
 
-    if (resources.sunflowerPettles[0].id > 0) UnloadTexture(resources.sunflowerPettles[0]);
-    if (resources.sunflowerPettles[1].id > 0) UnloadTexture(resources.sunflowerPettles[1]);
-    if (resources.sunflowerPettles[2].id > 0) UnloadTexture(resources.sunflowerPettles[2]);
-    if (resources.sunflowerPettles[3].id > 0) UnloadTexture(resources.sunflowerPettles[3]);
-    if (resources.sunflowerPettles[4].id > 0) UnloadTexture(resources.sunflowerPettles[4]);
-    if (resources.sunflowerPettles[5].id > 0) UnloadTexture(resources.sunflowerPettles[5]);
-    if (resources.sunflowerPettles[6].id > 0) UnloadTexture(resources.sunflowerPettles[6]);
-    if (resources.sunflowerPettles[7].id > 0) UnloadTexture(resources.sunflowerPettles[7]);
+    if (resources.sunflowerPetals[0].id > 0) UnloadTexture(resources.sunflowerPetals[0]);
+    if (resources.sunflowerPetals[1].id > 0) UnloadTexture(resources.sunflowerPetals[1]);
+    if (resources.sunflowerPetals[2].id > 0) UnloadTexture(resources.sunflowerPetals[2]);
+    if (resources.sunflowerPetals[3].id > 0) UnloadTexture(resources.sunflowerPetals[3]);
+    if (resources.sunflowerPetals[4].id > 0) UnloadTexture(resources.sunflowerPetals[4]);
+    if (resources.sunflowerPetals[5].id > 0) UnloadTexture(resources.sunflowerPetals[5]);
+    if (resources.sunflowerPetals[6].id > 0) UnloadTexture(resources.sunflowerPetals[6]);
+    if (resources.sunflowerPetals[7].id > 0) UnloadTexture(resources.sunflowerPetals[7]);
 
     if (resources.fenceProp.id > 0) UnloadTexture(resources.fenceProp);
     if (resources.flowerBigProp.id > 0) UnloadTexture(resources.flowerBigProp);

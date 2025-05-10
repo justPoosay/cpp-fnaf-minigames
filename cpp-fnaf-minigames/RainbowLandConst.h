@@ -80,35 +80,51 @@ const float checkpointFlagHeight = 51.0f;
 
 const float flag1 = 100.0f;
 const float flag2 = 850.0f;
+const float flag3 = 1775.0f;
 
 // small flowers
 const float flowerSmallWidth = 60.0f;
 const float flowerSmallHeight = 60.0f;
 
-const float smalFlow1 = 600.0f;
-const float smalFlow2 = 700.0f;
+const float smalFlow1 = 1500.0f;
 
 // big flowers
 const float flowerBigWidth = 100.0f;
 const float flowerBigHeight = 100.0f;
 
-const float bigFlow1 = 1000.0f;
+const float bigFlow1 = 1050.0f;
+const float bigFlow2 = 1150.0f;
+const float bigFlow3 = 1250.0f;
+const float bigFlow4 = 1350.0f;
 
 // sunflowers
 const float sunflowerWidth = 136.0f;
 const float sunflowerHeight = 296.0f;
 
-const float sunfl1 = 920.0f;
-const float sunfl2 = 1220.0f;
-const float sunfl3 = 1570.0f;
-
-// sunflower pettles
-const float petalSpeed = 1000.0f;
-const float petalLifespan = 0.75f;
-
 const float sunflowerDiscCenterX = 68.0f;
 const float sunflowerDiscCenterY = 67.0f;
 
+float CalculateTriggerX(Rectangle sf1, Rectangle sf2) {
+    float x1 = sf1.x + sunflowerDiscCenterX;
+    float x2 = sf2.x + sunflowerDiscCenterX;
+    return (x1 + x2) / 2;
+}
+
+const float sunfl1 = 920.0f;
+const float sunfl2 = 1270.0f;
+const float sunfl3 = 1620.0f;
+
+const float sunfl3_1 = 1970.0f;
+const float sunfl3_2 = 2320.0f;
+
+const float sunfl4 = 1850.0f;
+const float sunfl5 = 2050.0f;
+const float sunfl6 = 2250.0f;
+const float sunfl7 = 2450.0f;
+
+// sunflower petals
+const float petalSpeed = 1000.0f;
+const float petalLifespan = 0.75f;
 
 //Vector2 petalDirections[] = {
 //    {0.0f, -1.0f},          // 0: N
