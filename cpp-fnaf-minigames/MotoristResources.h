@@ -2,12 +2,14 @@
 
 #include "raylib.h"
 #include "GameSettings.h"
-#include <vector>
-#include <string>
 
-struct MotoristGameResources { // Store game resources
+#include <vector>
+
+using namespace std;
+
+struct MotoristGameResources {
 	Texture2D car;
-    std::vector<Texture2D> carSpinFrames; // Zamiast pojedynczej tekstury
+    vector<Texture2D> carSpinFrames;
 	Texture2D leftCarNPC;
 	Texture2D rightCarNPC;
 
@@ -40,8 +42,5 @@ struct MotoristGameResources { // Store game resources
 	Font gameFont;
 };
 
-// Loading Resources
 MotoristGameResources LoadMotoristResources(GraphicsQuality quality);
-
-// Unloadind Resources
 void UnloadMotoristResources(MotoristGameResources& resources);

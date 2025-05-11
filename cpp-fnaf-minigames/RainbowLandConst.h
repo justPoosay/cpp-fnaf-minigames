@@ -5,104 +5,109 @@
 #include <cmath>
 
 
-const float PI_F = PI; // Use the PI defined by Raylib/raymath.h
+const float PI_F = PI;
 
-const float radiansToDegrees = PI_F / 180.0f;
+const float radiansToDegrees = PI_F / 180;
 
 const int virtualScreenWidth = 800;
 const int virtualScreenHeight = 450;
 
-const float levelLogicalWidth = 5000.0f;
-const float bgScrollFactor = 0.3f;
+const float levelLogicalWidth = 5000;
+const float bgScrollFactor = 0.3;
 
-const float virtualAspectRatio = (float)virtualScreenWidth / (float)virtualScreenHeight;
-const float maxScrollX = fmaxf(0.0f, levelLogicalWidth - virtualScreenWidth);
-const float groundLevelY = virtualScreenHeight - 25.0f;
+const float virtualAspectRatio = virtualScreenWidth / virtualScreenHeight;
+const float maxScrollX = fmax(0, levelLogicalWidth - virtualScreenWidth);
+const float groundLevelY = virtualScreenHeight - 25;
 
 
+const float playerTextureHeight = 70;
+const float playerTextureWidth = 70;
 
-// --------- REGULACJA LOGIKI RUCHU ---------
-
-const float playerTextureHeight = 70.0f;
-const float playerTextureWidth = 70.0f;
-
-// dostosowanie rozmiary hitboxa playera
-const float playerHitboxWidth = playerTextureWidth * 0.6f;
-const float playerHitboxHeight = playerTextureHeight * 0.8f;
-const float playerHitboxOffsetX = (playerTextureWidth - playerHitboxWidth) / 2.0f;
+const float playerHitboxWidth = playerTextureWidth * 0.6;
+const float playerHitboxHeight = playerTextureHeight * 0.8;
+const float playerHitboxOffsetX = (playerTextureWidth - playerHitboxWidth) / 2;
 const float playerHitboxOffsetY = (playerTextureHeight - playerHitboxHeight);
 
-const float playerVirtualScreenX = virtualScreenWidth / 2.0f - playerTextureWidth / 2.0f;
+const float playerVirtualScreenX = (virtualScreenWidth - playerTextureWidth) / 2;
 
-// --------- DOSTOSUJ FIZYKE RUCHU CHICI!! ---------
-const float playerSpeed = 3.8f;
-const float jumpSpeed = -5.0f;
-const float fallSpeed = 5.0f;
-const float maxJumpHeight = 270.0f;
+const float playerSpeed = 3.8;
+const float jumpSpeed = -5;
+const float fallSpeed = 5;
+const float maxJumpHeight = 270;
 const int animUpdateRate = 1;
 const int idleFrames = 16;
 const int walkFrames = 16;
 const int jumpFrames = 1;
 
 
-// --------- DOSTOSUJ FIZYKE RUCHU RAINBOWA!! ---------
-const float rainbowTargetY = 5.0f;
-const float rainbowPaddingX = 60.0f;
-const float rainbowSpeed = playerSpeed / 1.75f;
-const float rainbowLeftEyeOffsetX = 90.0f;
-const float rainbowLeftEyeOffsetY = 18.0f;
-const float rainbowRightEyeOffsetX = 152.0f;
-const float rainbowRightEyeOffsetY = 18.0f;
+const float rainbowTargetY = 5;
+const float rainbowPaddingX = 60;
+const float rainbowSpeed = playerSpeed / 1.75;
+const float rainbowLeftEyeOffsetX = 90;
+const float rainbowLeftEyeOffsetY = 18;
+const float rainbowRightEyeOffsetX = 152;
+const float rainbowRightEyeOffsetY = 18;
 
 
-// ------- BUTTERFLY SETUP -------
-const float butterflyWidth = 32.0f;
-const float butterflyHeight = 32.0f;
+const float butterflyWidth = 32;
+const float butterflyHeight = 32;
 const int BUTTERFLY_TOTAL_FRAMES = 6;
 const int BUTTERFLY_ANIM_UPDATE_RATE = 3;
-const float BUTTERFLY_MOVEMENT_RADIUS_X = 40.0f;
-const float BUTTERFLY_MOVEMENT_RADIUS_Y = 20.0f;
-const float BUTTERFLY_BASE_MOVEMENT_SPEED = 0.8f;
+const float BUTTERFLY_MOVEMENT_RADIUS_X = 40;
+const float BUTTERFLY_MOVEMENT_RADIUS_Y = 20;
+const float BUTTERFLY_BASE_MOVEMENT_SPEED = 0.8;
+
+// platforms
+const float platformWidth = 80;
+const float platformHeight = 21;
+
+const float platform1 = 260;
+const float platform2 = 360;
+const float platform3 = 460;
+const float platform4 = 560;
+const float platform5 = 660;
+
+const float platform6 = 1825;
 
 // fences
-const float fenceWidth = 159.0f;
-const float fenceHeight = 43.0f;
+const float fenceWidth = 159;
+const float fenceHeight = 43;
 
-const float fence1 = 275.0f;
-const float fence2 = 434.0f;
-const float fence3 = 593.0f;
-const float fence4 = 752.0f;
-const float fence5 = 911.0f;
+const float fence1 = 275;
+const float fence2 = 434;
+const float fence3 = 593;
+const float fence4 = 752;
+const float fence5 = 911;
 
 // checkpoint flags
-const float checkpointFlagWidth = 49.0f;
-const float checkpointFlagHeight = 51.0f;
+const float checkpointFlagWidth = 49;
+const float checkpointFlagHeight = 51;
 
-const float flag1 = 100.0f;
-const float flag2 = 850.0f;
-const float flag3 = 1775.0f;
+const float flag1 = 100;
+const float flag2 = 850;
+const float flag3 = 1775;
 
 // small flowers
-const float flowerSmallWidth = 60.0f;
-const float flowerSmallHeight = 60.0f;
+const float flowerSmallWidth = 60;
+const float flowerSmallHeight = 60;
 
-const float smalFlow1 = 1500.0f;
+const float smalFlow1 = 1500;
 
 // big flowers
-const float flowerBigWidth = 100.0f;
-const float flowerBigHeight = 100.0f;
+const float flowerBigWidth = 100;
+const float flowerBigHeight = 100;
 
-const float bigFlow1 = 1050.0f;
-const float bigFlow2 = 1150.0f;
-const float bigFlow3 = 1250.0f;
-const float bigFlow4 = 1350.0f;
+const float bigFlow1 = 1050;
+const float bigFlow2 = 1150;
+const float bigFlow3 = 1250;
+const float bigFlow4 = 1350;
 
 // sunflowers
-const float sunflowerWidth = 136.0f;
-const float sunflowerHeight = 296.0f;
+const float sunflowerWidth = 136;
+const float sunflowerHeight = 296;
 
-const float sunflowerDiscCenterX = 68.0f;
-const float sunflowerDiscCenterY = 67.0f;
+const float sunflowerDiscCenterX = 68;
+const float sunflowerDiscCenterY = 67;
 
 float CalculateTriggerX(Rectangle sf1, Rectangle sf2) {
     float x1 = sf1.x + sunflowerDiscCenterX;
@@ -110,61 +115,35 @@ float CalculateTriggerX(Rectangle sf1, Rectangle sf2) {
     return (x1 + x2) / 2;
 }
 
-const float sunfl1 = 920.0f;
-const float sunfl2 = 1270.0f;
-const float sunfl3 = 1620.0f;
+const float sunfl1 = 920;
+const float sunfl2 = 1270;
+const float sunfl3 = 1620;
 
-const float sunfl3_1 = 1970.0f;
-const float sunfl3_2 = 2320.0f;
+const float sunfl3_1 = 1970;
+const float sunfl3_2 = 2320;
 
-const float sunfl4 = 1850.0f;
-const float sunfl5 = 2050.0f;
-const float sunfl6 = 2250.0f;
-const float sunfl7 = 2450.0f;
+const float sunfl4 = 1880;
+const float sunfl5 = 2050;
+const float sunfl6 = 2250;
+const float sunfl7 = 2450;
 
 // sunflower petals
-const float petalSpeed = 1000.0f;
-const float petalLifespan = 0.75f;
-
-//Vector2 petalDirections[] = {
-//    {0.0f, -1.0f},          // 0: N
-//    {0.7071f, -0.7071f},    // 1: NE
-//    {1.0f, 0.0f},           // 2: E
-//    {0.7071f, 0.7071f},     // 3: SE
-//    {0.0f, 1.0f},           // 4: S
-//    {-0.7071f, 0.7071f},    // 5: SW
-//    {-1.0f, 0.0f},          // 6: W
-//    {-0.7071f, -0.7071f}    // 7: NW
-//};
+const float petalSpeed = 1000;
+const float petalLifespan = 0.75;
 
 Vector2 petalDirections[] = {
-// N: Points towards -Y. Angle of -90 degrees (or 270 degrees)
-    {cosf(-90.0f * radiansToDegrees), sinf(-90.0f * radiansToDegrees)},     // (0, -1)
-// NE: Angle of -45 degrees (or 315 degrees)
-    {cosf(-45.0f * radiansToDegrees), sinf(-45.0f * radiansToDegrees)},     // (0.7071, -0.7071)
-// E: Points towards +X. Angle of 0 degrees
-    {cosf(0.0f * radiansToDegrees),   sinf(0.0f * radiansToDegrees)},       // (1, 0)
-// SE: Angle of 45 degrees
-    {cosf(45.0f * radiansToDegrees),  sinf(45.0f * radiansToDegrees)},      // (0.7071, 0.7071)
-// S: Points towards +Y. Angle of 90 degrees
-    {cosf(90.0f * radiansToDegrees),  sinf(90.0f * radiansToDegrees)},      // (0, 1)
-// SW: Angle of 135 degrees
-    {cosf(135.0f * radiansToDegrees), sinf(135.0f * radiansToDegrees)},     // (-0.7071, 0.7071)
-// W: Points towards -X. Angle of 180 degrees
-    {cosf(180.0f * radiansToDegrees), sinf(180.0f * radiansToDegrees)},     // (-1, 0)
-// NW: Angle of 225 degrees (or -135 degrees)
-    {cosf(225.0f * radiansToDegrees), sinf(225.0f * radiansToDegrees)}      // (-0.7071, -0.7071)
+    {cosf(-90 * radiansToDegrees), sinf(-90 * radiansToDegrees)},     // (0, -1)
+    {cosf(-45 * radiansToDegrees), sinf(-45 * radiansToDegrees)},     // (0.7071, -0.7071)
+    {cosf(0 * radiansToDegrees),   sinf(0 * radiansToDegrees)},       // (1, 0)
+    {cosf(45 * radiansToDegrees),  sinf(45 * radiansToDegrees)},      // (0.7071, 0.7071)
+    {cosf(90 * radiansToDegrees),  sinf(90 * radiansToDegrees)},      // (0, 1)
+    {cosf(135 * radiansToDegrees), sinf(135 * radiansToDegrees)},     // (-0.7071, 0.7071)
+    {cosf(180 * radiansToDegrees), sinf(180 * radiansToDegrees)},     // (-1, 0)
+    {cosf(225 * radiansToDegrees), sinf(225 * radiansToDegrees)}      // (-0.7071, -0.7071)
 };
 
-
-// platform specs
-const float platformWidth = 80.0f;
-const float platformHeight = 21.0f;
-
 // voices button specs
-const float buttonPadding = 5.0f;
-const float buttonTextureWidth = 100.0f;
-const float buttonTextureHeight = 30.0f;
-Vector2 buttonPos = { buttonPadding, (float)virtualScreenHeight - buttonTextureHeight - buttonPadding };
-
-
+const float buttonPadding = 6;
+const float buttonTextureWidth = 126;
+const float buttonTextureHeight = 26;
+Vector2 buttonPos = { buttonPadding, virtualScreenHeight - (buttonTextureHeight + buttonPadding) / 2 };

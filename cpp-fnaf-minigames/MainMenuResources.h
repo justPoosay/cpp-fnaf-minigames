@@ -11,15 +11,15 @@ struct MainMenuResources {
 
     // --- Rendering Variables ---
     Shader crtShader;
-    int crtResolutionLoc; // For CRT shader
-    int crtTimeLoc;       // For CRT shader
+    int crtResolutionLoc; 
+    int crtTimeLoc;
     bool shaderLoadedSuccessfully;
 
     // --- Asset Variables ---
-    Image bgGifImage;         // Raw GIF data for animation
-    Texture2D bgTexture;      // Texture for current GIF frame (main menu)
-    Texture2D settingsBgTexture; // Background for settings screen
-    int animFrames;           // Total frames in bgGifImage
+    Image bgGifImage; 
+    Texture2D bgTexture;
+    Texture2D settingsBgTexture;
+    int animFrames;
     bool gifLoaded;
 
     // Helpy gif
@@ -29,8 +29,8 @@ struct MainMenuResources {
     bool helpyGifLoaded;
 
     //Font guiFont;
-    Font defaultGuiFont; // Bêdzie to GetFontDefault()
-    Font arcadeClassicFont;    // Dla np. ARCADECLASSIC.TTF
+    Font defaultGuiFont;
+    Font arcadeClassicFont; 
     Font bytesFont;
 
     Music menuMusic;
@@ -38,7 +38,7 @@ struct MainMenuResources {
     bool menuMusicLoaded;
     bool settingsMusicLoaded;
 
-    // --- Paths (centralized for clarity) ---
+    // --- Paths  ---
     const char* helpyLoadingScreenPath = "resources/helpy/helpyLoadingScreen.png";
     const char* iconPath = "resources/favicon.png";
     const char* crtShaderPathFS = "crt.fs";
@@ -50,13 +50,9 @@ struct MainMenuResources {
     const char* menuMusicPath = "resources/mainMenu.mp3";
     const char* settingsMusicPath = "resources/SETTINGS.mp3";
 
-    RenderTexture2D targetRenderTexture; // Main render target for UI
+    RenderTexture2D targetRenderTexture;
 };
 
 bool LoadInitialLoadingScreenResources(MainMenuResources& res);
-
 bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logicalHeight);
-
-
-// Function to unload all main menu resources
 void UnloadMainMenuResources(MainMenuResources& res);

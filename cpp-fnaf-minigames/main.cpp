@@ -1,16 +1,13 @@
 #include "raylib.h"
 #include "raymath.h"
+
 #include "GameSettings.h"
+
+#include "MainMenuResources.h"
 #include "MotoristResources.h"
 #include "RainbowLandResources.h"
-#include "MainMenuResources.h"
 
-#include <string>
-#include <vector>
-#include <iostream>
-#include <cmath>
-
-// --- States ---
+// --- Game states ---
 typedef enum GameScreen {
     LOADING,
     MAIN_MENU,
@@ -20,23 +17,23 @@ typedef enum GameScreen {
     EXITING
 } GameScreen;
 
-// --- Forward declarations ---
 int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bool applyShader);
 int runMagicRainbowLand(GraphicsQuality quality);
 void StopAndUnloadMusic(Music& music, bool& loadedFlag);
 
-// --- UI Data (Global or passed around for settings) ---
+
+// --- UI Data  ---
 const char* resolutionOptions[] = { "1280x720", "1920x1080" };
 const ScreenResolution resolutionValues[] = { RES_1280x720, RES_1920x1080 };
 const int numResolutionOptions = sizeof(resolutionOptions) / sizeof(resolutionOptions[0]);
-int currentResolutionIndex = 2; // Default to 1280x720
+int currentResolutionIndex = 2; // Default - 1280x720
 
 const char* qualityOptions[] = { "Low", "Medium", "High" };
 const GraphicsQuality qualityValues[] = { QUALITY_LOW, QUALITY_MEDIUM, QUALITY_HIGH };
 const int numQualityOptions = sizeof(qualityOptions) / sizeof(qualityOptions[0]);
-int currentQualityIndex = 1; // Default to Medium
+int currentQualityIndex = 1; // Default - Medium
 
-static bool settingsAreInitialized = false; // To init indexes once when entering settings
+static bool settingsAreInitialized = false;
 
 // --- UI Functions ---
 static bool GuiButton(Rectangle bounds, const char* text, Font font, int fontSize, Color textColor, Color bgColor, Color hoverColor, Color pressedColor, Vector2 scaledMousePos) {
@@ -53,44 +50,38 @@ static bool GuiButton(Rectangle bounds, const char* text, Font font, int fontSiz
     }
     DrawRectangleRec(bounds, currentBgColor);
 
-    Vector2 textSize = MeasureTextEx(font, text, (float)fontSize, 1);
+    Vector2 textSize = MeasureTextEx(font, text, fontSize, 1);
     DrawTextEx(font, text,
-        { bounds.x + (bounds.width / 2) - (textSize.x / 2), bounds.y + (bounds.height / 2) - (textSize.y / 2.0f) },
-        (float)fontSize, 1, textColor);
+        { bounds.x + (bounds.width / 2) - (textSize.x / 2), bounds.y + (bounds.height / 2) - (textSize.y / 2) },
+        fontSize, 1, textColor);
     return clicked;
 }
-
-// Returns: -1 if left arrow clicked, 1 if right arrow clicked, 0 otherwise
-
 
 static int GuiSelector(Rectangle bounds, const char* currentOptionText, Font font, int optionFontSize,
     Color textColor, Color boxColor, Color arrowColor, Color arrowHoverColor, Color arrowPressedColor,
     Vector2 scaledMousePos)
 {
     int clicked_direction = 0;
-    float arrowPaddingFromBox = 4.0f; // Increased padding between text box and arrow hotspot
-    float arrowHotspotExtraPadding = 6.0f; // Extra clickable padding around the arrow text itself
+    float arrowPaddingFromBox = 4;
+    float arrowHotspotExtraPadding = 6;
 
-    // --- Draw the main box for the text option ---
     DrawRectangleRec(bounds, boxColor);
-    DrawRectangleLinesEx(bounds, 1, Fade(BLACK, 0.3f));
+    DrawRectangleLinesEx(bounds, 1, Fade(BLACK, 0.3));
 
-    Vector2 optionTextSize = MeasureTextEx(font, currentOptionText, (float)optionFontSize, 1);
+    Vector2 optionTextSize = MeasureTextEx(font, currentOptionText, optionFontSize, 1);
     DrawTextEx(font, currentOptionText,
         { bounds.x + (bounds.width / 2) - (optionTextSize.x / 2),
-          bounds.y + (bounds.height / 2) - (optionTextSize.y / 2.0f) },
-        (float)optionFontSize, 1, textColor);
+          bounds.y + (bounds.height / 2) - (optionTextSize.y / 2) },
+        optionFontSize, 1, textColor);
 
-    // --- Arrow specific settings ---
     int arrowFontSize = optionFontSize * 2;
-    if (arrowFontSize < 12) arrowFontSize = 12; // Ensure a minimum visible size for arrows
+    if (arrowFontSize < 12) arrowFontSize = 12;
 
-    // --- Left Arrow ---
     const char* leftArrowStr = "<";
-    Vector2 leftArrowTextSize = MeasureTextEx(font, leftArrowStr, (float)arrowFontSize, 1);
+    Vector2 leftArrowTextSize = MeasureTextEx(font, leftArrowStr, arrowFontSize, 1);
 
     float leftArrowHotspotWidth = leftArrowTextSize.x + 2 * arrowHotspotExtraPadding;
-    float leftArrowHotspotHeight = fmaxf(bounds.height, leftArrowTextSize.y + 2 * arrowHotspotExtraPadding); // Ensure hotspot fits text
+    float leftArrowHotspotHeight = fmaxf(bounds.height, leftArrowTextSize.y + 2 * arrowHotspotExtraPadding);
 
     Rectangle leftArrowHotspot = {
         bounds.x - leftArrowHotspotWidth - arrowPaddingFromBox,
@@ -102,22 +93,21 @@ static int GuiSelector(Rectangle bounds, const char* currentOptionText, Font fon
 
     if (CheckCollisionPointRec(scaledMousePos, leftArrowHotspot)) {
         currentLeftArrowColor = arrowHoverColor;
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             currentLeftArrowColor = arrowPressedColor;
-        }
-        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
             clicked_direction = -1;
-        }
     }
-    // DrawRectangleLinesEx(leftArrowHotspot, 1, RED); // DEBUG
+
     DrawTextEx(font, leftArrowStr,
         { leftArrowHotspot.x + (leftArrowHotspot.width / 2) - (leftArrowTextSize.x / 2),
           leftArrowHotspot.y + (leftArrowHotspot.height / 2) - (leftArrowTextSize.y / 2) },
-        (float)arrowFontSize, 1, currentLeftArrowColor);
+        arrowFontSize, 1, currentLeftArrowColor);
 
-    // --- Right Arrow ---
     const char* rightArrowStr = ">";
-    Vector2 rightArrowTextSize = MeasureTextEx(font, rightArrowStr, (float)arrowFontSize, 1);
+    Vector2 rightArrowTextSize = MeasureTextEx(font, rightArrowStr, arrowFontSize, 1);
 
     float rightArrowHotspotWidth = rightArrowTextSize.x + 2 * arrowHotspotExtraPadding;
     float rightArrowHotspotHeight = fmaxf(bounds.height, rightArrowTextSize.y + 2 * arrowHotspotExtraPadding);
@@ -132,33 +122,24 @@ static int GuiSelector(Rectangle bounds, const char* currentOptionText, Font fon
 
     if (CheckCollisionPointRec(scaledMousePos, rightArrowHotspot)) {
         currentRightArrowColor = arrowHoverColor;
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             currentRightArrowColor = arrowPressedColor;
-        }
-        // IMPORTANT: Check if a left click didn't already occur if hotspots could overlap
-        // However, for non-overlapping hotspots, this is fine.
-        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && clicked_direction == 0) { // Process only if no left click detected
+
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && clicked_direction == 0)
             clicked_direction = 1;
-        }
-        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && clicked_direction == -1) {
-            // This case means mouse was released over left, then somehow (unlikely) also over right in same frame check.
-            // Prioritize left, or handle as an error/ignore. For now, left click wins.
-        }
     }
-    // DrawRectangleLinesEx(rightArrowHotspot, 1, LIME); // DEBUG
-    DrawTextEx(font, rightArrowStr,
-        { rightArrowHotspot.x + (rightArrowHotspot.width / 2) - (rightArrowTextSize.x / 2),
-          rightArrowHotspot.y + (rightArrowHotspot.height / 2) - (rightArrowTextSize.y / 2) },
-        (float)arrowFontSize, 1, currentRightArrowColor);
+
+    DrawTextEx(font, rightArrowStr, { rightArrowHotspot.x + (rightArrowHotspot.width / 2) - (rightArrowTextSize.x / 2), rightArrowHotspot.y + (rightArrowHotspot.height / 2) - (rightArrowTextSize.y / 2) }, arrowFontSize, 1, currentRightArrowColor);
 
     return clicked_direction;
 }
 
 void StopAndUnloadMusic(Music& music, bool& loadedFlag) {
     if (loadedFlag && music.stream.buffer) {
-        if (IsMusicStreamPlaying(music)) {
+        if (IsMusicStreamPlaying(music))
             StopMusicStream(music);
-        }
+
         UnloadMusicStream(music);
         music = { 0 };
         loadedFlag = false;
@@ -173,13 +154,13 @@ void StopAndUnloadMusic(Music& music, bool& loadedFlag) {
 int main(void) {
     InitializeGameSettings();
 
-    for (int i = 0; i < numResolutionOptions; ++i) {
+    for (int i = 0; i < numResolutionOptions; i++) {
         if (g_settings.currentResolution == resolutionValues[i]) {
             currentResolutionIndex = i;
             break;
         }
     }
-    for (int i = 0; i < numQualityOptions; ++i) {
+    for (int i = 0; i < numQualityOptions; i++) {
         if (g_settings.quality == qualityValues[i]) {
             currentQualityIndex = i;
             break;
@@ -200,8 +181,8 @@ int main(void) {
         TraceLog(LOG_ERROR, "MAIN: Failed to load initial STATIC loading screen texture!");
     }
 
-    float loadingScreenMinVisibleTime = 2.0f;
-    float loadingScreenVisibleTimer = 0.0f;
+    float loadingScreenMinVisibleTime = 2;
+    float loadingScreenVisibleTimer = 0;
 
     int monitorWidth = GetMonitorWidth(GetCurrentMonitor());
     int monitorHeight = GetMonitorHeight(GetCurrentMonitor());
@@ -214,15 +195,15 @@ int main(void) {
     bool shouldExit = false;
 
     int mainMenuBgCurrentFrame = 0;
-    float mainMenuBgFrameDelay = 1.0f / 15.0f;
-    float mainMenuBgFrameTimer = 0.0f;
+    float mainMenuBgFrameDelay = 0.067;
+    float mainMenuBgFrameTimer = 0;
 
     int helpyCurrentAnimFrame = 0;
-    float helpyFrameDelay = 0.73f;
-    float helpyFrameTimer = 0.0f;
+    float helpyFrameDelay = 0.725;
+    float helpyFrameTimer = 0;
 
-    float fadeAlpha = 0.0f;
-    float fadeSpeed = 1.5f;
+    float fadeAlpha = 0;
+    float fadeSpeed = 1.5;
     bool isFadingOut = false;
     bool isFadingIn = false;
     GameScreen fadeNextScreen = MAIN_MENU;
@@ -238,14 +219,15 @@ int main(void) {
 
         if (isFadingOut) {
             fadeAlpha += fadeSpeed * GetFrameTime();
-            if (fadeAlpha >= 1.0f) {
-                fadeAlpha = 1.0f;
+            if (fadeAlpha >= 1) {
+                fadeAlpha = 1;
                 isFadingOut = false;
 
                 StopAndUnloadMusic(mainMenuRes.menuMusic, mainMenuRes.menuMusicLoaded);
                 StopAndUnloadMusic(mainMenuRes.settingsMusic, mainMenuRes.settingsMusicLoaded);
 
                 int gameResult = 0;
+
                 if (fadeNextScreen == PLAYING_MOTORIST) {
                     MotoristGameResources motoristRes = LoadMotoristResources(g_settings.quality);
                     gameResult = runMidnightMotorist(g_settings.quality, mainMenuRes.crtShader, g_settings.useCRTShader && mainMenuRes.shaderLoadedSuccessfully);
@@ -262,33 +244,34 @@ int main(void) {
 
                 fadeNextScreen = MAIN_MENU;
 
-                if (IsWindowMinimized()) RestoreWindow();
+                if (IsWindowMinimized())
+                    RestoreWindow();
                 SetMasterVolume(g_settings.masterVolume);
                 SetTargetFPS(60);
 
                 if (!mainMenuRes.menuMusicLoaded && mainMenuRes.menuMusicPath && FileExists(mainMenuRes.menuMusicPath)) {
                     mainMenuRes.menuMusic = LoadMusicStream(mainMenuRes.menuMusicPath);
                     if (mainMenuRes.menuMusic.stream.buffer) {
-                        mainMenuRes.menuMusicLoaded = true; SetMusicVolume(mainMenuRes.menuMusic, 1.0f);
+                        mainMenuRes.menuMusicLoaded = true;
+                        SetMusicVolume(mainMenuRes.menuMusic, 1);
                     }
                 }
-                if (mainMenuRes.menuMusicLoaded) PlayMusicStream(mainMenuRes.menuMusic);
+                if (mainMenuRes.menuMusicLoaded)
+                    PlayMusicStream(mainMenuRes.menuMusic);
 
                 isFadingIn = true;
             }
         }
         else if (isFadingIn) {
             fadeAlpha -= fadeSpeed * GetFrameTime();
-            if (fadeAlpha <= 0.0f) {
-                fadeAlpha = 0.0f;
+            if (fadeAlpha <= 0) {
+                fadeAlpha = 0;
                 isFadingIn = false;
                 currentScreen = fadeNextScreen;
 
-                if (previousScreen == LOADING && currentScreen == MAIN_MENU) {
-                    if (mainMenuRes.menuMusicLoaded) {
+                if (previousScreen == LOADING && currentScreen == MAIN_MENU)
+                    if (mainMenuRes.menuMusicLoaded)
                         PlayMusicStream(mainMenuRes.menuMusic);
-                    }
-                }
             }
         }
 
@@ -312,10 +295,10 @@ int main(void) {
                         TraceLog(LOG_WARNING, "MAIN: CRT Shader failed to load or not found. Disabling shader option.");
                     }
 
-                    mainMenuBgFrameTimer = 0.0f;
+                    mainMenuBgFrameTimer = 0;
                     mainMenuBgCurrentFrame = 0;
                     if (mainMenuRes.helpyGifLoaded) {
-                        helpyFrameTimer = 0.0f;
+                        helpyFrameTimer = 0;
                         helpyCurrentAnimFrame = 0;
                     }
                     SetWindowTitle("FNaF Minigames Port");
@@ -326,17 +309,17 @@ int main(void) {
                         previousScreen = LOADING;
                         fadeNextScreen = MAIN_MENU;
                         isFadingIn = true;
-                        fadeAlpha = 1.0f;
+                        fadeAlpha = 1;
                     }
                 }
             } break;
 
             case MAIN_MENU: {
-                Font fontForMainMenuButtons = mainMenuRes.arcadeClassicFont.texture.id != 0 ? mainMenuRes.arcadeClassicFont : GetFontDefault();
+                Font fontForMainMenuButtons = mainMenuRes.arcadeClassicFont;
                 if (mainMenuRes.menuMusicLoaded && IsMusicStreamPlaying(mainMenuRes.menuMusic)) {
                     UpdateMusicStream(mainMenuRes.menuMusic);
-                    if (GetMusicTimePlayed(mainMenuRes.menuMusic) >= GetMusicTimeLength(mainMenuRes.menuMusic) - 0.1f)
-                        SeekMusicStream(mainMenuRes.menuMusic, 0.0f);
+                    if (GetMusicTimePlayed(mainMenuRes.menuMusic) >= GetMusicTimeLength(mainMenuRes.menuMusic))
+                        SeekMusicStream(mainMenuRes.menuMusic, 0);
                 }
                 if (mainMenuRes.gifLoaded && mainMenuRes.bgTexture.id > 0 && mainMenuRes.bgGifImage.data) {
                     mainMenuBgFrameTimer += GetFrameTime();
@@ -346,6 +329,7 @@ int main(void) {
                         mainMenuBgCurrentFrame = (mainMenuBgCurrentFrame + 1) % mainMenuRes.animFrames;
                         bgFrameUpdated = true;
                     }
+
                     if (bgFrameUpdated) {
                         int frameDataSize = GetPixelDataSize(mainMenuRes.bgGifImage.width, mainMenuRes.bgGifImage.height, mainMenuRes.bgGifImage.format);
                         unsigned char* frameDataOffset = (unsigned char*)mainMenuRes.bgGifImage.data + (mainMenuBgCurrentFrame * frameDataSize);
@@ -358,32 +342,42 @@ int main(void) {
                         (GetMonitorHeight(GetCurrentMonitor()) - GetScreenHeight()) / 2);
                 }
 
-                float buttonX = logicalWidth / 2.0f - 150;
-                float startY = 160.0f + 30;
+                float buttonX = logicalWidth / 2 - 150;
+                float startY = 160 + 30;
                 float buttonSpacing = 70;
                 int buttonFontSize = 22;
 
                 if (GuiButton({ buttonX, startY + 0 * buttonSpacing, 300, 50 }, "Midnight Motorist", fontForMainMenuButtons, buttonFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
                     previousScreen = currentScreen;
                     fadeNextScreen = PLAYING_MOTORIST;
-                    isFadingOut = true; fadeAlpha = 0.0f;
+                    isFadingOut = true; fadeAlpha = 0;
                 }
+
                 if (GuiButton({ buttonX, startY + 1 * buttonSpacing, 300, 50 }, "Chica's Magic Rainbow Land", fontForMainMenuButtons, buttonFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
                     previousScreen = currentScreen;
                     fadeNextScreen = PLAYING_RAINBOW;
-                    isFadingOut = true; fadeAlpha = 0.0f;
+                    isFadingOut = true; fadeAlpha = 0;
                 }
+
                 if (GuiButton({ buttonX, startY + 2 * buttonSpacing, 300, 50 }, "Settings", fontForMainMenuButtons, buttonFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
-                    settingsAreInitialized = false; // Re-initialize settings indexes next time
-                    if (mainMenuRes.menuMusicLoaded) StopMusicStream(mainMenuRes.menuMusic);
+                    settingsAreInitialized = false;
+                    if (mainMenuRes.menuMusicLoaded)
+                        StopMusicStream(mainMenuRes.menuMusic);
+
                     previousScreen = currentScreen;
                     currentScreen = SETTINGS;
                     if (!mainMenuRes.settingsMusicLoaded && mainMenuRes.settingsMusicPath && FileExists(mainMenuRes.settingsMusicPath)) {
                         mainMenuRes.settingsMusic = LoadMusicStream(mainMenuRes.settingsMusicPath);
-                        if (mainMenuRes.settingsMusic.stream.buffer) { mainMenuRes.settingsMusicLoaded = true; SetMusicVolume(mainMenuRes.settingsMusic, 1.0f); }
+
+                        if (mainMenuRes.settingsMusic.stream.buffer) {
+                            mainMenuRes.settingsMusicLoaded = true;
+                            SetMusicVolume(mainMenuRes.settingsMusic, 1);
+                        }
                     }
-                    if (mainMenuRes.settingsMusicLoaded) PlayMusicStream(mainMenuRes.settingsMusic);
+                    if (mainMenuRes.settingsMusicLoaded)
+                        PlayMusicStream(mainMenuRes.settingsMusic);
                 }
+
                 if (GuiButton({ buttonX, startY + 3 * buttonSpacing, 300, 50 }, "Exit", fontForMainMenuButtons, buttonFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
                     previousScreen = currentScreen;
                     currentScreen = EXITING;
@@ -391,15 +385,15 @@ int main(void) {
             } break;
 
             case SETTINGS: {
-                Font fontForGeneralUI = mainMenuRes.defaultGuiFont.texture.id != 0 ? mainMenuRes.defaultGuiFont : GetFontDefault();
+                Font fontForGeneralUI = mainMenuRes.defaultGuiFont;
                 if (!settingsAreInitialized) {
-                    for (int i = 0; i < numResolutionOptions; ++i) {
+                    for (int i = 0; i < numResolutionOptions; i++) {
                         if (g_settings.currentResolution == resolutionValues[i]) {
                             currentResolutionIndex = i;
                             break;
                         }
                     }
-                    for (int i = 0; i < numQualityOptions; ++i) {
+                    for (int i = 0; i < numQualityOptions; i++) {
                         if (g_settings.quality == qualityValues[i]) {
                             currentQualityIndex = i;
                             break;
@@ -410,17 +404,21 @@ int main(void) {
 
                 if (mainMenuRes.settingsMusicLoaded && IsMusicStreamPlaying(mainMenuRes.settingsMusic)) {
                     UpdateMusicStream(mainMenuRes.settingsMusic);
-                    if (GetMusicTimePlayed(mainMenuRes.settingsMusic) >= GetMusicTimeLength(mainMenuRes.settingsMusic) - 0.1f)
-                        SeekMusicStream(mainMenuRes.settingsMusic, 0.0f);
+
+                    if (GetMusicTimePlayed(mainMenuRes.settingsMusic) >= GetMusicTimeLength(mainMenuRes.settingsMusic))
+                        SeekMusicStream(mainMenuRes.settingsMusic, 0);
                 }
+
                 if (mainMenuRes.helpyGifLoaded && mainMenuRes.helpyTexture.id > 0 && mainMenuRes.helpyGifImage.data) {
                     helpyFrameTimer += GetFrameTime();
                     bool helpyFrameUpdated = false;
+
                     while (helpyFrameTimer >= helpyFrameDelay) {
                         helpyFrameTimer -= helpyFrameDelay;
                         helpyCurrentAnimFrame = (helpyCurrentAnimFrame + 1) % mainMenuRes.helpyAnimFrames;
                         helpyFrameUpdated = true;
                     }
+
                     if (helpyFrameUpdated) {
                         int frameDataSize = GetPixelDataSize(mainMenuRes.helpyGifImage.width, mainMenuRes.helpyGifImage.height, mainMenuRes.helpyGifImage.format);
                         unsigned char* frameDataOffset = (unsigned char*)mainMenuRes.helpyGifImage.data + (helpyCurrentAnimFrame * frameDataSize);
@@ -429,54 +427,77 @@ int main(void) {
                 }
 
                 Rectangle volumeSliderRect = { 250, 175, 300, 30 };
+
                 if (CheckCollisionPointRec(scaledMousePos, volumeSliderRect) && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
                     float mouseXRelative = scaledMousePos.x - volumeSliderRect.x;
-                    g_settings.masterVolume = Clamp(mouseXRelative / volumeSliderRect.width, 0.0f, 1.0f);
+                    g_settings.masterVolume = Clamp(mouseXRelative / volumeSliderRect.width, 0, 1);
                     SetMasterVolume(g_settings.masterVolume);
                 }
 
                 Rectangle resolutionSelectorBounds = { selectorX, 235, selectorWidth, selectorHeight };
-                int resolutionChange = GuiSelector(resolutionSelectorBounds, resolutionOptions[currentResolutionIndex],
-                    fontForGeneralUI, settingsSelectorFontSize, BLACK, WHITE, DARKGRAY, GRAY, BLACK, scaledMousePos);
+                int resolutionChange = GuiSelector(resolutionSelectorBounds, resolutionOptions[currentResolutionIndex], fontForGeneralUI, settingsSelectorFontSize, BLACK, WHITE, DARKGRAY, GRAY, BLACK, scaledMousePos);
+
                 if (resolutionChange != 0) {
                     currentResolutionIndex += resolutionChange;
-                    if (currentResolutionIndex < 0) currentResolutionIndex = numResolutionOptions - 1;
-                    if (currentResolutionIndex >= numResolutionOptions) currentResolutionIndex = 0;
+
+                    if (currentResolutionIndex < 0)
+                        currentResolutionIndex = numResolutionOptions - 1;
+
+                    if (currentResolutionIndex >= numResolutionOptions)
+                        currentResolutionIndex = 0;
 
                     g_settings.currentResolution = resolutionValues[currentResolutionIndex];
                     UpdateScreenDimensionsFromSettings();
                     SetWindowSize(g_settings.screenWidth, g_settings.screenHeight);
-                    if (!IsWindowFullscreen()) {
+
+                    if (!IsWindowFullscreen())
                         SetWindowPosition((GetMonitorWidth(GetCurrentMonitor()) - g_settings.screenWidth) / 2, (GetMonitorHeight(GetCurrentMonitor()) - g_settings.screenHeight) / 2);
-                    }
                 }
 
                 Rectangle qualitySelectorBounds = { selectorX, 295, selectorWidth, selectorHeight };
-                int qualityChange = GuiSelector(qualitySelectorBounds, qualityOptions[currentQualityIndex],
-                    fontForGeneralUI, settingsSelectorFontSize, BLACK, WHITE, DARKGRAY, GRAY, BLACK, scaledMousePos);
+                int qualityChange = GuiSelector(qualitySelectorBounds, qualityOptions[currentQualityIndex], fontForGeneralUI, settingsSelectorFontSize, BLACK, WHITE, DARKGRAY, GRAY, BLACK, scaledMousePos);
+
                 if (qualityChange != 0) {
                     currentQualityIndex += qualityChange;
-                    if (currentQualityIndex < 0) currentQualityIndex = numQualityOptions - 1;
-                    if (currentQualityIndex >= numQualityOptions) currentQualityIndex = 0;
+
+                    if (currentQualityIndex < 0)
+                        currentQualityIndex = numQualityOptions - 1;
+
+                    if (currentQualityIndex >= numQualityOptions)
+                        currentQualityIndex = 0;
+
                     g_settings.quality = qualityValues[currentQualityIndex];
                 }
 
                 Rectangle crtToggleButton = { selectorX, 355, 100, 30 };
-                if (GuiButton(crtToggleButton, g_settings.useCRTShader ? "ON" : "OFF", fontForGeneralUI, settingsSelectorFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
-                    if (mainMenuRes.shaderLoadedSuccessfully) g_settings.useCRTShader = !g_settings.useCRTShader;
-                }
+                if (GuiButton(crtToggleButton, g_settings.useCRTShader ? "ON" : "OFF", fontForGeneralUI, settingsSelectorFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos))
+                    if (mainMenuRes.shaderLoadedSuccessfully)
+                        g_settings.useCRTShader = !g_settings.useCRTShader;
 
-                Rectangle backButton = { logicalWidth / 2.0f - 100, logicalHeight - 100, 200, 50 };
+
+                Rectangle backButton = { logicalWidth / 2 - 100, logicalHeight - 100, 200, 50 };
                 if (GuiButton(backButton, "Back", fontForGeneralUI, 20, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos) || IsKeyPressed(KEY_ESCAPE)) {
-                    settingsAreInitialized = false; // Reset for next entry
-                    if (mainMenuRes.settingsMusicLoaded) StopMusicStream(mainMenuRes.settingsMusic);
+                    settingsAreInitialized = false;
+
+                    if (mainMenuRes.settingsMusicLoaded)
+                        StopMusicStream(mainMenuRes.settingsMusic);
+
                     previousScreen = currentScreen;
                     currentScreen = MAIN_MENU;
                     if (!mainMenuRes.menuMusicLoaded && mainMenuRes.menuMusicPath && FileExists(mainMenuRes.menuMusicPath)) {
                         mainMenuRes.menuMusic = LoadMusicStream(mainMenuRes.menuMusicPath);
-                        if (mainMenuRes.menuMusic.stream.buffer) { mainMenuRes.menuMusicLoaded = true; SetMusicVolume(mainMenuRes.menuMusic, 1.0f); }
+
+                        if (mainMenuRes.menuMusic.stream.buffer) {
+                            mainMenuRes.menuMusicLoaded = true;
+                            SetMusicVolume(mainMenuRes.menuMusic, 1);
+                        }
                     }
-                    if (mainMenuRes.menuMusicLoaded) PlayMusicStream(mainMenuRes.menuMusic);
+
+                    if (mainMenuRes.menuMusicLoaded)
+                        PlayMusicStream(mainMenuRes.menuMusic);
+
+                    helpyCurrentAnimFrame = 0;
+                    helpyFrameTimer = 0.0;
                 }
             } break;
 
@@ -494,12 +515,9 @@ int main(void) {
 
         if (currentScreen == LOADING) {
             if (mainMenuRes.helpyLoadingTextureLoaded && mainMenuRes.helpyLoadingScreenTexture.id > 0) {
-                float imgDrawWidth = (float)mainMenuRes.helpyLoadingScreenTexture.width;
-                float imgDrawHeight = (float)mainMenuRes.helpyLoadingScreenTexture.height;
-                DrawTexture(mainMenuRes.helpyLoadingScreenTexture,
-                    (GetScreenWidth() - imgDrawWidth) / 2,
-                    (GetScreenHeight() - imgDrawHeight) / 2 - 60,
-                    WHITE);
+                float imgDrawWidth = mainMenuRes.helpyLoadingScreenTexture.width;
+                float imgDrawHeight = mainMenuRes.helpyLoadingScreenTexture.height;
+                DrawTexture(mainMenuRes.helpyLoadingScreenTexture, (GetScreenWidth() - imgDrawWidth) / 2, (GetScreenHeight() - imgDrawHeight) / 2 - 60, WHITE);
             }
             else {
                 const char* errMsg = "Loading...";
@@ -514,19 +532,19 @@ int main(void) {
             if (isFadingOut) screenContentToDraw = previousScreen;
             else if (isFadingIn) screenContentToDraw = fadeNextScreen;
 
-            Font titleDrawFont = mainMenuRes.bytesFont.texture.id != 0 ? mainMenuRes.bytesFont : GetFontDefault();
-            Font uiDrawFont = mainMenuRes.defaultGuiFont.texture.id != 0 ? mainMenuRes.defaultGuiFont : GetFontDefault();
-            Font mainMenuButtonDrawFont = mainMenuRes.arcadeClassicFont.texture.id != 0 ? mainMenuRes.arcadeClassicFont : GetFontDefault();
+            Font titleDrawFont = mainMenuRes.bytesFont;
+            Font uiDrawFont = mainMenuRes.defaultGuiFont;
+            Font mainMenuButtonDrawFont = mainMenuRes.arcadeClassicFont;
 
             switch (screenContentToDraw) {
             case MAIN_MENU: {
                 if (mainMenuRes.gifLoaded && mainMenuRes.bgTexture.id > 0)
-                    DrawTexturePro(mainMenuRes.bgTexture, { 0.0f, 0.0f, (float)mainMenuRes.bgTexture.width, (float)mainMenuRes.bgTexture.height }, { 0.0f, 0.0f, (float)logicalWidth, (float)logicalHeight }, { 0, 0 }, 0.0f, WHITE);
+                    DrawTexturePro(mainMenuRes.bgTexture, { 0, 0, (float)mainMenuRes.bgTexture.width, (float)mainMenuRes.bgTexture.height }, { 0, 0, (float)logicalWidth, (float)logicalHeight }, { 0, 0 }, 0, WHITE);
                 else
                     ClearBackground(DARKBLUE);
 
-                float overlayWidth = 400.0f; float overlayY = 160.0f;
-                float overlayX = (logicalWidth - overlayWidth) / 2.0f;
+                float overlayWidth = 400; float overlayY = 160;
+                float overlayX = (logicalWidth - overlayWidth) / 2;
                 float buttonStartY = overlayY + 30; float buttonSpacing = 70;
                 float lastButtonY = buttonStartY + 3 * buttonSpacing + 50;
                 float overlayHeight = (lastButtonY - overlayY) + 20;
@@ -535,9 +553,9 @@ int main(void) {
                 const char* titleText = "FNaF Minigames Port";
                 float titleFontSize = 75;
                 Vector2 titleSize = MeasureTextEx(titleDrawFont, titleText, titleFontSize, 1);
-                DrawTextEx(titleDrawFont, titleText, { (float)logicalWidth / 2 - titleSize.x / 2, 40 }, titleFontSize, 1, WHITE);
+                DrawTextEx(titleDrawFont, titleText, { logicalWidth / 2 - titleSize.x / 2, 40 }, titleFontSize, 1, WHITE);
 
-                float buttonX = logicalWidth / 2.0f - 150;
+                float buttonX = logicalWidth / 2 - 150;
                 int buttonFontSize = 22;
 
                 GuiButton({ buttonX, buttonStartY + 0 * buttonSpacing, 300, 50 }, "Midnight Motorist", mainMenuButtonDrawFont, buttonFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos);
@@ -547,21 +565,21 @@ int main(void) {
             } break;
             case SETTINGS: {
                 if (mainMenuRes.settingsBgTexture.id > 0)
-                    DrawTexturePro(mainMenuRes.settingsBgTexture, { 0.0f, 0.0f, (float)mainMenuRes.settingsBgTexture.width, (float)mainMenuRes.settingsBgTexture.height },
-                        { 0.0f, 0.0f, (float)logicalWidth, (float)logicalHeight }, { 0, 0 }, 0.0f, WHITE);
+                    DrawTexturePro(mainMenuRes.settingsBgTexture, { 0, 0, (float)mainMenuRes.settingsBgTexture.width, (float)mainMenuRes.settingsBgTexture.height },
+                        { 0, 0, logicalWidth, logicalHeight }, { 0, 0 }, 0, WHITE);
                 else ClearBackground(DARKGRAY);
 
                 const char* settingsTitle = "SETTINGS";
                 float settingsTitleSize = 65;
                 Vector2 stSize = MeasureTextEx(titleDrawFont, settingsTitle, settingsTitleSize, 1);
-                DrawTextEx(titleDrawFont, settingsTitle, { (float)logicalWidth / 2 - stSize.x / 2, 80 }, settingsTitleSize, 1, WHITE);
+                DrawTextEx(titleDrawFont, settingsTitle, { logicalWidth / 2 - stSize.x / 2, 80 }, settingsTitleSize, 1, WHITE);
 
                 DrawTextEx(uiDrawFont, "Volume:", { 100, 180 }, settingsTextFontSize, 1, WHITE);
                 Rectangle volumeSliderRect = { 250, 175, 300, 30 };
                 DrawRectangleRec(volumeSliderRect, WHITE);
                 DrawRectangleRec({ volumeSliderRect.x, volumeSliderRect.y, volumeSliderRect.width * g_settings.masterVolume, volumeSliderRect.height }, PURPLE);
-                DrawRectangleLinesEx(volumeSliderRect, 2, Fade(BLACK, 0.5f));
-                DrawTextEx(uiDrawFont, TextFormat("%.0f%%", g_settings.masterVolume * 100), { volumeSliderRect.x + volumeSliderRect.width + 15, 180 }, settingsTextFontSize, 1, WHITE);
+                DrawRectangleLinesEx(volumeSliderRect, 2, Fade(BLACK, 0.5));
+                DrawTextEx(uiDrawFont, TextFormat("%%%", g_settings.masterVolume * 100), { volumeSliderRect.x + volumeSliderRect.width + 15, 180 }, settingsTextFontSize, 1, WHITE);
 
                 DrawTextEx(uiDrawFont, "Resolution:", { 100, 240 }, settingsTextFontSize, 1, WHITE);
                 float selectorWidth = 125;
@@ -584,8 +602,8 @@ int main(void) {
 
 
                 if (mainMenuRes.helpyGifLoaded && mainMenuRes.helpyTexture.id > 0) {
-                    float helpyDrawWidthOnScreen = 200.0f;
-                    float helpyDrawHeightOnScreen = 200.0f;
+                    float helpyDrawWidthOnScreen = 200;
+                    float helpyDrawHeightOnScreen = 200;
                     float helpyOriginalAspectRatio = (float)mainMenuRes.helpyTexture.width / mainMenuRes.helpyTexture.height;
 
                     float finalDrawWidth, finalDrawHeight;
@@ -612,8 +630,8 @@ int main(void) {
                         finalDrawHeight = helpyDrawHeightOnScreen;
                     }
 
-                    float paddingX = -10.0f;
-                    float paddingY = 15.0f;
+                    float paddingX = -10;
+                    float paddingY = 15;
 
                     Rectangle helpyDestinationRect = {
                         logicalWidth - finalDrawWidth - paddingX,
@@ -621,11 +639,11 @@ int main(void) {
                         finalDrawWidth,
                         finalDrawHeight
                     };
-                    Rectangle helpySourceRect = { 0.0f, 0.0f, (float)mainMenuRes.helpyTexture.width, (float)mainMenuRes.helpyTexture.height };
-                    DrawTexturePro(mainMenuRes.helpyTexture, helpySourceRect, helpyDestinationRect, { 0,0 }, 0.0f, WHITE);
+                    Rectangle helpySourceRect = { 0, 0, mainMenuRes.helpyTexture.width, mainMenuRes.helpyTexture.height };
+                    DrawTexturePro(mainMenuRes.helpyTexture, helpySourceRect, helpyDestinationRect, { 0,0 }, 0, WHITE);
                 }
 
-                Rectangle backButton = { logicalWidth / 2.0f - 100, logicalHeight - 100, 200, 50 };
+                Rectangle backButton = { logicalWidth / 2 - 100, logicalHeight - 100, 200, 50 };
                 GuiButton(backButton, "Back", uiDrawFont, 20, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos);
             } break;
             case PLAYING_MOTORIST:
@@ -634,30 +652,26 @@ int main(void) {
                 break;
             case EXITING: {
                 ClearBackground(BLACK);
-                const char* exitMsg = "Exiting..."; float exitMsgSize = 20;
+                const char* exitMsg = "Exiting...";
+                float exitMsgSize = 20;
                 Vector2 emSize = MeasureTextEx(uiDrawFont, exitMsg, exitMsgSize, 1);
-                DrawTextEx(uiDrawFont, exitMsg, { (float)logicalWidth / 2 - emSize.x / 2, (float)logicalHeight / 2 - emSize.y / 2 }, exitMsgSize, 1, LIGHTGRAY);
+                DrawTextEx(uiDrawFont, exitMsg, { logicalWidth / 2 - emSize.x / 2, logicalHeight / 2 - emSize.y / 2 }, exitMsgSize, 1, LIGHTGRAY);
             } break;
             default: break;
             }
             EndTextureMode();
 
-            float scale = fmin((float)GetScreenWidth() / logicalWidth, (float)GetScreenHeight() / logicalHeight);
+            float scale = min(GetScreenWidth() / logicalWidth, GetScreenHeight() / logicalHeight);
             float scaledWidth = logicalWidth * scale;
             float scaledHeight = logicalHeight * scale;
-            Vector2 drawPos = { (GetScreenWidth() - scaledWidth) / 2.0f, (GetScreenHeight() - scaledHeight) / 2.0f };
-            Rectangle sourceRect = { 0.0f, 0.0f, (float)mainMenuRes.targetRenderTexture.texture.width, -(float)mainMenuRes.targetRenderTexture.texture.height };
+            Vector2 drawPos = { (GetScreenWidth() - scaledWidth) / 2, (GetScreenHeight() - scaledHeight) / 2 };
+            Rectangle sourceRect = { 0, 0, mainMenuRes.targetRenderTexture.texture.width, -mainMenuRes.targetRenderTexture.texture.height };
             Rectangle destRect = { drawPos.x, drawPos.y, scaledWidth, scaledHeight };
-            DrawTexturePro(mainMenuRes.targetRenderTexture.texture, sourceRect, destRect, { 0,0 }, 0.0f, WHITE);
+            DrawTexturePro(mainMenuRes.targetRenderTexture.texture, sourceRect, destRect, { 0,0 }, 0, WHITE);
 
         }
-        else if (currentScreen == LOADING && !mainMenuRes.helpyLoadingTextureLoaded) {
-            const char* errMsg = "Loading...";
-            DrawText(errMsg, GetScreenWidth() / 2 - MeasureText(errMsg, 40) / 2, GetScreenHeight() / 2 - 20, 40, LIGHTGRAY);
-        }
 
-
-        if ((isFadingOut || isFadingIn) && fadeAlpha > 0.0f) {
+        if ((isFadingOut || isFadingIn) && fadeAlpha > 0) {
             DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, fadeAlpha));
         }
 
