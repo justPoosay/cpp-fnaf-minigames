@@ -1,11 +1,6 @@
-#include "GameSettings.h" // Include the header file
-#include "raylib.h"       // Needed for GetMonitorWidth/Height etc.
+#include "GameSettings.h"
 
-// --- Global Settings Instance Definition ---
-// Define the actual global variable here.
 GameSettingsData g_settings;
-
-// --- Function Definitions ---
 
 void UpdateScreenDimensionsFromSettings() {
     switch (g_settings.currentResolution) {
@@ -25,7 +20,7 @@ void UpdateScreenDimensionsFromSettings() {
         g_settings.screenWidth = 1920;
         g_settings.screenHeight = 1080;
         break;
-    default: // Default to a known resolution if something goes wrong
+    default:
         g_settings.currentResolution = RES_1280x720;
         g_settings.screenWidth = 1280;
         g_settings.screenHeight = 720;
@@ -34,12 +29,10 @@ void UpdateScreenDimensionsFromSettings() {
 }
 
 void InitializeGameSettings() {
-    // Set default values
     g_settings.currentResolution = RES_1280x720;
     g_settings.quality = QUALITY_HIGH;
-    g_settings.masterVolume = 1.0f;
-    g_settings.useCRTShader = true; // Default CRT for Motorist to ON
+    g_settings.masterVolume = 1;
+    g_settings.useCRTShader = true;
 
-    // Set initial screen dimensions based on default resolution
     UpdateScreenDimensionsFromSettings();
 }

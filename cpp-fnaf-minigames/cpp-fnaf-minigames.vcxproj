@@ -152,7 +152,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="MotoristConst.h" />
-    <ClInclude Include="Enemies.h" />
     <ClInclude Include="GameSettings.h" />
     <ClInclude Include="MainMenuResources.h" />
     <ClInclude Include="MotoristResources.h" />

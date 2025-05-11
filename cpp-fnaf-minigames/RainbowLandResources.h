@@ -5,7 +5,9 @@
 #include <string>
 #include "GameSettings.h"
 
-struct RainbowLandGameResources { // Store game resources
+using namespace std;
+
+struct RainbowLandGameResources { 
 
 // Chica (player)
     Texture2D idleRight;
@@ -20,7 +22,7 @@ struct RainbowLandGameResources { // Store game resources
     Texture2D rbowVoiceOffBodyTexture;
 
 // Rainbow (eyes)
-    std::vector<Texture2D> rbowEyeTextures;
+    vector<Texture2D> rbowEyeTextures;
     const int numEyeSprites = 32;
 
 // Butterfly
@@ -28,12 +30,13 @@ struct RainbowLandGameResources { // Store game resources
     Texture2D bflyLaser;
 
 // Background, Tiles, UI
+    Texture2D cursor;
     Texture2D bg;
     Texture2D tile;
     Texture2D platformTexture;
 
     Texture2D sunflower;
-    std::vector<Texture2D> sunflowerPetals;
+    vector<Texture2D> sunflowerPetals;
     const int numPetals = 8;
 
     Texture2D fenceProp;
@@ -48,12 +51,7 @@ struct RainbowLandGameResources { // Store game resources
     Texture2D bloodParticle;
     Texture2D buttonVoicesOn;
     Texture2D buttonVoicesOff;
-
     Texture2D checkpoint;
-    Texture2D checkpointAnimTexture;
-    Image checkpointAnimImage;
-    int checkpointAnimNumFrames;
-    float checkpointAnimFrameDelay;
 
     Texture2D controlKeysInfo;
     Texture2D greatJob;
@@ -61,49 +59,44 @@ struct RainbowLandGameResources { // Store game resources
 
 
 // Music & FX
-    Music backgroundMusic;  // Music
-    Sound respawn;          // Respawn
-    Sound death;            // Death
-    Sound jump;             // Jump 
-    Sound eyePop;           // Rainbow Eye Shoot
-    Sound checkpointSound;  // Checkpoint
-    Sound logs;             // Logs Shoot
-    Sound petalShoot;       // Sunflower Petal Shoot
-    Sound rbowLaserShoot;   // Rainbow Laser (Single Tick)
-    Sound bflyLaserShoot;   // Butterfly Laser (Single Tick)
+    Music backgroundMusic;
+    Sound respawn;
+    Sound death;
+    Sound jump;
+    Sound eyePop;
+    Sound checkpointSound;
+    Sound logs;
+    Sound petalShoot;
+    Sound rbowLaserShoot;
+    Sound bflyLaserShoot;
 
 
     Sound rbowVoiceOff;
     Sound rbowGonnaKillYou;
-    Sound rbowLastChance;
-    Sound rbowHA;
+    Sound rbowYouStillSuck;
 
-    std::vector<Sound> rbowDialogues;
-    const int numRbowVoiceLines = 32;
+    vector<Sound> rbowDialogues;
+    const int numRbowVoiceLines = 33;
 
-    bool checkpointAnimLoaded = false;
+    bool checkpointAnimLoaded;
 
-    bool backgroundMusicLoaded = false;
-    bool respawnSoundLoaded = false;
-    bool deathSoundLoaded = false;
-    bool jumpSoundLoaded = false;
-    bool eyePopSoundLoaded = false;
-    bool checkpointSoundLoaded = false;
-    bool logsSoundLoaded = false;
-    bool petalSoundLoaded = false;
-    bool bflyLaserShootSoundLoaded = false;
-    bool rbowLaserShootSoundLoaded = false;
+    bool backgroundMusicLoaded;
+    bool respawnSoundLoaded;
+    bool deathSoundLoaded;
+    bool jumpSoundLoaded;
+    bool eyePopSoundLoaded;
+    bool checkpointSoundLoaded;
+    bool logsSoundLoaded;
+    bool petalSoundLoaded;
+    bool bflyLaserShootSoundLoaded;
+    bool rbowLaserShootSoundLoaded;
 
-    bool rbowVoiceOffSoundLoaded = false;
-    bool rbowGonnaKillYouSoundLoaded = false;
-    bool rbowLastChanceSoundLoaded = false;
-    bool rbowHASoundLoaded = false;
-    bool rbowDialoguesSoundLoaded = false;
+    bool rbowVoiceOffSoundLoaded;
+    bool rbowGonnaKillYouSoundLoaded;
+    bool rbowYouStillSuckSoundLoaded;
+    bool rbowDialoguesSoundLoaded;
 
 };
 
-// Loading Resources
 RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality);
-
-// Unloadind Resources
 void UnloadRainbowLandResources(RainbowLandGameResources& resources);

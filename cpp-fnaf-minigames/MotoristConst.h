@@ -1,79 +1,75 @@
 #pragma once
 
-// Definicja PI
-#ifndef PI
-#define PI 3.14159265358979323846f
-#endif
+#include <cmath>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <random>
+#include <iostream>
+#include <iomanip>
 
-// --- Domyœlne wymiary t³a ---
-constexpr float defaultBackgroundWidth = 1920.0f;
-constexpr float defaultBackgroundHeight = 1080.0f;
+using namespace std;
 
-// --- Konfiguracja poziomu Midnight Motorist ---
-constexpr float virtualScreenWidth = 960.0f;
-constexpr float virtualScreenHeight = 540.0f;
-constexpr float motoristRoadMargin = 25.0f;
+
+constexpr float defaultBackgroundWidth = 1920;
+constexpr float defaultBackgroundHeight = 1080;
+
+constexpr float virtualScreenWidth = 960;
+constexpr float virtualScreenHeight = 540;
+constexpr float motoristRoadMargin = 25;
 constexpr float motoristRoadYTop = motoristRoadMargin;
 constexpr float motoristRoadYBottom = virtualScreenHeight - motoristRoadMargin;
-constexpr float LAP_DISTANCE = 10000.0f;
+constexpr float LAP_DISTANCE = 10000;
 
-// --- Prêdkoœci gracza i œwiata ---
-constexpr float PLAYER_MOVE_SPEED = 250.0f;
-constexpr float VIRTUAL_SPEED_INITIAL = 0.0f;
-constexpr float VIRTUAL_SPEED_MAX = 1690.0f;
-constexpr float VIRTUAL_SPEED_ACCELERATION = 45.0f;
-constexpr float bgScrollMultiplier = 1.5f;
-constexpr float spinDurationPerFrame = 0.05f;
+constexpr float PLAYER_MOVE_SPEED = 250;
+constexpr float VIRTUAL_SPEED_INITIAL = 0;
+constexpr float VIRTUAL_SPEED_MAX = 1690;
+constexpr float VIRTUAL_SPEED_ACCELERATION = 45;
+constexpr float bgScrollMultiplier = 1.5;
+constexpr float spinDurationPerFrame = 0.05;
 
-// --- Prêdkoœci NPC ---
-constexpr float MIN_NPC_SPEED = 150.0f;
-constexpr float MAX_NPC_SPEED = 300.0f;
+constexpr float MIN_NPC_SPEED = 150;
+constexpr float MAX_NPC_SPEED = 300;
 
-// --- Spawnowanie NPC ---
-constexpr float npcSpawnRate = 2.5f;
-constexpr float minNpcSpacing = 25.0f;
+constexpr float npcSpawnRate = 2.5;
+constexpr float minNpcSpacing = 25;
 
-// --- LAP ANIMATION CONSTANTS ---
 constexpr int LAP_ANIM_TOTAL_BLINKS = 16;
-constexpr float LAP_ANIM_BLINK_DURATION = 0.025f;
-constexpr float LAP_ANIM_SCALE = 0.35f;
+constexpr float LAP_ANIM_BLINK_DURATION = 0.025;
+constexpr float LAP_ANIM_SCALE = 0.35;
 
-// --- 8 Lane Definitions (Ratio) ---
-constexpr float laneCenterY1Ratio = 95.0f / defaultBackgroundHeight;
-constexpr float laneCenterY2Ratio = 191.0f / defaultBackgroundHeight;
-constexpr float laneCenterY3Ratio = 349.0f / defaultBackgroundHeight;
-constexpr float laneCenterY4Ratio = 455.0f / defaultBackgroundHeight;
-constexpr float laneCenterY5Ratio = 611.0f / defaultBackgroundHeight;
-constexpr float laneCenterY6Ratio = 717.0f / defaultBackgroundHeight;
-constexpr float laneCenterY7Ratio = 877.0f / defaultBackgroundHeight;
-constexpr float laneCenterY8Ratio = 981.0f / defaultBackgroundHeight;
+constexpr float laneCenterY1Ratio = 95 / defaultBackgroundHeight;
+constexpr float laneCenterY2Ratio = 191 / defaultBackgroundHeight;
+constexpr float laneCenterY3Ratio = 349 / defaultBackgroundHeight;
+constexpr float laneCenterY4Ratio = 455 / defaultBackgroundHeight;
+constexpr float laneCenterY5Ratio = 611 / defaultBackgroundHeight;
+constexpr float laneCenterY6Ratio = 717 / defaultBackgroundHeight;
+constexpr float laneCenterY7Ratio = 877 / defaultBackgroundHeight;
+constexpr float laneCenterY8Ratio = 981 / defaultBackgroundHeight;
 
-// --- Dystans okr¹¿enia i UI (dodane z poprzedniej wersji, jeœli by³y potrzebne) ---
-constexpr float UI_TEXT_SIZE_INFO = 60.0f;
-constexpr float UI_TEXT_SPACING = 1.5f;
-constexpr float UI_MARGIN = 10.0f;
+constexpr float UI_TEXT_SIZE_INFO = 60;
+constexpr float UI_TEXT_SPACING = 1.5;
+constexpr float UI_MARGIN = 10;
 
-// --- Sta³e obliczeniowe dla wymiarów gracza ---
-constexpr float playerScaleFactor = 0.75f;
-constexpr float defaultPlayerWidth = 160.0f;
-constexpr float defaultPlayerHeight = 131.0f;
+constexpr float playerScaleFactor = 0.75;
+constexpr float defaultPlayerWidth = 160;
+constexpr float defaultPlayerHeight = 131;
 constexpr float baseScaleY = virtualScreenHeight / defaultBackgroundHeight;
-constexpr float baseScaleX = baseScaleY; // Zak³adamy kwadratowe piksele
+constexpr float baseScaleX = baseScaleY;
 constexpr float playerTextureWidth = defaultPlayerWidth * baseScaleX * playerScaleFactor;
 constexpr float playerTextureHeight = defaultPlayerHeight * baseScaleY * playerScaleFactor;
-constexpr float playerHalfWidth = playerTextureWidth / 2.0f;
-constexpr float playerHalfHeight = playerTextureHeight / 2.0f;
+constexpr float playerHalfWidth = playerTextureWidth / 2;
+constexpr float playerHalfHeight = playerTextureHeight / 2;
 
-// --- Sta³e obliczeniowe dla wymiarów NPC ---
-constexpr float npcScaleFactor = 0.75f;
-constexpr float defaultNpcWidth = 160.0f;
-constexpr float defaultNpcHeight = 131.0f;
+constexpr float npcScaleFactor = 0.75;
+constexpr float defaultNpcWidth = 160;
+constexpr float defaultNpcHeight = 131;
 constexpr float npcTextureWidth = defaultNpcWidth * baseScaleX * npcScaleFactor;
 constexpr float npcTextureHeight = defaultNpcHeight * baseScaleY * npcScaleFactor;
-constexpr float npcHalfWidth = npcTextureWidth / 2.0f;
-constexpr float npcHalfHeight = npcTextureHeight / 2.0f;
+constexpr float npcHalfWidth = npcTextureWidth / 2;
+constexpr float npcHalfHeight = npcTextureHeight / 2;
 
-constexpr float npcCollisionMarginX_raw = 10.0f;
-constexpr float npcCollisionMarginY_raw = 5.0f;
+constexpr float npcCollisionMarginX_raw = 10;
+constexpr float npcCollisionMarginY_raw = 5;
 constexpr float npcCollisionMarginX = npcCollisionMarginX_raw * baseScaleX * npcScaleFactor;
 constexpr float npcCollisionMarginY = npcCollisionMarginY_raw * baseScaleY * npcScaleFactor;
