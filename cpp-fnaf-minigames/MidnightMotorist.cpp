@@ -1,5 +1,4 @@
 #include "raylib.h"
-#include "raymath.h"
 
 #include "MotoristResources.h"
 #include "MotoristConst.h"
@@ -42,7 +41,6 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
 
     RenderTexture2D target = LoadRenderTexture(virtualScreenWidth, virtualScreenHeight);
     if (target.id == 0) {
-        TraceLog(LOG_ERROR, "MOTORIST: Failed to create render texture. Aborting.");
         UnloadMotoristResources(resources);
         return 1;
     }
@@ -57,8 +55,6 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
             float gameResolution[2] = { (float)virtualScreenWidth, (float)virtualScreenHeight };
             SetShaderValue(postProcessingShader, shaderResolutionLoc, gameResolution, SHADER_UNIFORM_VEC2);
         }
-        else { TraceLog(LOG_WARNING, "MOTORIST: Shader 'resolution' uniform not found."); }
-        if (shaderTimeLoc == -1) { TraceLog(LOG_WARNING, "MOTORIST: Shader 'time' uniform not found."); }
     }
 
     Rectangle playerRect;
@@ -66,7 +62,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
     MotoristGameState currentGameState = COUNTDOWN_INITIAL_DELAY;
     float countdownTimer = 2;
 
-    // Oryginalna pozycja startowa gracza
+    // Player start position
     Vector2 motoristPlayerPos = { virtualScreenWidth / 10, (motoristRoadYTop + motoristRoadYBottom) / 2 };
     Vector2 motoristPlayerVel = { 0, 0 };
     float motoristVirtualSpeed = 0;
@@ -218,7 +214,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
                 }
             }
 
-            if (currentGameState == PLAYING) { // Dodatkowe zabezpieczenie
+            if (currentGameState == PLAYING) {
                 if (!isSpinning) {
                     motoristVirtualSpeed += VIRTUAL_SPEED_ACCELERATION * dt;
                     if (motoristVirtualSpeed > VIRTUAL_SPEED_MAX)
@@ -350,11 +346,9 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
                 distanceThisLap = 0;
                 showLapAnim = false;
                 lapAnimBlinkCount = 0;
-
                 SeekMusicStream(resources.backgroundMusic, 0);
-
-                TraceLog(LOG_INFO, "MOTORIST: Game Restarted.");
             }
+
             break;
         }
 
@@ -516,16 +510,16 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
             DrawText(TextFormat("State: %d, CTimer: %.2", currentGameState, countdownTimer), 10, debugY, 10, GOLD); debugY += lineHeight;
             DrawText(TextFormat("Lives: %d", playerLives), 10, debugY, 10, (playerLives > 0) ? GREEN : RED);
         }
+
         EndDrawing();
     }
 
-    TraceLog(LOG_INFO, "MOTORIST: Exiting game loop.");
-    if (resources.backgroundMusicLoaded && IsMusicStreamPlaying(resources.backgroundMusic)) {
+    if (resources.backgroundMusicLoaded && IsMusicStreamPlaying(resources.backgroundMusic)) 
         StopMusicStream(resources.backgroundMusic);
-    }
-    if (resources.bgNoiseLoaded && IsMusicStreamPlaying(resources.bgNoise)) {
+    
+    if (resources.bgNoiseLoaded && IsMusicStreamPlaying(resources.bgNoise))
         StopMusicStream(resources.bgNoise);
-    }
+    
     UnloadRenderTexture(target);
     UnloadMotoristResources(resources);
 

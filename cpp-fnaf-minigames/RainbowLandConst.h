@@ -2,8 +2,6 @@
 
 #include "raylib.h"
 #include "raymath.h"
-#include <cmath>
-
 
 const float PI_F = PI;
 
@@ -30,9 +28,9 @@ const float playerHitboxOffsetY = (playerTextureHeight - playerHitboxHeight);
 
 const float playerVirtualScreenX = (virtualScreenWidth - playerTextureWidth) / 2;
 
-const float playerSpeed = 3.8;
-const float jumpSpeed = -5;
-const float fallSpeed = 5;
+const float playerSpeed = 4;
+const float jumpSpeed = -5.25;
+const float fallSpeed = 5.25;
 const float maxJumpHeight = 270;
 const int animUpdateRate = 1;
 const int idleFrames = 16;
@@ -70,7 +68,7 @@ const float platform6 = 1825;
 const float platform7 = 2250;
 
 // spikes
-const float spikeSpeed = 2250;
+const float spikeSpeed = 2000;
 
 const float spike1 = 3000;
 const float spike2 = 3300;

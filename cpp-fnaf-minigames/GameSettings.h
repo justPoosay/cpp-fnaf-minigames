@@ -48,6 +48,8 @@ const float selectorWidth = 125;
 const float selectorHeight = 30;
 const float selectorX = 250;
 
+const float musicFadeSpeed = 2;
+
 
 // --- Function Declarations ---
 void InitializeGameSettings();

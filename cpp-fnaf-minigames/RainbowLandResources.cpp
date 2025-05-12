@@ -1,9 +1,4 @@
 #include "RainbowLandResources.h"
-#include "raylib.h"
-
-#include <string>
-#include <vector>
-
 
 RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // Loading Resources Function
     TraceLog(LOG_INFO, "Loading game resources...");
@@ -128,8 +123,6 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
     return resources;
 }
 
-
-// Unloadind Resources
 void UnloadRainbowLandResources(RainbowLandGameResources& resources) {
     TraceLog(LOG_INFO, "Unloading game resources...");
 
@@ -202,5 +195,4 @@ void UnloadRainbowLandResources(RainbowLandGameResources& resources) {
     if (resources.rbowDialoguesSoundLoaded) 
         for (size_t i = 0; i < resources.rbowDialogues.size(); i++) 
             UnloadSound(resources.rbowDialogues[i]);
-
 }

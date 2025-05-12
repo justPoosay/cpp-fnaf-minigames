@@ -1,15 +1,6 @@
 #include "raylib.h"
 #include "RainbowLandResources.h"
-#include "GameSettings.h"
 #include "RainbowLandConst.h"
-
-#include <cmath>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <iostream>
-
-using namespace std;
 
 struct CheckpointFlag {
     Rectangle rect;
@@ -40,19 +31,19 @@ struct SpikesActivationEvent {
 };
 
 enum SpikeState {
-    SPIKE_IDLE,       // Not active, ready for removal
+    SPIKE_IDLE,
     SPIKE_EXTENDING,
     SPIKE_RETRACTING
 };
 
 struct ActiveSpikeTrap {
-    SpikeState state;       // Current state
-    bool directionUp;   // True = from bottom, false = from top
-    float startBaseY;   // Y-coordinate where the base starts (off-screen)
-    float targetBaseY;  // Y-coordinate the base should reach at max extension
-    float currentBaseY; // Current Y-coordinate of the sprite's base (top edge for spikesUp, bottom edge for spikesDown?) Let's define as TOP edge of the sprite always.
-    float spikeHeight;   // Height of the spike texture
-    Rectangle hitbox;    // Collision rectangle (screen coordinates) - Covers the visible sprite area
+    SpikeState state;
+    bool directionUp;
+    float startBaseY;
+    float targetBaseY;
+    float currentBaseY;
+    float spikeHeight;
+    Rectangle hitbox;
 };
 
 struct ShootingSunflower {
@@ -135,16 +126,32 @@ void DrawProps(const vector<Rectangle>& props, Texture2D texture, float scrollX,
             DrawTexture(texture, (prop.x - scrollX), prop.y, WHITE);
 }
 
+static void StopAllRainbowLandSounds(RainbowLandGameResources& res) {
+
+    if (IsMusicStreamPlaying(res.backgroundMusic)) 
+        StopMusicStream(res.backgroundMusic);
+
+    for (size_t i = 0; i < res.rbowDialogues.size(); ++i) 
+        if (res.rbowDialogues[i].frameCount > 0 && IsSoundPlaying(res.rbowDialogues[i])) 
+            StopSound(res.rbowDialogues[i]);
+        
+    if (IsSoundPlaying(res.jump)) StopSound(res.jump);
+    if (IsSoundPlaying(res.petalShoot)) StopSound(res.petalShoot);
+    if (IsSoundPlaying(res.spikesPush)) StopSound(res.spikesPush);
+    if (IsSoundPlaying(res.rbowVoiceOff)) StopSound(res.rbowVoiceOff);
+    if (IsSoundPlaying(res.death)) StopSound(res.death);
+    if (IsSoundPlaying(res.checkpointSound)) StopSound(res.checkpointSound);
+    if (IsSoundPlaying(res.rbowYouStillSuck)) StopSound(res.rbowYouStillSuck);
+}
+
 
 int runMagicRainbowLand(GraphicsQuality quality) {
     cout << "Launching Chica's Magic Rainbow with quality " << quality << endl;
+    HideCursor();
 
     // --------- RESOURCE LOADER ---------
     RainbowLandGameResources resources = LoadRainbowLandResources(quality);
-
     RenderTexture2D target = LoadRenderTexture(virtualScreenWidth, virtualScreenHeight);
-    SetTextureFilter(target.texture, TEXTURE_FILTER_BILINEAR);
-
 
     // --------- Player ---------
     Vector2 playerPos = { 225, groundLevelY - playerTextureHeight };
@@ -161,9 +168,9 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     int frameCounter = 0;
     int maxFramesForCurrentAnim = idleFrames;
 
-    bool isPlayerRespawning = false;  // NEW: Flag to indicate respawn delay is active
-    float playerRespawnTimer = 0;  // NEW: Timer for the delay
-    const float PLAYER_RESPAWN_DELAY = 0.5; // NEW: Constant for the delay duration
+    bool isPlayerRespawning = false;
+    float playerRespawnTimer = 0;
+    const float PLAYER_RESPAWN_DELAY = 0.5;
 
     bool isPlayerInvincible = false;
     float playerInvincibilityTimer = 0;
@@ -182,7 +189,6 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
 
     // --------- Butterfly ---------
-         // Example for one butterfly
     Texture2D currentButterflySprite;
     int butterflyCurrentAnimFrame = 0;
     int butterflyAnimFrameCounter = 0;
@@ -194,19 +200,14 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     float scrollX = 0;
     float bgScroll = 0;
 
-    if (resources.rbowBodyTexture.id > 0) {
-        float initialTargetX = (playerPos.x + 100) - (resources.rbowBodyTexture.width / 2);
-        rainbowPos.x = initialTargetX;
-    }
-    else {
-        rainbowPos.x = 50;
-    }
+    float initialTargetX = (playerPos.x + 100) - (resources.rbowBodyTexture.width / 2);
+    rainbowPos.x = initialTargetX;
 
     // temp: DEBUG SCREEN
     bool showDebugInfo = false;
 
     // voices button
-    Rectangle buttonRect = { buttonPos.x, buttonPos.y, buttonTextureWidth, buttonTextureHeight };
+    Rectangle buttonRect = { buttonPos.x, buttonPos.y, buttonTextureWidth / 2, buttonTextureHeight / 2 };
     bool isButtonClicked = false;
     Texture2D currentButtonTexture = resources.buttonVoicesOn;
 
@@ -283,46 +284,41 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         { spike3, true, false },
     };
 
-    if (resources.backgroundMusicLoaded) {
-        PlayMusicStream(resources.backgroundMusic);
-        SetMusicVolume(resources.backgroundMusic, 1);
-    }
+    PlayMusicStream(resources.backgroundMusic);
+    SetMusicVolume(resources.backgroundMusic, 1);
 
-    // ------- BUTTERFLY SETUP -------
+// ------- BUTTERFLY SETUP -------
     vector<Butterfly> butterflies;
 
-    if (resources.butterfly.id > 0) {
+    butterflies.push_back({
+            {350, groundLevelY - 150},
+            {350, groundLevelY - 150},
+            0, 0, 0, 0
+        });
 
-        butterflies.push_back({
-                {350, groundLevelY - 150},
-                {350, groundLevelY - 150},
-                0, 0, 0, 0
-            });
+    butterflies.push_back({
+            {750, groundLevelY - 200},
+            {750, groundLevelY - 200},
+            GetRandomValue(0, BUTTERFLY_TOTAL_FRAMES - 1), 0,
+            (float)GetRandomValue(0, 628) / 100,
+            (float)GetRandomValue(-20, 20) / 100
+        });
 
-        butterflies.push_back({
-                {750, groundLevelY - 200},
-                {750, groundLevelY - 200},
-                GetRandomValue(0, BUTTERFLY_TOTAL_FRAMES - 1), 0,
-                (float)GetRandomValue(0, 628) / 100,
-                (float)GetRandomValue(-20, 20) / 100
-            });
+    butterflies.push_back({
+            {1100, groundLevelY - 120},
+            {1100, groundLevelY - 120},
+            GetRandomValue(0, BUTTERFLY_TOTAL_FRAMES - 1), 0,
+            (float)GetRandomValue(0, 628) / 100,
+            (float)GetRandomValue(-20, 20) / 100
+        });
 
-        butterflies.push_back({
-                {1100, groundLevelY - 120},
-                {1100, groundLevelY - 120},
-                GetRandomValue(0, BUTTERFLY_TOTAL_FRAMES - 1), 0,
-                (float)GetRandomValue(0, 628) / 100,
-                (float)GetRandomValue(-20, 20) / 100
-            });
-
-        butterflies.push_back({
-               {150, groundLevelY - 70},
-               {150, groundLevelY - 70},
-               GetRandomValue(0, BUTTERFLY_TOTAL_FRAMES - 1), 0,
-               (float)GetRandomValue(0, 628) / 100,
-               (float)GetRandomValue(-20, 20) / 100
-            });
-    }
+    butterflies.push_back({
+            {150, groundLevelY - 70},
+            {150, groundLevelY - 70},
+            GetRandomValue(0, BUTTERFLY_TOTAL_FRAMES - 1), 0,
+            (float)GetRandomValue(0, 628) / 100,
+            (float)GetRandomValue(-20, 20) / 100
+        });
 
 
     vector<ShootingSunflower> shootingSunflowers;
@@ -342,8 +338,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
     vector<ActiveSpikeTrap> activeSpikes;
     float spikeHeight = 0; 
-    if (resources.spikesUp.id > 0)
-        spikeHeight = resources.spikesUp.height;
+    spikeHeight = resources.spikesUp.height;
 
     Vector2 lastCheckpointPos = playerStartPos;
     Vector2 checkpointEffectPos = { 0, 0 };
@@ -357,19 +352,28 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     float checkpointEffectYoffset = 0;
 
 
+    bool gameShouldEnd = false;
 
-    // --------------- MAIN GAME LOOP ---------------
+
+    const KeyboardKey konamiSequence[] = { KEY_UP, KEY_UP, KEY_DOWN, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_LEFT, KEY_RIGHT, KEY_B, KEY_A };
+    const int konamiSequenceLength = sizeof(konamiSequence) / sizeof(konamiSequence[0]);
+    int konamiCodeProgress = 0; 
+    bool isSecretActivated = false;
+
+// --------------- MAIN GAME LOOP ---------------
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
         bool isTouchingCheckpoint = false;
 
-        if (resources.backgroundMusicLoaded) {
-            UpdateMusicStream(resources.backgroundMusic);
-            if (GetMusicTimePlayed(resources.backgroundMusic) >= GetMusicTimeLength(resources.backgroundMusic)) {
-                SeekMusicStream(resources.backgroundMusic, 0);
-                PlayMusicStream(resources.backgroundMusic);
-            }
+        UpdateMusicStream(resources.backgroundMusic);
+
+        if (GetMusicTimePlayed(resources.backgroundMusic) >= GetMusicTimeLength(resources.backgroundMusic)) {
+            SeekMusicStream(resources.backgroundMusic, 0);
+            PlayMusicStream(resources.backgroundMusic);
         }
+
+        if (IsKeyPressed(KEY_ESCAPE))
+            gameShouldEnd = true;
 
         if (IsKeyPressed(KEY_F11)) {
             int d = GetCurrentMonitor();
@@ -384,11 +388,22 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         }
 
         Vector2 mousePosWindow = GetMousePosition();
-        float scale = min(GetScreenWidth() / virtualScreenWidth, GetScreenHeight() / virtualScreenHeight);
-        float offsetX = (GetScreenWidth() - (virtualScreenWidth * scale)) / 2;
-        float offsetY = (GetScreenHeight() - (virtualScreenHeight * scale)) / 2;
-        float virtualMouseX = (mousePosWindow.x - offsetX) / scale;
-        float virtualMouseY = (mousePosWindow.y - offsetY) / scale;
+        float screenW = (float)GetScreenWidth();
+        float screenH = (float)GetScreenHeight();
+        float virtualW = (float)virtualScreenWidth;
+        float virtualH = (float)virtualScreenHeight;
+        float scale = min(screenW / virtualW, screenH / virtualH);
+        float scaledVirtualWidth = virtualW * scale;
+        float scaledVirtualHeight = virtualH * scale;
+        float offsetX = (screenW - scaledVirtualWidth) / 2;
+        float offsetY = (screenH - scaledVirtualHeight) / 2;
+        float mouseRelativeToVirtualAreaX = mousePosWindow.x - offsetX;
+        float mouseRelativeToVirtualAreaY = mousePosWindow.y - offsetY;
+        float virtualMouseX = mouseRelativeToVirtualAreaX / scale;
+        float virtualMouseY = mouseRelativeToVirtualAreaY / scale;
+        virtualMouseX = Clamp(virtualMouseX, 0, virtualW);
+        virtualMouseY = Clamp(virtualMouseY, 0, virtualH);
+
         Vector2 virtualMousePos = { virtualMouseX, virtualMouseY };
 
     // --- Check and Update Respawn Timer ---
@@ -401,13 +416,11 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 isGrounded = true;
                 isJumping = false;
 
-                for (auto& event : sunflowerEvents) {
+                for (auto& event : sunflowerEvents)
                     event.hasBeenActivated = false;
-                }
 
-                for (auto& event : spikeEvents) {
+                for (auto& event : spikeEvents)
                     event.hasBeenActivated = false;
-                }
 
                 activePetals.clear();
                 activeSpikes.clear();
@@ -425,12 +438,11 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
         if (isPlayerInvincible) {
             playerInvincibilityTimer -= dt;
-            if (playerInvincibilityTimer <= 0) {
+            if (playerInvincibilityTimer <= 0) 
                 isPlayerInvincible = false;
-            }
         }
 
-        // --------- PLAYER MOVEMENT INPUT ---------
+    // --------- PLAYER MOVEMENT INPUT ---------
         playerVel.x = 0;
         bool isMoving = false;
         if (IsKeyDown(KEY_A)) {
@@ -438,28 +450,54 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             isMoving = true;
             facingRight = false;
         }
+
         if (IsKeyDown(KEY_D)) {
             playerVel.x = playerSpeed;
             isMoving = true;
             facingRight = true;
         }
-        if (IsKeyPressed(KEY_F3)) {
-            showDebugInfo = !showDebugInfo;
-        }
 
-        if (buttonCanBeClicked && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            isButtonClicked = true;
-            currentButtonTexture = resources.buttonVoicesOff;
-            israinbowInDialogue = true;
-            buttonCanBeClicked = false;
+        int keyPressed = GetKeyPressed();
 
-            if (resources.rbowVoiceOffSoundLoaded && !IsSoundPlaying(resources.rbowVoiceOff)) {
-                PauseMusicStream(resources.backgroundMusic);
-                PauseSound(resources.rbowDialogues[currentDialogueIndex]);
-                PlaySound(resources.rbowVoiceOff);
+        // secret konami code
+        if (keyPressed != 0) { 
+            if (keyPressed == konamiSequence[konamiCodeProgress]) {
+                konamiCodeProgress++;
+
+                if (konamiCodeProgress == konamiSequenceLength) {
+                    isSecretActivated = !isSecretActivated;
+                    konamiCodeProgress = 0;
+                }
+            }
+            else {
+                if (keyPressed == konamiSequence[0])
+                    konamiCodeProgress = 1;
+                else 
+                    konamiCodeProgress = 0; 
             }
         }
 
+        if (IsKeyPressed(KEY_F3)) // temp debug
+            showDebugInfo = !showDebugInfo;
+
+        if (buttonCanBeClicked && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            if (CheckCollisionPointRec(virtualMousePos, buttonRect)) {
+                isButtonClicked = true;
+                currentButtonTexture = resources.buttonVoicesOff;
+                israinbowInDialogue = true;
+                buttonCanBeClicked = false;
+
+                if (!IsSoundPlaying(resources.rbowVoiceOff)) {
+                    if (resources.backgroundMusicLoaded && IsMusicStreamPlaying(resources.backgroundMusic))
+                        PauseMusicStream(resources.backgroundMusic);
+
+                    if (currentDialogueIndex >= 0 && currentDialogueIndex < resources.rbowDialogues.size() && IsSoundPlaying(resources.rbowDialogues[currentDialogueIndex]))
+                        PauseSound(resources.rbowDialogues[currentDialogueIndex]);
+
+                    PlaySound(resources.rbowVoiceOff);
+                }
+            }
+        }
 
         jumpButtonHeld = IsKeyDown(KEY_W);
         if (IsKeyPressed(KEY_W) && isGrounded) {
@@ -467,7 +505,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             isJumping = true;
             jumpStartY = playerPos.y;
             playerVel.y = jumpSpeed;
-            if (resources.jumpSoundLoaded) PlaySound(resources.jump);
+            PlaySound(resources.jump);
         }
         if (!isGrounded) {
             if (isJumping && jumpButtonHeld && (jumpStartY - playerPos.y < maxJumpHeight)) {
@@ -483,17 +521,10 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
 
         if (butterflySheet.id > 0)
-            UpdateButterflyAnimation(
-                currentButterflySprite,
-                butterflyCurrentAnimFrame,
-                BUTTERFLY_ANIM_UPDATE_RATE,
-                BUTTERFLY_TOTAL_FRAMES,
-                butterflyAnimFrameCounter,
-                butterflySheet
-            );
+            UpdateButterflyAnimation(currentButterflySprite, butterflyCurrentAnimFrame, BUTTERFLY_ANIM_UPDATE_RATE, BUTTERFLY_TOTAL_FRAMES, butterflyAnimFrameCounter, butterflySheet);
 
 
-        // ---------- FIZYKA GRACZA NA PLATFORMIE ----------
+    // ---------- FIZYKA GRACZA NA PLATFORMIE ----------
         jumpButtonHeld = IsKeyDown(KEY_W);
         if (isGrounded) {
             if (IsKeyPressed(KEY_W)) {
@@ -501,8 +532,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 isJumping = true;
                 jumpStartY = playerPos.y;
                 playerVel.y = jumpSpeed;
-                if (resources.jumpSoundLoaded)
-                    PlaySound(resources.jump);
+                PlaySound(resources.jump);
             }
             else {
                 playerVel.y = 0;
@@ -529,7 +559,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         bool resolvedY = false;
         isGrounded = false;
 
-        // Platform collision handler
+    // Platform collision handler
         for (const auto& platform : platforms) {
             Rectangle platformRect = platform;
 
@@ -559,7 +589,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         }
 
 
-        // Checkpoint collision handler
+    // Checkpoint collision handler
         touchingAnyCheckpoint = false;
         for (auto& flag : checkpointFlags) {
             if (CheckCollisionRecs(playerCollisionHitbox, flag.rect)) {
@@ -614,7 +644,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
 
 
-        // Ground collision handler
+    // Ground collision handler
         if (!isGrounded && playerVel.y >= 0) {
             float potentialHitboxBottomY = potentialY + playerHitboxOffsetY + playerHitboxHeight;
             if (potentialHitboxBottomY >= groundLevelY) {
@@ -676,35 +706,33 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         bgScroll = scrollX * bgScrollFactor;
 
         // Rainbow logic
-        if (resources.rbowBodyTexture.id > 0) {
-            rainbowTargetX = (playerPos.x + playerTextureWidth / 2) - (resources.rbowBodyTexture.width / 2);
-            float diffX = rainbowTargetX - rainbowPos.x;
-            float moveAmount = rainbowSpeed;
-            if (fabsf(diffX) < moveAmount)
-                rainbowPos.x = rainbowTargetX;
-            else if (diffX > 0)
-                rainbowPos.x += moveAmount;
-            else if (diffX < 0)
-                rainbowPos.x -= moveAmount;
+        rainbowTargetX = (playerPos.x + playerTextureWidth / 2) - (resources.rbowBodyTexture.width / 2);
+        float diffX = rainbowTargetX - rainbowPos.x;
+        float moveAmount = rainbowSpeed;
+        if (fabsf(diffX) < moveAmount)
+            rainbowPos.x = rainbowTargetX;
+        else if (diffX > 0)
+            rainbowPos.x += moveAmount;
+        else if (diffX < 0)
+            rainbowPos.x -= moveAmount;
 
-            rainbowPos.y = 5;
+        rainbowPos.y = 5;
 
-            if (!israinbowInDialogue) {
-                Vector2 rainbowCenter = { rainbowPos.x + resources.rbowBodyTexture.width / 2, rainbowPos.y + resources.rbowBodyTexture.height / 2 };
-                Vector2 playerCenter = { playerPos.x + playerTextureWidth / 2, playerPos.y + playerTextureHeight / 2 };
-                float angleX = playerCenter.x - rainbowCenter.x;
-                float angleY = playerCenter.y - rainbowCenter.y;
-                float angleRad = atan2f(-angleY, angleX);
+        if (!israinbowInDialogue) {
+            Vector2 rainbowCenter = { rainbowPos.x + resources.rbowBodyTexture.width / 2, rainbowPos.y + resources.rbowBodyTexture.height / 2 };
+            Vector2 playerCenter = { playerPos.x + playerTextureWidth / 2, playerPos.y + playerTextureHeight / 2 };
+            float angleX = playerCenter.x - rainbowCenter.x;
+            float angleY = playerCenter.y - rainbowCenter.y;
+            float angleRad = atan2f(-angleY, angleX);
 
-                if (angleRad < 0)
-                    angleRad += 2 * PI;
+            if (angleRad < 0)
+                angleRad += 2 * PI;
 
-                currentEyeIndex = roundf(angleRad / (2 * PI) * resources.numEyeSprites);
-                currentEyeIndex = currentEyeIndex % resources.numEyeSprites;
-            }
+            currentEyeIndex = roundf(angleRad / (2 * PI) * resources.numEyeSprites);
+            currentEyeIndex = currentEyeIndex % resources.numEyeSprites;
         }
 
-        // --- rainbow atakuje jesli nacisnales voice off ---
+    // --- rainbow atakuje jesli nacisnales voice off ---
         if (israinbowInDialogue && resources.rbowVoiceOffSoundLoaded && !IsSoundPlaying(resources.rbowVoiceOff)) {
             // TODO: dodaj atakowanie gracza
             // israinbowInDialogue = false;
@@ -712,32 +740,30 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
 
 
-        // --- Butterfly logic ---
-        if (resources.butterfly.id > 0) {
-            for (auto& butterfly : butterflies) {
-                float currentMovementSpeed = BUTTERFLY_BASE_MOVEMENT_SPEED + butterfly.movementSpeedOffset;
-                butterfly.movementPhase += currentMovementSpeed * dt;
-                if (butterfly.movementPhase >= 2 * PI) {
-                    butterfly.movementPhase -= 2 * PI;
-                }
-
-                butterfly.position.x = butterfly.startPosition.x + BUTTERFLY_MOVEMENT_RADIUS_X * cosf(butterfly.movementPhase);
-                butterfly.position.y = butterfly.startPosition.y + BUTTERFLY_MOVEMENT_RADIUS_Y * sinf(butterfly.movementPhase);
-
-                Texture2D dummyTextureForAnimFunc;
-                UpdateButterflyAnimation(
-                    dummyTextureForAnimFunc,
-                    butterfly.animCurrentFrame,
-                    BUTTERFLY_ANIM_UPDATE_RATE,
-                    BUTTERFLY_TOTAL_FRAMES,
-                    butterfly.animFrameCounter,
-                    resources.butterfly
-                );
+    // --- Butterfly logic ---
+        for (auto& butterfly : butterflies) {
+            float currentMovementSpeed = BUTTERFLY_BASE_MOVEMENT_SPEED + butterfly.movementSpeedOffset;
+            butterfly.movementPhase += currentMovementSpeed * dt;
+            if (butterfly.movementPhase >= 2 * PI) {
+                butterfly.movementPhase -= 2 * PI;
             }
+
+            butterfly.position.x = butterfly.startPosition.x + BUTTERFLY_MOVEMENT_RADIUS_X * cosf(butterfly.movementPhase);
+            butterfly.position.y = butterfly.startPosition.y + BUTTERFLY_MOVEMENT_RADIUS_Y * sinf(butterfly.movementPhase);
+
+            Texture2D dummyTextureForAnimFunc;
+            UpdateButterflyAnimation(
+                dummyTextureForAnimFunc,
+                butterfly.animCurrentFrame,
+                BUTTERFLY_ANIM_UPDATE_RATE,
+                BUTTERFLY_TOTAL_FRAMES,
+                butterfly.animFrameCounter,
+                resources.butterfly
+            );
         }
 
 
-        // --- Petal projectile logic ---
+    // --- Petal projectile logic ---
         bool petalShootSoundPlayedThisFrame = false;
         for (auto& event : sunflowerEvents) {
             if (event.hasBeenActivated) continue;
@@ -764,7 +790,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                     }
 
                     if (targetSunflower) {
-                        if (resources.petalSoundLoaded && !soundPlayedForThisSpecificEvent && !petalShootSoundPlayedThisFrame) {
+                        if (!soundPlayedForThisSpecificEvent && !petalShootSoundPlayedThisFrame) {
                             PlaySound(resources.petalShoot);
                             soundPlayedForThisSpecificEvent = true;
                             petalShootSoundPlayedThisFrame = true;
@@ -786,7 +812,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-        // Petal config
+    // Petal config
         for (int i = activePetals.size() - 1; i >= 0; i--) {
             PetalProjectile& currentPetal = activePetals[i];
 
@@ -800,7 +826,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                     currentPetal.active = false;
 
                 // Petal collision handler
-                if (!showDebugInfo && !isPlayerRespawning && !isPlayerInvincible) { // GODMODE
+                if (!showDebugInfo && !isPlayerRespawning && !isPlayerInvincible) {
                     if (currentPetal.active) {
                         Rectangle petalHitbox = { currentPetal.position.x - 5, currentPetal.position.y - 5, 10, 10 };
 
@@ -827,12 +853,9 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 activePetals.erase(activePetals.begin() + i);
         }
 
-        // --- Spike Activation Logic ---
-        bool canTrigger = !isPlayerRespawning;
-
-        if (canTrigger) {
+    // --- Spike Activation Logic ---
+        if (!showDebugInfo && !isPlayerRespawning) {
             for (auto& event : spikeEvents) {
-
                 if (event.hasBeenActivated) continue;
 
                 Rectangle currentWorldPlayerHitbox = {
@@ -841,13 +864,13 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                     playerHitboxWidth,
                     playerHitboxHeight
                 };
+
                 float playerRightEdgeX = currentWorldPlayerHitbox.x + currentWorldPlayerHitbox.width;
 
                 if (playerRightEdgeX > event.triggerX) {
                     event.hasBeenActivated = true;
 
-                     if (resources.spikesSoundLoaded)
-                         PlaySound(resources.spikesPush);
+                    PlaySound(resources.spikesPush);
 
                     ActiveSpikeTrap newSpike;
                     newSpike.state = SPIKE_EXTENDING;
@@ -874,7 +897,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-        // --- Spike Update and Collision ---
+    // --- Spike Update and Collision ---
         for (int i = activeSpikes.size() - 1; i >= 0; i--) {
             if (i >= activeSpikes.size()) continue;
 
@@ -899,7 +922,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 currentSpike.hitbox.width = virtualScreenWidth;
                 currentSpike.hitbox.height = currentSpike.spikeHeight;
 
-                // --- Collision Check ---
+            // --- Collision Check ---
                 if (currentSpike.state != SPIKE_IDLE && !showDebugInfo && !isPlayerRespawning && !isPlayerInvincible) {
                     float playerScreenX = playerPos.x - scrollX;
                     Rectangle playerScreenHitbox = {
@@ -949,148 +972,122 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         BeginTextureMode(target);
         ClearBackground(RAYWHITE);
 
-        //--- Control keys info draw ---
-        if (!firstCheckpointReached && resources.controlKeysInfo.id > 0) {
-            DrawTexture(resources.controlKeysInfo, 10, 10, WHITE);
-        }
+    // --- Bg Draw ---
+        float bgX = -fmodf(bgScroll, resources.bg.width);
+        DrawTextureEx(resources.bg, { bgX , 0 }, 0, 1, WHITE);
+        DrawTextureEx(resources.bg, { bgX + resources.bg.width, 0 }, 0, 1, WHITE);
+        if (bgX + 2 * resources.bg.width < virtualScreenWidth)
+            DrawTextureEx(resources.bg, { bgX + 2 * resources.bg.width, 0 }, 0, 1, WHITE);
 
-        // --- Bg Draw ---
-        if (resources.bg.id > 0) {
-            float bgX = -fmodf(bgScroll, resources.bg.width);
-            DrawTextureEx(resources.bg, { bgX , 0 }, 0, 1, WHITE);
-            DrawTextureEx(resources.bg, { bgX + resources.bg.width, 0 }, 0, 1, WHITE);
-            if (bgX + 2 * resources.bg.width < virtualScreenWidth)
-                DrawTextureEx(resources.bg, { bgX + 2 * resources.bg.width, 0 }, 0, 1, WHITE);
-        }
+    // --- Rainbow draw ---
+        Vector2 rainbowDrawPos = { rainbowPos.x - scrollX, rainbowPos.y };
+        if (rainbowDrawPos.x + resources.rbowBodyTexture.width > 0 && rainbowDrawPos.x < virtualScreenWidth) {
+            Texture2D bodyToDraw = israinbowInDialogue ? resources.rbowVoiceOffBodyTexture : resources.rbowBodyTexture;
 
-        // --- Rainbow draw ---
-        if (resources.rbowBodyTexture.id > 0) {
-            Vector2 rainbowDrawPos = { rainbowPos.x - scrollX, rainbowPos.y };
-            if (rainbowDrawPos.x + resources.rbowBodyTexture.width > 0 && rainbowDrawPos.x < virtualScreenWidth) {
-                Texture2D bodyToDraw = israinbowInDialogue ? resources.rbowVoiceOffBodyTexture : resources.rbowBodyTexture;
+            if (bodyToDraw.id == 0)
+                bodyToDraw = resources.rbowBodyTexture;
 
-                if (bodyToDraw.id == 0)
-                    bodyToDraw = resources.rbowBodyTexture;
+            DrawTextureV(bodyToDraw, rainbowDrawPos, WHITE);
 
-                DrawTextureV(bodyToDraw, rainbowDrawPos, WHITE);
+            // --- Rainbow Eyes draw ---
+            if (!israinbowInDialogue && resources.numEyeSprites > 0) { 
+                Vector2 playerCenter = { playerPos.x + playerTextureWidth / 2, playerPos.y + playerTextureHeight / 2 };
+                Vector2 leftEyeWorldPos = { rainbowPos.x + rainbowLeftEyeOffsetX, rainbowPos.y + rainbowLeftEyeOffsetY };
+                Vector2 rightEyeWorldPos = { rainbowPos.x + rainbowRightEyeOffsetX, rainbowPos.y + rainbowRightEyeOffsetY };
+                int leftEyeTargetIndex = CalculateEyeIndexForAngle(leftEyeWorldPos, playerCenter, resources.numEyeSprites);
+                int rightEyeTargetIndex = CalculateEyeIndexForAngle(rightEyeWorldPos, playerCenter, resources.numEyeSprites);
 
-                // --- Rainbow Eyes draw ---
-                if (!israinbowInDialogue && resources.numEyeSprites > 0) { 
-                    Vector2 playerCenter = { playerPos.x + playerTextureWidth / 2, playerPos.y + playerTextureHeight / 2 };
-                    Vector2 leftEyeWorldPos = { rainbowPos.x + rainbowLeftEyeOffsetX, rainbowPos.y + rainbowLeftEyeOffsetY };
-                    Vector2 rightEyeWorldPos = { rainbowPos.x + rainbowRightEyeOffsetX, rainbowPos.y + rainbowRightEyeOffsetY };
-                    int leftEyeTargetIndex = CalculateEyeIndexForAngle(leftEyeWorldPos, playerCenter, resources.numEyeSprites);
-                    int rightEyeTargetIndex = CalculateEyeIndexForAngle(rightEyeWorldPos, playerCenter, resources.numEyeSprites);
+                // --- Squint Logic ---
+                const int straightAheadIndex = resources.numEyeSprites / 2;
+                const int squintTriggerRange = 1;
+                bool useSquintTexture = false;
 
-                    // --- Squint Logic ---
-                    const int straightAheadIndex = resources.numEyeSprites / 2;
-                    const int squintTriggerRange = 1;
-                    bool useSquintTexture = false;
-
-                    if (abs(leftEyeTargetIndex - straightAheadIndex) <= squintTriggerRange && abs(rightEyeTargetIndex - straightAheadIndex) <= squintTriggerRange)
-                        useSquintTexture = true;
+                if (abs(leftEyeTargetIndex - straightAheadIndex) <= squintTriggerRange && abs(rightEyeTargetIndex - straightAheadIndex) <= squintTriggerRange)
+                    useSquintTexture = true;
                  
-                    int finalLeftEyeIndex = leftEyeTargetIndex;
-                    int finalRightEyeIndex = rightEyeTargetIndex;
+                int finalLeftEyeIndex = leftEyeTargetIndex;
+                int finalRightEyeIndex = rightEyeTargetIndex;
 
-                    if (useSquintTexture) {
-                        finalLeftEyeIndex = straightAheadIndex;
-                        finalRightEyeIndex = straightAheadIndex;
-                    }
+                if (useSquintTexture) {
+                    finalLeftEyeIndex = straightAheadIndex;
+                    finalRightEyeIndex = straightAheadIndex;
+                }
 
-                    if (finalLeftEyeIndex >= 0 && finalLeftEyeIndex < resources.numEyeSprites && finalRightEyeIndex >= 0 && finalRightEyeIndex < resources.numEyeSprites) {
-                        Texture2D leftEyeTexture = resources.rbowEyeTextures[finalLeftEyeIndex];
-                        Texture2D rightEyeTexture = resources.rbowEyeTextures[finalRightEyeIndex];
+                if (finalLeftEyeIndex >= 0 && finalLeftEyeIndex < resources.numEyeSprites && finalRightEyeIndex >= 0 && finalRightEyeIndex < resources.numEyeSprites) {
+                    Texture2D leftEyeTexture = resources.rbowEyeTextures[finalLeftEyeIndex];
+                    Texture2D rightEyeTexture = resources.rbowEyeTextures[finalRightEyeIndex];
 
-                        if (leftEyeTexture.id > 0 && rightEyeTexture.id > 0) {
-                            Vector2 leftEyeDrawPos = { rainbowDrawPos.x + rainbowLeftEyeOffsetX, rainbowDrawPos.y + rainbowLeftEyeOffsetY };
-                            Vector2 rightEyeDrawPos = { rainbowDrawPos.x + rainbowRightEyeOffsetX, rainbowDrawPos.y + rainbowRightEyeOffsetY };
+                    if (leftEyeTexture.id > 0 && rightEyeTexture.id > 0) {
+                        Vector2 leftEyeDrawPos = { rainbowDrawPos.x + rainbowLeftEyeOffsetX, rainbowDrawPos.y + rainbowLeftEyeOffsetY };
+                        Vector2 rightEyeDrawPos = { rainbowDrawPos.x + rainbowRightEyeOffsetX, rainbowDrawPos.y + rainbowRightEyeOffsetY };
 
-                            DrawTextureV(leftEyeTexture, leftEyeDrawPos, WHITE);
-                            DrawTextureV(rightEyeTexture, rightEyeDrawPos, WHITE);
-                        }
+                        DrawTextureV(leftEyeTexture, leftEyeDrawPos, WHITE);
+                        DrawTextureV(rightEyeTexture, rightEyeDrawPos, WHITE);
                     }
                 }
             }
         }
-        // --- Ground tiles draw ---
-        if (resources.tile.id > 0) {
-            float startTileX = -fmodf(scrollX, resources.tile.width);
-            int tilesToDraw = (virtualScreenWidth / resources.tile.width) + 2;
-            for (int i = 0; i < tilesToDraw; i++) {
-                float tileX = startTileX + i * resources.tile.width;
-                if (tileX + resources.tile.width > 0 && tileX < virtualScreenWidth)
-                    DrawTexture(resources.tile, tileX, groundLevelY, WHITE);
-            }
-        }
 
-        // --- Spikes Draw ---
-        if (spikeHeight > 0) {
-            for (const auto& spike : activeSpikes) {
-                if (spike.state != SPIKE_IDLE) {
-                    Texture2D tex = spike.directionUp ? resources.spikesUp : resources.spikesDown;
-                    if (tex.id == 0) 
-                        continue;
-
-                    for (float tileX = 0; tileX < virtualScreenWidth; tileX += tex.width) 
-                        DrawTexture(tex, tileX, spike.currentBaseY, WHITE);
-                }
-            }
+    // --- Ground tiles draw ---
+        float startTileX = -fmodf(scrollX, resources.tile.width);
+        int tilesToDraw = (virtualScreenWidth / resources.tile.width) + 2;
+        for (int i = 0; i < tilesToDraw; i++) {
+            float tileX = startTileX + i * resources.tile.width;
+            if (tileX + resources.tile.width > 0 && tileX < virtualScreenWidth)
+                DrawTexture(resources.tile, tileX, groundLevelY, WHITE);
         }
 
 
-        // --- Props draw ---
-        if (resources.fenceProp.id > 0)
-            for (const auto& fence : fenceProps)
-                if (fence.x - scrollX + fence.width > 0 && fence.x - scrollX < virtualScreenWidth)
-                    DrawTexture(resources.fenceProp, (fence.x - scrollX), fence.y, WHITE);
+    // --- Props draw ---
+        for (const auto& fence : fenceProps)
+            if (fence.x - scrollX + fence.width > 0 && fence.x - scrollX < virtualScreenWidth)
+                DrawTexture(resources.fenceProp, (fence.x - scrollX), fence.y, WHITE);
 
-        if (resources.flowerSmallProp.id > 0)
-            for (const auto& flowerSmall : flowerSmallProps)
-                if (flowerSmall.x - scrollX + flowerSmall.width > 0 && flowerSmall.x - scrollX < virtualScreenWidth)
-                    DrawTexture(resources.flowerSmallProp, (flowerSmall.x - scrollX), flowerSmall.y, WHITE);
+        for (const auto& flowerSmall : flowerSmallProps)
+            if (flowerSmall.x - scrollX + flowerSmall.width > 0 && flowerSmall.x - scrollX < virtualScreenWidth)
+                DrawTexture(resources.flowerSmallProp, (flowerSmall.x - scrollX), flowerSmall.y, WHITE);
 
-        if (resources.flowerBigProp.id > 0)
-            for (const auto& flowerBig : flowerBigProps)
-                if (flowerBig.x - scrollX + flowerBig.width > 0 && flowerBig.x - scrollX < virtualScreenWidth)
-                    DrawTexture(resources.flowerBigProp, (flowerBig.x - scrollX), flowerBig.y, WHITE);
+        for (const auto& flowerBig : flowerBigProps)
+            if (flowerBig.x - scrollX + flowerBig.width > 0 && flowerBig.x - scrollX < virtualScreenWidth)
+                DrawTexture(resources.flowerBigProp, (flowerBig.x - scrollX), flowerBig.y, WHITE);
 
-        if (resources.checkpointFlag.id > 0)
-            for (const auto& flag : checkpointFlags)
-                if (flag.rect.x - scrollX + flag.rect.width > 0 && flag.rect.x - scrollX < virtualScreenWidth)
-                    DrawTexture(resources.checkpointFlag, (flag.rect.x - scrollX), flag.rect.y, WHITE);
+        for (const auto& flag : checkpointFlags)
+            if (flag.rect.x - scrollX + flag.rect.width > 0 && flag.rect.x - scrollX < virtualScreenWidth)
+                DrawTexture(resources.checkpointFlag, (flag.rect.x - scrollX), flag.rect.y, WHITE);
 
-        if (resources.platformTexture.id > 0)
-            for (const auto& platform : platforms)
-                if (platform.x - scrollX + platform.width > 0 && platform.x - scrollX < virtualScreenWidth)
-                    DrawTexture(resources.platformTexture, (platform.x - scrollX), platform.y, WHITE);
+        for (const auto& platform : platforms)
+            if (platform.x - scrollX + platform.width > 0 && platform.x - scrollX < virtualScreenWidth)
+                DrawTexture(resources.platformTexture, (platform.x - scrollX), platform.y, WHITE);
 
-        Rectangle sourceRect = { currentFrame * playerTextureWidth, 0, playerTextureWidth, playerTextureHeight };
-        if (playerDrawVirtualPos.x + playerTextureWidth > 0 && playerDrawVirtualPos.x < virtualScreenWidth)
-            DrawTextureRec(currentTexture, sourceRect, playerDrawVirtualPos, WHITE);
 
-        if (resources.sunflower.id > 0)
-            for (const auto& sunflowers : deadlySunflowers)
-                if (sunflowers.x - scrollX + sunflowers.width > 0 && sunflowers.x - scrollX < virtualScreenWidth)
-                    DrawTexture(resources.sunflower, (sunflowers.x - scrollX), sunflowers.y, WHITE);
+    // --- Player draw ---
+    Rectangle sourceRect = { currentFrame * playerTextureWidth, 0, playerTextureWidth, playerTextureHeight };
+    if (playerDrawVirtualPos.x + playerTextureWidth > 0 && playerDrawVirtualPos.x < virtualScreenWidth)
+        DrawTextureRec(currentTexture, sourceRect, playerDrawVirtualPos, WHITE);
 
-        if (resources.butterfly.id > 0) {
-            float butterflyFrameActualWidth = resources.butterfly.width / BUTTERFLY_TOTAL_FRAMES;
-            float butterflyFrameActualHeight = resources.butterfly.height;
 
-            for (const auto& butterfly : butterflies) {
-                Rectangle butterflySourceRect = { butterfly.animCurrentFrame * butterflyFrameActualWidth, 0, butterflyFrameActualWidth, butterflyFrameActualHeight };
-                Vector2 butterflyDrawPos = {
-                    butterfly.position.x - scrollX,
-                    butterfly.position.y
-                };
+    // --- Sunflowers draw ---
+    for (const auto& sunflowers : deadlySunflowers)
+        if (sunflowers.x - scrollX + sunflowers.width > 0 && sunflowers.x - scrollX < virtualScreenWidth)
+            DrawTexture(resources.sunflower, (sunflowers.x - scrollX), sunflowers.y, WHITE);
 
-                if (butterflyDrawPos.x + butterflyFrameActualWidth > 0 && butterflyDrawPos.x < virtualScreenWidth && butterflyDrawPos.y + butterflyFrameActualHeight > 0 && butterflyDrawPos.y < virtualScreenHeight)
-                    DrawTextureRec(resources.butterfly, butterflySourceRect, butterflyDrawPos, WHITE);
-            }
-        }
 
-        // Petals draw
+    // --- Butterflies draw ---
+    for (const auto& butterfly : butterflies) {
+        float butterflyFrameActualWidth = resources.butterfly.width / BUTTERFLY_TOTAL_FRAMES;
+        float butterflyFrameActualHeight = resources.butterfly.height;
+
+        Rectangle butterflySourceRect = { butterfly.animCurrentFrame * butterflyFrameActualWidth, 0, butterflyFrameActualWidth, butterflyFrameActualHeight };
+        Vector2 butterflyDrawPos = {
+            butterfly.position.x - scrollX,
+            butterfly.position.y
+        };
+
+        if (butterflyDrawPos.x + butterflyFrameActualWidth > 0 && butterflyDrawPos.x < virtualScreenWidth && butterflyDrawPos.y + butterflyFrameActualHeight > 0 && butterflyDrawPos.y < virtualScreenHeight)
+            DrawTextureRec(resources.butterfly, butterflySourceRect, butterflyDrawPos, WHITE);
+    }
+
+    // Petals draw
         for (const auto& petal : activePetals) {
             if (petal.active) {
                 if (petal.textureIndex >= 0 && petal.textureIndex < 8) {
@@ -1106,11 +1103,25 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-        // --- Voice Button draw ---
+    // --- Spikes Draw ---
+    if (spikeHeight > 0) {
+        for (const auto& spike : activeSpikes) {
+            if (spike.state != SPIKE_IDLE) {
+                Texture2D tex = spike.directionUp ? resources.spikesUp : resources.spikesDown;
+                if (tex.id == 0)
+                    continue;
+
+                for (float tileX = 0; tileX < virtualScreenWidth; tileX += tex.width)
+                    DrawTexture(tex, tileX, spike.currentBaseY, WHITE);
+            }
+        }
+    }
+
+    // --- Voice Button draw ---
         DrawTextureV(currentButtonTexture, buttonPos, WHITE);
 
 
-        // --- Checkpoint draw ---
+    // --- Checkpoint draw ---
         if (checkpointEffectActive) {
             int frameWidth = resources.checkpoint.width / 4;
             Rectangle src = { checkpointEffectFrame * frameWidth, 0, frameWidth, resources.checkpoint.height };
@@ -1119,8 +1130,27 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             DrawTextureRec(resources.checkpoint, src, drawPos, WHITE);
         }
 
+    //--- Cursor draw ---
+        float scaledCursorWidth = resources.cursor.width / 1.5;
+        float scaledCursorHeight = resources.cursor.height / 1.5;
 
-        // ------- DEBUG DRAW -------
+        Rectangle cursorDestRect = {
+            virtualMousePos.x,
+            virtualMousePos.y,
+            scaledCursorWidth,
+            scaledCursorHeight
+        };
+
+        Rectangle cursorSourceRect = { 0, 0, (float)resources.cursor.width, (float)resources.cursor.height };
+        DrawTexturePro(resources.cursor, cursorSourceRect, cursorDestRect, { 0, 0 }, 0, WHITE);
+
+
+    //--- Control keys info draw ---
+        if (!firstCheckpointReached && resources.controlKeysInfo.id > 0)
+            DrawTexture(resources.controlKeysInfo, 10, 10, WHITE);
+
+
+    // ------- DEBUG DRAW -------
         if (showDebugInfo) {
             const int gridSpacing = 100;
             const int labelFontSize = 10;
@@ -1148,7 +1178,6 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
 
             DrawRectangle(0, 0, 140, 180, BLACK);
-
             int textY = 10;
             int lineHeight = 10;
             DrawText(TextFormat("Position: (%.0f, %.0f)", playerPos.x, playerPos.y), 10, textY, lineHeight, LIME); textY += lineHeight;
@@ -1166,14 +1195,9 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             DrawText(TextFormat("rainbow Target X: %.0f", rainbowTargetX), 10, textY, lineHeight, MAGENTA); textY += lineHeight;
             DrawText(TextFormat("rainbow Eye Idx: %d", currentEyeIndex), 10, textY, lineHeight, WHITE); textY += lineHeight;
             DrawText(TextFormat("rainbow In Dialog: %s", israinbowInDialogue ? "Yes" : "No"), 10, textY, lineHeight, PINK); textY += lineHeight;
+            DrawText(TextFormat("Konami code: %s", isSecretActivated ? "On" : "Off"), 10, textY, lineHeight, PINK); textY += lineHeight;
 
-            if (resources.backgroundMusicLoaded)
-                DrawText(TextFormat("Music: %.1f/%.1f", GetMusicTimePlayed(resources.backgroundMusic), GetMusicTimeLength(resources.backgroundMusic)), 10, textY, lineHeight, SKYBLUE);
-            else
-                DrawText("Music: Not Loaded", 10, textY, lineHeight, RED);
-
-            textY += lineHeight;
-
+            DrawText(TextFormat("Music: %.1f/%.1f", GetMusicTimePlayed(resources.backgroundMusic), GetMusicTimeLength(resources.backgroundMusic)), 10, textY, lineHeight, SKYBLUE); textY += lineHeight;
             DrawText("DEBUG (F3) Full (F11)", virtualScreenWidth - MeasureText("DEBUG (F3) Full (F11)", 20) - 10, 10, 20, WHITE);
 
             for (const auto& platform : platforms) {
@@ -1218,17 +1242,17 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
             Rectangle feetCheckRectDraw = { playerDrawVirtualPos.x + playerHitboxOffsetX, playerDrawVirtualPos.y + playerHitboxOffsetY + playerHitboxHeight, playerHitboxWidth, 1 };
             DrawRectangleRec(feetCheckRectDraw, YELLOW);
+        }
 
-            // Sunflower triggers draw
+    // Triggers draw (debug/godmode)
+        if (showDebugInfo || isSecretActivated) {
             for (const auto& event : sunflowerEvents) {
                 if (event.hasBeenActivated) continue;
 
                 float triggerScreenX = event.triggerX - scrollX;
 
                 if (triggerScreenX >= 0 && triggerScreenX < virtualScreenWidth) {
-                    DrawLineV({ triggerScreenX, 0 }, { triggerScreenX, virtualScreenHeight }, BLACK);
-                    DrawText(TextFormat("X: %.0f", event.triggerX), triggerScreenX + 3, 30, 10, BLACK);
-
+                    DrawLineBezier({ triggerScreenX, 0 }, { triggerScreenX, virtualScreenHeight }, 5, BLACK);
                     for (int sfId : event.sunflowerIdsToFire) {
                         for (const auto& ss : shootingSunflowers) {
                             if (ss.id == sfId) {
@@ -1244,24 +1268,12 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                     }
                 }
             }
-
-            DrawText("-- Spike Triggers --", 150, 10, 10, BLUE); // Marker to show this section is running
-            int triggerTextY = 20;
-            if (spikeEvents.empty()) {
-                DrawText("spikeEvents vector is EMPTY!", 150, triggerTextY, 10, RED);
+            for (const auto& event : spikeEvents) {
+                float triggerScreenX = event.triggerX - scrollX;
+                Color triggerColor = event.hasBeenActivated ? GRAY : BLUE;
+                if (triggerScreenX >= -50 && triggerScreenX < virtualScreenWidth + 50)
+                    DrawLineBezier({ triggerScreenX, 0 }, { triggerScreenX, virtualScreenHeight }, 5, triggerColor);
             }
-            else {
-                for (const auto& event : spikeEvents) {
-                    float triggerScreenX = event.triggerX - scrollX;
-                    Color triggerColor = event.hasBeenActivated ? GRAY : BLUE;
-                    if (triggerScreenX >= -50 && triggerScreenX < virtualScreenWidth + 50) {
-                        DrawLineV({ triggerScreenX, 0 }, { triggerScreenX, virtualScreenHeight }, triggerColor);
-                        DrawText(TextFormat("S:%.0f(%s)", event.triggerX, event.directionUp ? "U" : "D"), triggerScreenX + 3, triggerTextY, 10, triggerColor);
-                        triggerTextY += 10; 
-                    }
-                }
-            }
-
         }
 
         EndTextureMode();
@@ -1276,6 +1288,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         DrawTexturePro(target.texture, src, dst, { 0, 0 }, 0, WHITE);
         EndDrawing();
     }
+    StopAllRainbowLandSounds(resources);
 
     return 0;
 }

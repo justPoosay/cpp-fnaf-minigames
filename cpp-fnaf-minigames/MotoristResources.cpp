@@ -1,10 +1,4 @@
 #include "MotoristResources.h"
-#include "raylib.h"
-#include "GameSettings.h"
-
-#include <string>
-#include <vector>
-
 
 MotoristGameResources LoadMotoristResources(GraphicsQuality quality) { // Loading Resources Function
     TraceLog(LOG_INFO, "Loading game resources...");
@@ -15,11 +9,8 @@ MotoristGameResources LoadMotoristResources(GraphicsQuality quality) { // Loadin
     resources.car = LoadTexture("resources/mm/car.png");
     resources.carSpinFrames.resize(19);
     for (int i = 0; i < 19; i++) {
-        std::string filename = TextFormat("resources/mm/carSpin_%02d.png", i + 1);
+        string filename = TextFormat("resources/mm/carSpin_%02d.png", i + 1);
         resources.carSpinFrames[i] = LoadTexture(filename.c_str());
-        if (resources.carSpinFrames[i].id == 0) {
-            TraceLog(LOG_ERROR, "Blad ladowania tekstury animacji: %s", filename.c_str());
-        }
     }
 
     resources.rightCarNPC = LoadTexture("resources/mm/leftCarNPC.png");
@@ -55,9 +46,7 @@ MotoristGameResources LoadMotoristResources(GraphicsQuality quality) { // Loadin
     resources.lapSoundLoaded = (resources.lapReached.frameCount > 0);
     resources.goalSoundLoaded = (resources.goalReached.frameCount > 0);
 
-
     SetTextureFilter(resources.gameFont.texture, TEXTURE_FILTER_BILINEAR);
-
     TraceLog(LOG_INFO, "Game resources loaded successfully.");
 
     return resources;
