@@ -27,7 +27,7 @@ struct RainbowLandGameResources {
 
 // Butterfly
     Texture2D butterfly;
-    Texture2D bflyLaser;
+    Texture2D laserBeamFrame;
 
 // Background, Tiles, UI
     Texture2D cursor;
@@ -66,6 +66,7 @@ struct RainbowLandGameResources {
     Sound eyePop;
     Sound checkpointSound;
     Sound logs;
+    Sound spikesPush;
     Sound petalShoot;
     Sound rbowLaserShoot;
     Sound bflyLaserShoot;
@@ -87,6 +88,7 @@ struct RainbowLandGameResources {
     bool eyePopSoundLoaded;
     bool checkpointSoundLoaded;
     bool logsSoundLoaded;
+    bool spikesSoundLoaded;
     bool petalSoundLoaded;
     bool bflyLaserShootSoundLoaded;
     bool rbowLaserShootSoundLoaded;

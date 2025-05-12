@@ -199,7 +199,7 @@ int main(void) {
     float mainMenuBgFrameTimer = 0;
 
     int helpyCurrentAnimFrame = 0;
-    float helpyFrameDelay = 0.725;
+    float helpyFrameDelay = 0.72;
     float helpyFrameTimer = 0;
 
     float fadeAlpha = 0;
