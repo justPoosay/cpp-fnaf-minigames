@@ -40,7 +40,6 @@ const int walkFrames = 16;
 const int jumpFrames = 1;
 
 
-const float rainbowTargetY = 5;
 const float rainbowPaddingX = 60;
 const float rainbowSpeed = playerSpeed / 1.75;
 const float rainbowLeftEyeOffsetX = 90;
@@ -68,6 +67,14 @@ const float platform4 = 560;
 const float platform5 = 660;
 
 const float platform6 = 1825;
+const float platform7 = 2250;
+
+// spikes
+const float spikeSpeed = 2250;
+
+const float spike1 = 3000;
+const float spike2 = 3300;
+const float spike3 = 3450;
 
 // fences
 const float fenceWidth = 159;
@@ -86,6 +93,7 @@ const float checkpointFlagHeight = 51;
 const float flag1 = 100;
 const float flag2 = 850;
 const float flag3 = 1775;
+const float flag4 = 2800;
 
 // small flowers
 const float flowerSmallWidth = 60;
@@ -119,13 +127,13 @@ const float sunfl1 = 920;
 const float sunfl2 = 1270;
 const float sunfl3 = 1620;
 
-const float sunfl3_1 = 1970;
-const float sunfl3_2 = 2320;
+const float sunfl3_1 = 1987.5;
+const float sunfl3_2 = 2437.5;
 
-const float sunfl4 = 1880;
-const float sunfl5 = 2050;
-const float sunfl6 = 2250;
-const float sunfl7 = 2450;
+const float sunfl4 = 1875;
+const float sunfl5 = 2100;
+const float sunfl6 = 2325;
+const float sunfl7 = 2550;
 
 // sunflower petals
 const float petalSpeed = 1000;

@@ -35,9 +35,10 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
         resources.rbowEyeTextures[i] = LoadTexture(filePath.c_str());
     }
 
+    resources.laserBeamFrame = LoadTexture("resources/cmrl/textures/laser/bflyBeam.png");
+
 // Butterfly
     resources.butterfly = LoadTexture("resources/cmrl/textures/butterfly/butterfly.png");
-    resources.bflyLaser = LoadTexture("resources/cmrl/textures/laser/bflyBeam.png");
 
 // Background, Tiles & UI
     resources.cursor = LoadTexture("resources/cursor.png");
@@ -95,6 +96,7 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
     resources.eyePop = LoadSound("resources/cmrl/audio/sfx/eye.wav");
     resources.checkpointSound = LoadSound("resources/cmrl/audio/sfx/checkpoint.wav");
     resources.logs = LoadSound("resources/cmrl/audio/sfx/logs.wav");
+    resources.spikesPush = LoadSound("resources/cmrl/audio/sfx/spikes.wav");
     resources.petalShoot = LoadSound("resources/cmrl/audio/sfx/petal.wav");
     resources.rbowLaserShoot = LoadSound("resources/cmrl/audio/sfx/rlaser.wav");
     resources.bflyLaserShoot = LoadSound("resources/cmrl/audio/sfx/blaser.wav");
@@ -111,6 +113,7 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
     resources.eyePopSoundLoaded = (resources.eyePop.frameCount > 0);
     resources.checkpointSoundLoaded = (resources.checkpointSound.frameCount > 0);
     resources.logsSoundLoaded = (resources.logs.frameCount > 0);
+    resources.spikesSoundLoaded = (resources.spikesPush.frameCount > 0);
     resources.petalSoundLoaded = (resources.petalShoot.frameCount > 0);
     resources.bflyLaserShootSoundLoaded = (resources.bflyLaserShoot.frameCount > 0);
     resources.rbowLaserShootSoundLoaded = (resources.rbowLaserShoot.frameCount > 0);
@@ -141,7 +144,7 @@ void UnloadRainbowLandResources(RainbowLandGameResources& resources) {
     if (resources.rbowVoiceOffBodyTexture.id > 0) UnloadTexture(resources.rbowVoiceOffBodyTexture);
 
     if (resources.butterfly.id > 0) UnloadTexture(resources.butterfly);
-    if (resources.bflyLaser.id > 0) UnloadTexture(resources.bflyLaser);
+    if (resources.laserBeamFrame.id > 0) UnloadTexture(resources.laserBeamFrame);
 
     if (resources.cursor.id > 0) UnloadTexture(resources.cursor);
     if (resources.bg.id > 0) UnloadTexture(resources.bg);
@@ -186,6 +189,7 @@ void UnloadRainbowLandResources(RainbowLandGameResources& resources) {
     if (resources.eyePopSoundLoaded) UnloadSound(resources.eyePop);
     if (resources.checkpointSoundLoaded) UnloadSound(resources.checkpointSound);
     if (resources.logsSoundLoaded) UnloadSound(resources.logs);
+    if (resources.spikesSoundLoaded) UnloadSound(resources.spikesPush);
     if (resources.petalSoundLoaded) UnloadSound(resources.petalShoot);
     if (resources.rbowLaserShootSoundLoaded) UnloadSound(resources.rbowLaserShoot);
     if (resources.bflyLaserShootSoundLoaded) UnloadSound(resources.bflyLaserShoot);
