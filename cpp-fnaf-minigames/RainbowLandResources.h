@@ -1,9 +1,13 @@
 #pragma once
 
 #include "raylib.h"
-#include <vector>
-#include <string>
 #include "GameSettings.h"
+
+#include <cmath>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <iostream>
 
 using namespace std;
 
