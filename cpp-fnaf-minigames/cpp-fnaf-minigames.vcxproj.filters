@@ -60,9 +60,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Enemies.h">
-      <Filter>Pliki nagłówkowe</Filter>
-    </ClInclude>
     <ClInclude Include="RainbowLandResources.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
