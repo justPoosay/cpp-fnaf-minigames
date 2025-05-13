@@ -430,7 +430,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 playerInvincibilityTimer = invincibilityDuration;
 
                 if (!checkpointFlags.empty()) 
-                    firstCheckpointReached = checkpointFlags[0].activated;
+                    firstCheckpointReached = checkpointFlags[1].activated;
                 else 
                     firstCheckpointReached = false;
             }
@@ -1104,18 +1104,14 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         }
 
     // --- Spikes Draw ---
-    if (spikeHeight > 0) {
         for (const auto& spike : activeSpikes) {
             if (spike.state != SPIKE_IDLE) {
-                Texture2D tex = spike.directionUp ? resources.spikesUp : resources.spikesDown;
-                if (tex.id == 0)
-                    continue;
-
-                for (float tileX = 0; tileX < virtualScreenWidth; tileX += tex.width)
-                    DrawTexture(tex, tileX, spike.currentBaseY, WHITE);
+                Texture2D currentSpikeTexture = spike.directionUp ? resources.spikesUp : resources.spikesDown;
+                float drawPosX = (virtualScreenWidth / 2) - (currentSpikeTexture.width / 2);
+                DrawTexture(currentSpikeTexture, drawPosX, spike.currentBaseY, WHITE);
             }
         }
-    }
+        
 
     // --- Voice Button draw ---
         DrawTextureV(currentButtonTexture, buttonPos, WHITE);
