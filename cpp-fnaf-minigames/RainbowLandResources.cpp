@@ -7,21 +7,21 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
 
 
 // Chica (player)
-    resources.idleRight = LoadTexture("resources/cmrl/textures/sprites/chica/chica_idle_right.png");
-    resources.idleLeft = LoadTexture("resources/cmrl/textures/sprites/chica/chica_idle_left.png");
-    resources.walkRight = LoadTexture("resources/cmrl/textures/sprites/chica/chica_walk_right.png");
-    resources.walkLeft = LoadTexture("resources/cmrl/textures/sprites/chica/chica_walk_left.png");
-    resources.jumpRight = LoadTexture("resources/cmrl/textures/sprites/chica/chica_jump_right.png");
-    resources.jumpLeft = LoadTexture("resources/cmrl/textures/sprites/chica/chica_jump_left.png");
+    resources.idleRight = LoadTexture("resources/cmrl/textures/chica_idle_right.png");
+    resources.idleLeft = LoadTexture("resources/cmrl/textures/chica_idle_left.png");
+    resources.walkRight = LoadTexture("resources/cmrl/textures/chica_walk_right.png");
+    resources.walkLeft = LoadTexture("resources/cmrl/textures/chica_walk_left.png");
+    resources.jumpRight = LoadTexture("resources/cmrl/textures/chica_jump_right.png");
+    resources.jumpLeft = LoadTexture("resources/cmrl/textures/chica_jump_left.png");
 
 
 // Rainbow & Eyes
-    resources.rbowBodyTexture = LoadTexture("resources/cmrl/textures/sprites/rainbow/chica_rainbow.png");
-    resources.rbowVoiceOffBodyTexture = LoadTexture("resources/cmrl/textures/sprites/rainbow/chica_rainbow_pissed.png");
+    resources.rbowBodyTexture = LoadTexture("resources/cmrl/textures/chica_rainbow.png");
+    resources.rbowVoiceOffBodyTexture = LoadTexture("resources/cmrl/textures/chica_rainbow_pissed.png");
 
     resources.rbowEyeTextures.resize(resources.numEyeSprites);
     for (int i = 0; i < resources.numEyeSprites; i++) {
-        std::string filePath = "resources/cmrl/textures/sprites/rainbow/eyes/eye";
+        std::string filePath = "resources/cmrl/textures/eye";
         if (i < 9) {
             filePath += "0";
         }
@@ -30,52 +30,52 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
         resources.rbowEyeTextures[i] = LoadTexture(filePath.c_str());
     }
 
-    resources.laserBeamFrame = LoadTexture("resources/cmrl/textures/laser/bflyBeam.png");
+    resources.laserBeamFrame = LoadTexture("resources/cmrl/textures/bflyBeam.png");
 
 // Butterfly
-    resources.butterfly = LoadTexture("resources/cmrl/textures/butterfly/butterfly.png");
+    resources.butterfly = LoadTexture("resources/cmrl/textures/butterfly.png");
 
 // Background, Tiles & UI
     resources.cursor = LoadTexture("resources/cursor.png");
-    resources.bg = LoadTexture("resources/cmrl/background.png");
-    resources.tile = LoadTexture("resources/cmrl/textures/misc/dirt_tile.png");
-    resources.platformTexture = LoadTexture("resources/cmrl/textures/misc/platform_tile.png");
+    resources.bg = LoadTexture("resources/cmrl/textures/background.png");
+    resources.tile = LoadTexture("resources/cmrl/textures/dirt_tile.png");
+    resources.platformTexture = LoadTexture("resources/cmrl/textures/platform_tile.png");
 
-    resources.sunflower = LoadTexture("resources/cmrl/textures/sunflower/deadly_flower.png");
+    resources.sunflower = LoadTexture("resources/cmrl/textures/deadly_flower.png");
 
     resources.sunflowerPetals.resize(resources.numPetals);
-    resources.sunflowerPetals[0] = LoadTexture("resources/cmrl/textures/sunflower/pettleN.png");
-    resources.sunflowerPetals[1] = LoadTexture("resources/cmrl/textures/sunflower/pettleNE.png");
-    resources.sunflowerPetals[2] = LoadTexture("resources/cmrl/textures/sunflower/pettleE.png");
-    resources.sunflowerPetals[3] = LoadTexture("resources/cmrl/textures/sunflower/pettleSE.png");
-    resources.sunflowerPetals[4] = LoadTexture("resources/cmrl/textures/sunflower/pettleS.png");
-    resources.sunflowerPetals[5] = LoadTexture("resources/cmrl/textures/sunflower/pettleSW.png");
-    resources.sunflowerPetals[6] = LoadTexture("resources/cmrl/textures/sunflower/pettleW.png");
-    resources.sunflowerPetals[7] = LoadTexture("resources/cmrl/textures/sunflower/pettleNW.png");
+    resources.sunflowerPetals[0] = LoadTexture("resources/cmrl/textures/pettleN.png");
+    resources.sunflowerPetals[1] = LoadTexture("resources/cmrl/textures/pettleNE.png");
+    resources.sunflowerPetals[2] = LoadTexture("resources/cmrl/textures/pettleE.png");
+    resources.sunflowerPetals[3] = LoadTexture("resources/cmrl/textures/pettleSE.png");
+    resources.sunflowerPetals[4] = LoadTexture("resources/cmrl/textures/pettleS.png");
+    resources.sunflowerPetals[5] = LoadTexture("resources/cmrl/textures/pettleSW.png");
+    resources.sunflowerPetals[6] = LoadTexture("resources/cmrl/textures/pettleW.png");
+    resources.sunflowerPetals[7] = LoadTexture("resources/cmrl/textures/pettleNW.png");
 
-    resources.fenceProp = LoadTexture("resources/cmrl/textures/misc/fence.png");
-    resources.flowerBigProp = LoadTexture("resources/cmrl/textures/misc/decoration_flower_big.png");
-    resources.flowerSmallProp = LoadTexture("resources/cmrl/textures/misc/decoration_flower_small.png");
-    resources.checkpointFlag = LoadTexture("resources/cmrl/textures/misc/checkpoint_flag.png");
+    resources.fenceProp = LoadTexture("resources/cmrl/textures/fence.png");
+    resources.flowerBigProp = LoadTexture("resources/cmrl/textures/decoration_flower_big.png");
+    resources.flowerSmallProp = LoadTexture("resources/cmrl/textures/decoration_flower_small.png");
+    resources.checkpointFlag = LoadTexture("resources/cmrl/textures/checkpoint_flag.png");
 
-    resources.log = LoadTexture("resources/cmrl/textures/misc/log.png");
-    resources.spikesUp = LoadTexture("resources/cmrl/textures/misc/spikes_up.png");
-    resources.spikesDown = LoadTexture("resources/cmrl/textures/misc/spikes_down.png");
+    resources.log = LoadTexture("resources/cmrl/textures/log.png");
+    resources.spikesUp = LoadTexture("resources/cmrl/textures/spikes_up.png");
+    resources.spikesDown = LoadTexture("resources/cmrl/textures/spikes_down.png");
 
-    resources.bloodParticle = LoadTexture("resources/cmrl/textures/misc/blood_particle.png");
-    resources.buttonVoicesOn = LoadTexture("resources/cmrl/textures/text/voices_on.png");
-    resources.buttonVoicesOff = LoadTexture("resources/cmrl/textures/text/voices_off.png");
-    resources.checkpoint = LoadTexture("resources/cmrl/textures/text/checkpoint.png");
+    resources.bloodParticle = LoadTexture("resources/cmrl/textures/blood_particle.png");
+    resources.buttonVoicesOn = LoadTexture("resources/cmrl/textures/voices_on.png");
+    resources.buttonVoicesOff = LoadTexture("resources/cmrl/textures/voices_off.png");
+    resources.checkpoint = LoadTexture("resources/cmrl/textures/checkpoint.png");
 
-    resources.controlKeysInfo = LoadTexture("resources/cmrl/textures/text/control_keys_tutorial.png");
-    resources.greatJob = LoadTexture("resources/cmrl/textures/text/great_job.png");
-    resources.youSuck = LoadTexture("resources/cmrl/textures/text/you_suck.png");
+    resources.controlKeysInfo = LoadTexture("resources/cmrl/textures/control_keys_tutorial.png");
+    resources.greatJob = LoadTexture("resources/cmrl/textures/great_job.png");
+    resources.youSuck = LoadTexture("resources/cmrl/textures/you_suck.png");
 
 
 // Music & FX
     resources.rbowDialogues.resize(resources.numRbowVoiceLines);
     for (int i = 0; i < resources.numRbowVoiceLines; i++) {
-        std::string filePath = "resources/cmrl/audio/rVoice/voice";
+        std::string filePath = "resources/cmrl/audio/voice";
         if (i < 9) {
             filePath += "0";
         }
@@ -84,21 +84,21 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
         resources.rbowDialogues[i] = LoadSound(filePath.c_str());
     }
 
-    resources.backgroundMusic = LoadMusicStream("resources/cmrl/rainbow.mp3");
-    resources.respawn = LoadSound("resources/cmrl/audio/sfx/respawn.wav");
-    resources.death = LoadSound("resources/cmrl/audio/sfx/death.wav");
-    resources.jump = LoadSound("resources/cmrl/audio/sfx/jump.wav");
-    resources.eyePop = LoadSound("resources/cmrl/audio/sfx/eye.wav");
-    resources.checkpointSound = LoadSound("resources/cmrl/audio/sfx/checkpoint.wav");
-    resources.logs = LoadSound("resources/cmrl/audio/sfx/logs.wav");
-    resources.spikesPush = LoadSound("resources/cmrl/audio/sfx/spikes.wav");
-    resources.petalShoot = LoadSound("resources/cmrl/audio/sfx/petal.wav");
-    resources.rbowLaserShoot = LoadSound("resources/cmrl/audio/sfx/rlaser.wav");
-    resources.bflyLaserShoot = LoadSound("resources/cmrl/audio/sfx/blaser.wav");
+    resources.backgroundMusic = LoadMusicStream("resources/cmrl/audio/rainbow.mp3");
+    resources.respawn = LoadSound("resources/cmrl/audio/respawn.wav");
+    resources.death = LoadSound("resources/cmrl/audio/death.wav");
+    resources.jump = LoadSound("resources/cmrl/audio/jump.wav");
+    resources.eyePop = LoadSound("resources/cmrl/audio/eye.wav");
+    resources.checkpointSound = LoadSound("resources/cmrl/audio/checkpoint.wav");
+    resources.logs = LoadSound("resources/cmrl/audio/logs.wav");
+    resources.spikesPush = LoadSound("resources/cmrl/audio/spikes.wav");
+    resources.petalShoot = LoadSound("resources/cmrl/audio/petal.wav");
+    resources.rbowLaserShoot = LoadSound("resources/cmrl/audio/rlaser.wav");
+    resources.bflyLaserShoot = LoadSound("resources/cmrl/audio/blaser.wav");
 
-    resources.rbowVoiceOff = LoadSound("resources/cmrl/audio/rVoice/voiceOff.mp3");
-    resources.rbowGonnaKillYou = LoadSound("resources/cmrl/audio/rVoice/imgonnakillyou.mp3");
-    resources.rbowYouStillSuck = LoadSound("resources/cmrl/audio/rVoice/youStillSuck.mp3");
+    resources.rbowVoiceOff = LoadSound("resources/cmrl/audio/voiceOff.mp3");
+    resources.rbowGonnaKillYou = LoadSound("resources/cmrl/audio/imgonnakillyou.mp3");
+    resources.rbowYouStillSuck = LoadSound("resources/cmrl/audio/youStillSuck.mp3");
 
     resources.backgroundMusicLoaded = (GetMusicTimeLength(resources.backgroundMusic) > 0); 
 
