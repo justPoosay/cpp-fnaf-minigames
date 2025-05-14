@@ -95,7 +95,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
 
-        if (resources.backgroundMusicLoaded && (currentGameState == PLAYING || currentGameState == GAME_OVER_STATE)) {
+        if (currentGameState == PLAYING || currentGameState == GAME_OVER_STATE) {
             if (IsMusicStreamPlaying(resources.backgroundMusic)) {
                 UpdateMusicStream(resources.backgroundMusic);
                 if (GetMusicTimePlayed(resources.backgroundMusic) >= GetMusicTimeLength(resources.backgroundMusic))
@@ -103,7 +103,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
             }
         }
 
-        if (playBgNoiseLoop && resources.bgNoiseLoaded) {
+        if (playBgNoiseLoop) {
             if (IsMusicStreamPlaying(resources.bgNoise)) {
                 UpdateMusicStream(resources.bgNoise);
                 if (GetMusicTimePlayed(resources.bgNoise) >= GetMusicTimeLength(resources.bgNoise)) 
@@ -124,8 +124,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
             if (countdownTimer <= 0) {
                 currentGameState = COUNTDOWN_SHOW_3;
                 countdownTimer = 1;
-                if (resources.countdownSoundLoaded) 
-                    PlaySound(resources.countdown);
+                PlaySound(resources.countdown);
             }
             break;
         case COUNTDOWN_SHOW_3:
@@ -133,8 +132,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
             if (countdownTimer <= 0) {
                 currentGameState = COUNTDOWN_SHOW_2;
                 countdownTimer = 1;
-                if (resources.countdownSoundLoaded) 
-                    PlaySound(resources.countdown);
+                PlaySound(resources.countdown);
             }
             break;
         case COUNTDOWN_SHOW_2:
@@ -142,8 +140,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
             if (countdownTimer <= 0) {
                 currentGameState = COUNTDOWN_SHOW_1;
                 countdownTimer = 1;
-                if (resources.countdownSoundLoaded) 
-                    PlaySound(resources.countdown);
+                PlaySound(resources.countdown);
             }
             break;
         case COUNTDOWN_SHOW_1:
@@ -151,14 +148,11 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
             if (countdownTimer <= 0) {
                 currentGameState = COUNTDOWN_SHOW_GO;
                 countdownTimer = 1;
-                if (resources.goSoundLoaded)
-                    PlaySound(resources.ctdwnGo);
-                if (resources.bgNoiseLoaded) {
-                    playBgNoiseLoop = true;
-                    SeekMusicStream(resources.bgNoise, 0);
-                    PlayMusicStream(resources.bgNoise);
-                    SetMusicVolume(resources.bgNoise, 0.2); 
-                }
+                PlaySound(resources.ctdwnGo);
+                playBgNoiseLoop = true;
+                SeekMusicStream(resources.bgNoise, 0);
+                PlayMusicStream(resources.bgNoise);
+                SetMusicVolume(resources.bgNoise, 0.2); 
             }
             break;
         case COUNTDOWN_SHOW_GO:
@@ -171,7 +165,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
                 for (size_t i = 0; i < currentLaneSpeeds.size(); i++) 
                     currentLaneSpeeds[i] = npcSpeedDist(gen);
                 
-                if (resources.backgroundMusicLoaded && !IsMusicStreamPlaying(resources.backgroundMusic)) {
+                if (!IsMusicStreamPlaying(resources.backgroundMusic)) {
                     PlayMusicStream(resources.backgroundMusic);
                     SetMusicVolume(resources.backgroundMusic, 0.5);
                 }
@@ -204,9 +198,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
                         spinFrame = 0;
                         spinTimer = 0;
                         motoristVirtualSpeed = VIRTUAL_SPEED_INITIAL;
-
-                        if (resources.carCrashSoundLoaded) 
-                            PlaySound(resources.carCrash);
+                        PlaySound(resources.carCrash);
                         playerLives--;
                         if (playerLives <= 0) 
                             currentGameState = GAME_OVER_STATE;
@@ -225,9 +217,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
                 if (distanceThisLap >= LAP_DISTANCE) {
                     currentLap++;
                     distanceThisLap -= LAP_DISTANCE;
-
-                    if (resources.lapSoundLoaded) 
-                        PlaySound(resources.lapReached);
+                    PlaySound(resources.lapReached);
                     lapAnimBlinkCount = LAP_ANIM_TOTAL_BLINKS;
                     showLapAnim = true;
                     lapAnimTimer = LAP_ANIM_BLINK_DURATION;
@@ -505,8 +495,8 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
                 DrawText(TextFormat("Current Lap: %d", currentLap), 10, debugY, 10, SKYBLUE); debugY += lineHeight;
                 DrawText(TextFormat("Dist This Lap: %.1", distanceThisLap), 10, debugY, 10, SKYBLUE); debugY += lineHeight;
             }
-            if (resources.backgroundMusicLoaded) DrawText(TextFormat("Music: %.1/%.1", GetMusicTimePlayed(resources.backgroundMusic), GetMusicTimeLength(resources.backgroundMusic)), 10, debugY, 10, PURPLE); debugY += lineHeight;
-            if (resources.bgNoiseLoaded) DrawText(TextFormat("BG Noise: %s", IsMusicStreamPlaying(resources.bgNoise) ? "Playing" : "Stopped"), 10, debugY, 10, DARKGREEN); debugY += lineHeight;
+            DrawText(TextFormat("Music: %.1/%.1", GetMusicTimePlayed(resources.backgroundMusic), GetMusicTimeLength(resources.backgroundMusic)), 10, debugY, 10, PURPLE); debugY += lineHeight;
+            DrawText(TextFormat("BG Noise: %s", IsMusicStreamPlaying(resources.bgNoise) ? "Playing" : "Stopped"), 10, debugY, 10, DARKGREEN); debugY += lineHeight;
             DrawText(TextFormat("State: %d, CTimer: %.2", currentGameState, countdownTimer), 10, debugY, 10, GOLD); debugY += lineHeight;
             DrawText(TextFormat("Lives: %d", playerLives), 10, debugY, 10, (playerLives > 0) ? GREEN : RED);
         }
@@ -514,11 +504,8 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
         EndDrawing();
     }
 
-    if (resources.backgroundMusicLoaded && IsMusicStreamPlaying(resources.backgroundMusic)) 
-        StopMusicStream(resources.backgroundMusic);
-    
-    if (resources.bgNoiseLoaded && IsMusicStreamPlaying(resources.bgNoise))
-        StopMusicStream(resources.bgNoise);
+    if (IsMusicStreamPlaying(resources.backgroundMusic)) StopMusicStream(resources.backgroundMusic);
+    if (IsMusicStreamPlaying(resources.bgNoise)) StopMusicStream(resources.bgNoise);
     
     UnloadRenderTexture(target);
     UnloadMotoristResources(resources);

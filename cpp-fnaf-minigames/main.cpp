@@ -20,97 +20,101 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
 int runMagicRainbowLand(GraphicsQuality quality);
 void StopAndUnloadMusic(Music& music, bool& loadedFlag);
 
-static bool AreAllCoreResourcesLoaded(const RainbowLandGameResources& res) {
+
+static bool CheckRainbowLandResourcesLoaded(const RainbowLandGameResources& res) {
     vector<string> missingResources;
 
-    // Tekstury gracza
-    if (res.idleRight.id == 0) { missingResources.push_back("Tekstura gracza: idleRight"); }
-    if (res.idleLeft.id == 0) { missingResources.push_back("Tekstura gracza: idleLeft"); }
-    if (res.walkRight.id == 0) { missingResources.push_back("Tekstura gracza: walkRight"); }
-    if (res.walkLeft.id == 0) { missingResources.push_back("Tekstura gracza: walkLeft"); }
-    if (res.jumpRight.id == 0) { missingResources.push_back("Tekstura gracza: jumpRight"); }
-    if (res.jumpLeft.id == 0) { missingResources.push_back("Tekstura gracza: jumpLeft"); }
+    if (res.idleRight.id == 0) missingResources.push_back("idleRight");
+    if (res.idleLeft.id == 0) missingResources.push_back("idleLeft");
+    if (res.walkRight.id == 0) missingResources.push_back("walkRight");
+    if (res.walkLeft.id == 0) missingResources.push_back("walkLeft");
+    if (res.jumpRight.id == 0) missingResources.push_back("jumpRight");
+    if (res.jumpLeft.id == 0) missingResources.push_back("jumpLeft");
 
-    // Tekstury œrodowiska i rekwizytów
-    if (res.bg.id == 0) { missingResources.push_back("Tekstura t³a: bg"); }
-    if (res.tile.id == 0) { missingResources.push_back("Tekstura kafelka ziemi: tile"); }
-    if (res.platformTexture.id == 0) { missingResources.push_back("Tekstura platformy: platformTexture"); }
-    if (res.butterfly.id == 0) { missingResources.push_back("Tekstura motyla: butterfly"); }
-    if (res.spikesUp.id == 0) { missingResources.push_back("Tekstura kolców (góra): spikesUp"); }
-    if (res.spikesDown.id == 0) { missingResources.push_back("Tekstura kolców (dó³): spikesDown"); }
-    if (res.controlKeysInfo.id == 0) { missingResources.push_back("Tekstura informacji o sterowaniu: controlKeysInfo"); }
-    if (res.fenceProp.id == 0) { missingResources.push_back("Tekstura rekwizytu p³otu: fenceProp"); }
-    if (res.flowerSmallProp.id == 0) { missingResources.push_back("Tekstura rekwizytu ma³ego kwiatka: flowerSmallProp"); }
-    if (res.flowerBigProp.id == 0) { missingResources.push_back("Tekstura rekwizytu du¿ego kwiatka: flowerBigProp"); }
-    if (res.checkpointFlag.id == 0) { missingResources.push_back("Tekstura flagi checkpointu: checkpointFlag"); }
-    if (res.sunflower.id == 0) { missingResources.push_back("Tekstura s³onecznika: sunflower"); }
-    if (res.checkpoint.id == 0) { missingResources.push_back("Tekstura animacji checkpointu: checkpoint"); }
+    if (res.bg.id == 0) missingResources.push_back("bg");
+    if (res.tile.id == 0) missingResources.push_back("tile");
+    if (res.platformTexture.id == 0) missingResources.push_back("platformTexture");
+    if (res.butterfly.id == 0) missingResources.push_back("butterfly");
+    if (res.spikesUp.id == 0) missingResources.push_back("spikesUp");
+    if (res.spikesDown.id == 0) missingResources.push_back("spikesDown");
+    if (res.controlKeysInfo.id == 0) missingResources.push_back("controlKeysInfo");
+    if (res.fenceProp.id == 0) missingResources.push_back("fenceProp");
+    if (res.flowerSmallProp.id == 0) missingResources.push_back("flowerSmallProp");
+    if (res.flowerBigProp.id == 0) missingResources.push_back("flowerBigProp");
+    if (res.checkpointFlag.id == 0) missingResources.push_back("checkpointFlag");
+    if (res.sunflower.id == 0) missingResources.push_back("sunflower");
+    if (res.checkpoint.id == 0) missingResources.push_back("checkpoint");
 
-    // Tekstury Têczy
-    if (res.rbowBodyTexture.id == 0) { missingResources.push_back("Tekstura cia³a têczy: rbowBodyTexture"); }
+    if (res.rbowBodyTexture.id == 0) missingResources.push_back("rbowBodyTexture");
 
-    if (res.rbowEyeTextures.empty()) {
-        missingResources.push_back("Wektor tekstur oczu têczy (rbowEyeTextures) jest pusty");
-    }
-    else {
-        for (size_t i = 0; i < res.rbowEyeTextures.size(); ++i) {
-            if (res.rbowEyeTextures[i].id == 0) {
-                missingResources.push_back("Tekstura oka têczy: rbowEyeTextures[" + to_string(i) + "]");
-            }
-        }
-        if (res.numEyeSprites == 0 && !res.rbowEyeTextures.empty()) { // Poprawka: SprawdŸ tylko, jeœli tekstury s¹ za³adowane
-            missingResources.push_back("Licznik klatek oczu têczy (numEyeSprites) wynosi 0, mimo za³adowanych tekstur");
-        }
-        if (res.numEyeSprites != res.rbowEyeTextures.size() && !res.rbowEyeTextures.empty()) { // Poprawka: SprawdŸ tylko, jeœli tekstury s¹ za³adowane
-            missingResources.push_back("Licznik klatek oczu (numEyeSprites: " + to_string(res.numEyeSprites) +
-                ") nie zgadza siê z liczb¹ tekstur oczu (" + to_string(res.rbowEyeTextures.size()) + ")");
-        }
-    }
+    for (size_t i = 0; i < res.rbowEyeTextures.size(); ++i)
+        if (res.rbowEyeTextures[i].id == 0) missingResources.push_back("rbowEyeTextures[" + to_string(i) + "]");
 
+    for (size_t i = 0; i < res.sunflowerPetals.size(); ++i)
+        if (res.sunflowerPetals[i].id == 0) missingResources.push_back("sunflowerPetals[" + to_string(i) + "]");
 
-    if (res.sunflowerPetals.empty() || res.sunflowerPetals.size() != 8) {
-        missingResources.push_back("Tekstury p³atków s³onecznika (sunflowerPetals) nieza³adowane poprawnie (oczekiwano 8, jest: " + to_string(res.sunflowerPetals.size()) + ")");
-    }
-    else {
-        for (size_t i = 0; i < res.sunflowerPetals.size(); ++i) {
-            if (res.sunflowerPetals[i].id == 0) {
-                missingResources.push_back("Tekstura p³atka s³onecznika: sunflowerPetals[" + to_string(i) + "]");
-            }
-        }
-    }
+    if (res.buttonVoicesOn.id == 0) missingResources.push_back("buttonVoicesOn");
+    if (res.buttonVoicesOff.id == 0) missingResources.push_back("buttonVoicesOff");
 
-    // Tekstury UI
-    if (res.buttonVoicesOn.id == 0) { missingResources.push_back("Tekstura przycisku (g³osy w³¹czone): buttonVoicesOn"); }
-    if (res.buttonVoicesOff.id == 0) { missingResources.push_back("Tekstura przycisku (g³osy wy³¹czone): buttonVoicesOff"); }
+    if (!res.backgroundMusicLoaded) missingResources.push_back("backgroundMusic");
 
-    // DŸwiêki i muzyka
-    if (!res.backgroundMusicLoaded) { missingResources.push_back("Muzyka t³a (backgroundMusic)"); }
+    if (!res.jumpSoundLoaded) missingResources.push_back("FX: jump");
+    if (!res.petalSoundLoaded) missingResources.push_back("FX: petalShoot");
+    if (!res.spikesSoundLoaded) missingResources.push_back("FX: spikesPush");
+    if (!res.deathSoundLoaded) missingResources.push_back("FX: death");
+    if (!res.checkpointSoundLoaded) missingResources.push_back("FX: checkpoint");
 
-    if (!res.jumpSoundLoaded || (res.jumpSoundLoaded && res.jump.frameCount == 0)) { missingResources.push_back("DŸwiêk skoku (jump)"); } // Poprawka: SprawdŸ frameCount jeœli loaded
-    if (!res.petalSoundLoaded || (res.petalSoundLoaded && res.petalShoot.frameCount == 0)) { missingResources.push_back("DŸwiêk strza³u p³atkiem (petalShoot)"); }
-    if (!res.spikesSoundLoaded || (res.spikesSoundLoaded && res.spikesPush.frameCount == 0)) { missingResources.push_back("DŸwiêk kolców (spikesPush)"); }
-    if (!res.rbowVoiceOffSoundLoaded || (res.rbowVoiceOffSoundLoaded && res.rbowVoiceOff.frameCount == 0)) { missingResources.push_back("DŸwiêk wy³¹czenia g³osu têczy (rbowVoiceOff)"); }
+    for (size_t i = 0; i < res.rbowDialogues.size(); ++i)
+        if (res.rbowDialogues[i].frameCount == 0) missingResources.push_back("rbowDialogues[" + to_string(i) + "]");
 
-    if (res.death.frameCount == 0) { missingResources.push_back("DŸwiêk œmierci (death)"); }
-    if (res.checkpointSound.frameCount == 0) { missingResources.push_back("DŸwiêk checkpointu (checkpointSound)"); }
+    if (!res.rbowVoiceOffSoundLoaded) missingResources.push_back("rbowVoiceOff");
 
-    if (res.rbowDialogues.empty())
-        missingResources.push_back("Wektor dialogów têczy (rbowDialogues) jest pusty");
-    else
-        for (size_t i = 0; i < res.rbowDialogues.size(); ++i)
-            if (res.rbowDialogues[i].frameCount == 0)
-                missingResources.push_back("Dialog têczy: rbowDialogues[" + to_string(i) + "]");
-
-    if (res.rbowYouStillSuck.frameCount == 0) { missingResources.push_back("DŸwiêk 'you still suck' têczy (rbowYouStillSuck)"); }
+    if (!res.rbowYouStillSuckSoundLoaded) missingResources.push_back("rbowYouStillSuck");
 
     if (!missingResources.empty()) {
-        cerr << "Krytyczny b³¹d: Nie uda³o siê za³adowaæ nastêpuj¹cych kluczowych zasobów gry:" << endl;
-
+        cout << "Critical error: failed to load resources:" << endl;
         for (const string& resourceName : missingResources)
-            cerr << "  - " << resourceName << endl;
+            cout << "  - " << resourceName << endl;
 
-        cerr << "Proszê sprawdziæ œcie¿ki do plików i ich integralnoœæ." << endl;
-        // Mo¿na tutaj dodaæ MessageBoxA(NULL, errorMsg.c_str(), "B³¹d ³adowania", MB_OK | MB_ICONERROR);
+        return false;
+    }
+
+    return true;
+}
+
+static bool CheckMotoristResourcesLoaded(const MotoristGameResources& res) {
+    vector<string> missingResources;
+
+    if (res.car.id == 0) missingResources.push_back("car");
+    for (const auto& frame : res.carSpinFrames)
+        if (frame.id == 0) missingResources.push_back("carSpinFrames");
+   
+    if (res.leftCarNPC.id == 0) missingResources.push_back("tile");
+    if (res.rightCarNPC.id == 0) missingResources.push_back("platformTexture");
+
+    if (res.bg.id == 0) missingResources.push_back("bg");
+    if (res.one.id == 0) missingResources.push_back("one");
+    if (res.two.id == 0) missingResources.push_back("two");
+    if (res.three.id == 0) missingResources.push_back("three");
+    if (res.go.id == 0) missingResources.push_back("go");
+    if (res.wasd.id == 0) missingResources.push_back("wasd");
+    if (res.lap.id == 0) missingResources.push_back("lap");
+    //if (res.lapMark.id == 0) missingResources.push_back("lapMark");
+    if (res.goal.id == 0) missingResources.push_back("goal");
+
+    if (!res.backgroundMusicLoaded) missingResources.push_back("backgroundMusic");
+    if (!res.bgNoiseLoaded) missingResources.push_back("FX: bgNoise");
+    if (!res.countdownSoundLoaded) missingResources.push_back("FX: countdown");
+    if (!res.goSoundLoaded) missingResources.push_back("FX: ctdwnGo");
+    if (!res.carCrashSoundLoaded) missingResources.push_back("FX: carCrash");
+    if (!res.lapSoundLoaded) missingResources.push_back("FX: lapReached");
+    if (!res.goalSoundLoaded) missingResources.push_back("FX: goalReached");
+
+    if (!missingResources.empty()) {
+        cout << "Critical error: failed to load resources:" << endl;
+        for (const string& resourceName : missingResources)
+            cout << "  - " << resourceName << endl;
+
         return false;
     }
 
@@ -122,12 +126,12 @@ static bool AreAllCoreResourcesLoaded(const RainbowLandGameResources& res) {
 const char* resolutionOptions[] = { "1280x720", "1920x1080" };
 const ScreenResolution resolutionValues[] = { RES_1280x720, RES_1920x1080 };
 const int numResolutionOptions = sizeof(resolutionOptions) / sizeof(resolutionOptions[0]);
-int currentResolutionIndex = 0; // Default to index 0
+int currentResolutionIndex = 0; 
 
 const char* qualityOptions[] = { "Low", "Medium", "High" };
 const GraphicsQuality qualityValues[] = { QUALITY_LOW, QUALITY_MEDIUM, QUALITY_HIGH };
 const int numQualityOptions = sizeof(qualityOptions) / sizeof(qualityOptions[0]);
-int currentQualityIndex = 1; // Default - Medium
+int currentQualityIndex = 1;
 
 static bool settingsAreInitialized = false;
 
@@ -137,10 +141,9 @@ static bool GuiButton(Rectangle bounds, const char* text, Font font, int fontSiz
     Color currentBgColor = bgColor;
 
     if (CheckCollisionPointRec(scaledMousePos, bounds)) {
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-            currentBgColor = pressedColor;
-        else
-            currentBgColor = hoverColor;
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) currentBgColor = pressedColor;
+        else currentBgColor = hoverColor;
+
         if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
             clicked = true;
     }
@@ -290,7 +293,7 @@ int main(void) {
     float mainMenuBgFrameTimer = 0;
 
     int helpyCurrentAnimFrame = 0;
-    float helpyFrameDelay = 0.73;
+    float helpyFrameDelay = 0.728;
     float helpyFrameTimer = 0;
 
     float fadeAlpha = 0;
@@ -303,8 +306,8 @@ int main(void) {
     bool mainResourcesActuallyLoaded = false;
 
     while (!shouldExit && !WindowShouldClose()) {
-        float dt = GetFrameTime();
         HideCursor();
+        float dt = GetFrameTime();
         Vector2 mousePointWindow = GetMousePosition();
         float mouseScaleX = (float)logicalWidth / GetScreenWidth();
         float mouseScaleY = (float)logicalHeight / GetScreenHeight();
@@ -339,14 +342,16 @@ int main(void) {
 
                 if (fadeTargetScreen == PLAYING_MOTORIST) {
                     MotoristGameResources motoristRes = LoadMotoristResources(g_settings.quality);
-                    // TODO: Sprawdzanie zasobów dla Motorist
-                    gameResult = runMidnightMotorist(g_settings.quality, mainMenuRes.crtShader, g_settings.useCRTShader && mainMenuRes.shaderLoadedSuccessfully);
+                    if (CheckMotoristResourcesLoaded(motoristRes)) {
+                        gameResult = runMidnightMotorist(g_settings.quality, mainMenuRes.crtShader, g_settings.useCRTShader && mainMenuRes.shaderLoadedSuccessfully);
+                        gameActuallyPlayed = true; 
+                    }
+                    else fadeTargetScreen = MAIN_MENU;
                     UnloadMotoristResources(motoristRes);
-                    gameActuallyPlayed = true; 
                 }
                 else if (fadeTargetScreen == PLAYING_RAINBOW) {
                     RainbowLandGameResources rainbowRes = LoadRainbowLandResources(g_settings.quality);
-                    if (AreAllCoreResourcesLoaded(rainbowRes)) {
+                    if (CheckRainbowLandResourcesLoaded(rainbowRes)) {
                         gameResult = runMagicRainbowLand(g_settings.quality);
                         gameActuallyPlayed = true;
                     }
@@ -494,12 +499,14 @@ int main(void) {
                         fadeTargetScreen = PLAYING_MOTORIST;
                         isFadingOut = true;
                         fadeAlpha = 0;
+                        PlaySound(mainMenuRes.buttonSelect);
                     }
                     if (GuiButton({ buttonX, startY + 1 * buttonSpacing, 300, 50 }, "Chica's Magic Rainbow Land", fontForMainMenuButtons, buttonFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
                         previousScreen = currentScreen;
                         fadeTargetScreen = PLAYING_RAINBOW;
                         isFadingOut = true; 
                         fadeAlpha = 0;
+                        PlaySound(mainMenuRes.buttonSelect);
                     }
                     if (GuiButton({ buttonX, startY + 2 * buttonSpacing, 300, 50 }, "Settings", fontForMainMenuButtons, buttonFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
                         settingsAreInitialized = false;
@@ -507,6 +514,7 @@ int main(void) {
                         fadeTargetScreen = SETTINGS;
                         isFadingOut = true; 
                         fadeAlpha = 0;
+                        PlaySound(mainMenuRes.buttonSelect);
                     }
                     if (GuiButton({ buttonX, startY + 3 * buttonSpacing, 300, 50 }, "Exit", fontForMainMenuButtons, buttonFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
                         previousScreen = currentScreen;
@@ -557,6 +565,7 @@ int main(void) {
                     Rectangle resolutionSelectorBounds = { selectorX, 235, selectorWidth, selectorHeight };
                     int resolutionChange = GuiSelector(resolutionSelectorBounds, resolutionOptions[currentResolutionIndex], fontForGeneralUI, settingsSelectorFontSize, BLACK, WHITE, DARKGRAY, GRAY, BLACK, scaledMousePos);
                     if (resolutionChange != 0) {
+                        PlaySound(mainMenuRes.buttonClick);
                         currentResolutionIndex = (currentResolutionIndex + resolutionChange + numResolutionOptions) % numResolutionOptions;
                         g_settings.currentResolution = resolutionValues[currentResolutionIndex];
                         UpdateScreenDimensionsFromSettings();
@@ -568,17 +577,24 @@ int main(void) {
                     Rectangle qualitySelectorBounds = { selectorX, 295, selectorWidth, selectorHeight };
                     int qualityChange = GuiSelector(qualitySelectorBounds, qualityOptions[currentQualityIndex], fontForGeneralUI, settingsSelectorFontSize, BLACK, WHITE, DARKGRAY, GRAY, BLACK, scaledMousePos);
                     if (qualityChange != 0) {
+                        PlaySound(mainMenuRes.buttonClick);
                         currentQualityIndex = (currentQualityIndex + qualityChange + numQualityOptions) % numQualityOptions;
                         g_settings.quality = qualityValues[currentQualityIndex];
                     }
 
                     Rectangle crtToggleButton = { selectorX, 355, 100, 30 };
-                    if (GuiButton(crtToggleButton, g_settings.useCRTShader ? "ON" : "OFF", fontForGeneralUI, settingsSelectorFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos))
-                        if (mainMenuRes.shaderLoadedSuccessfully)
+                    if (GuiButton(crtToggleButton, g_settings.useCRTShader ? "ON" : "OFF", fontForGeneralUI, settingsSelectorFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
+                        if (mainMenuRes.shaderLoadedSuccessfully) {
                             g_settings.useCRTShader = !g_settings.useCRTShader;
+                            if (g_settings.useCRTShader) PlaySound(mainMenuRes.buttonClick);
+                            else PlaySound(mainMenuRes.buttonPoof);
+                        }
+                        else PlaySound(mainMenuRes.buttonPoof);
+                    }
 
                     Rectangle backButton = { logicalWidth / 2 - 100, logicalHeight - 100, 200, 50 };
                     if (GuiButton(backButton, "Back", fontForGeneralUI, 20, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos) || IsKeyPressed(KEY_ESCAPE)) {
+                        PlaySound(mainMenuRes.buttonSelect);
                         settingsAreInitialized = false;
                         previousScreen = SETTINGS;
                         fadeTargetScreen = MAIN_MENU;

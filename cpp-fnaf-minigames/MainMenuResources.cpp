@@ -116,6 +116,13 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
         }
     }
 
+    // --- Load Buttons FX ---
+    if (FileExists("resources/click.mp3") && FileExists("resources/poof.mp3") && FileExists("resources/select.mp3")) {
+        res.buttonClick = LoadSound("resources/click.mp3");
+        res.buttonPoof = LoadSound("resources/poof.mp3");
+        res.buttonSelect = LoadSound("resources/select.mp3");
+    }
+
     // --- Load Custom Fonts ---
     if (FileExists("resources/ARCADECLASSIC.TTF")) {
         res.arcadeClassicFont = LoadFont("resources/ARCADECLASSIC.TTF");
@@ -163,8 +170,8 @@ void UnloadMainMenuResources(MainMenuResources& res) {
 
     if (res.cursor.id > 0) UnloadTexture(res.cursor);
 
-    if (res.menuMusicLoaded && res.menuMusic.stream.buffer) UnloadMusicStream(res.menuMusic);
-    if (res.settingsMusicLoaded && res.settingsMusic.stream.buffer) UnloadMusicStream(res.settingsMusic);
+    if (res.menuMusic.stream.buffer) UnloadMusicStream(res.menuMusic);
+    if (res.settingsMusic.stream.buffer) UnloadMusicStream(res.settingsMusic);
 
     if (res.targetRenderTexture.id > 0) UnloadRenderTexture(res.targetRenderTexture);
 
@@ -179,6 +186,12 @@ void UnloadMainMenuResources(MainMenuResources& res) {
     }
 
     if (res.settingsBgTexture.id > 0) UnloadTexture(res.settingsBgTexture);
+
+    if (res.buttonClick.stream.buffer) {
+        UnloadSound(res.buttonClick);
+        UnloadSound(res.buttonPoof);
+        UnloadSound(res.buttonSelect);
+    }
     
     if (res.arcadeClassicFont.texture.id > 0) {
         UnloadFont(res.arcadeClassicFont);

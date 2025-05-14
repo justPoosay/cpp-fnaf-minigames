@@ -13,13 +13,13 @@ struct MainMenuResources {
 
     Texture2D cursor;
 
-    // --- Rendering Variables ---
+// --- Rendering Variables ---
     Shader crtShader;
     int crtResolutionLoc; 
     int crtTimeLoc;
     bool shaderLoadedSuccessfully;
 
-    // --- Asset Variables ---
+// --- Asset Variables ---
     Image bgGifImage; 
     Texture2D bgTexture;
     Texture2D settingsBgTexture;
@@ -32,10 +32,15 @@ struct MainMenuResources {
     int helpyAnimFrames;
     bool helpyGifLoaded;
 
-    //Font guiFont;
+    // Fonts;
     Font defaultGuiFont;
     Font arcadeClassicFont; 
     Font bytesFont;
+
+    // Button sounds 
+    Sound buttonPoof;
+    Sound buttonClick;
+    Sound buttonSelect;
 
     Music menuMusic;
     Music settingsMusic;

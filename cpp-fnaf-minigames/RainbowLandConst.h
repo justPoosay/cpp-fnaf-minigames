@@ -7,6 +7,9 @@ const float PI_F = PI;
 
 const float radiansToDegrees = PI_F / 180;
 
+const KeyboardKey konamiSequence[] = { KEY_UP, KEY_UP, KEY_DOWN, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_LEFT, KEY_RIGHT, KEY_B, KEY_A };
+const int konamiSequenceLength = sizeof(konamiSequence) / sizeof(konamiSequence[0]);
+
 const int virtualScreenWidth = 800;
 const int virtualScreenHeight = 450;
 
@@ -36,6 +39,8 @@ const int animUpdateRate = 1;
 const int idleFrames = 16;
 const int walkFrames = 16;
 const int jumpFrames = 1;
+const float playerRespawnDelay = 1;
+
 
 
 const float rainbowPaddingX = 60;
@@ -44,15 +49,18 @@ const float rainbowLeftEyeOffsetX = 90;
 const float rainbowLeftEyeOffsetY = 18;
 const float rainbowRightEyeOffsetX = 152;
 const float rainbowRightEyeOffsetY = 18;
+const float rainbowShootDelay = 0.5;
+const float rainbowProjectileSpeed = 450;
+const float rainbowProjectileLifetime = 3;
 
 
 const float butterflyWidth = 32;
 const float butterflyHeight = 32;
-const int BUTTERFLY_TOTAL_FRAMES = 6;
-const int BUTTERFLY_ANIM_UPDATE_RATE = 3;
-const float BUTTERFLY_MOVEMENT_RADIUS_X = 40;
-const float BUTTERFLY_MOVEMENT_RADIUS_Y = 20;
-const float BUTTERFLY_BASE_MOVEMENT_SPEED = 0.8;
+const int butterflyTotalFrames = 6;
+const int butterflyFrameRate = 3;
+const float butterflyMovementRadiusX = 40;
+const float butterflyMovementRadiusY = 20;
+const float butterflyMovementSpeed = 0.8;
 
 // platforms
 const float platformWidth = 80;
@@ -149,7 +157,7 @@ Vector2 petalDirections[] = {
 };
 
 // voices button specs
-const float buttonPadding = 6;
 const float buttonTextureWidth = 126;
 const float buttonTextureHeight = 26;
-Vector2 buttonPos = { buttonPadding, virtualScreenHeight - (buttonTextureHeight + buttonPadding) / 2 };
+Vector2 buttonPos = { 6, virtualScreenHeight - 20 / 2 };
+Rectangle buttonRect = { buttonPos.x, buttonPos.y, buttonTextureWidth / 2, buttonTextureHeight / 2 };
