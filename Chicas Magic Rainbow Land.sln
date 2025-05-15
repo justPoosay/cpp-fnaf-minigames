@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35828.75 d17.13
+VisualStudioVersion = 17.13.35828.75
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Chicas Magic Rainbow Land", "Chicas Magic Rainbow Land.vcxproj", "{7168E629-CF88-4998-AF0C-6E356FA1A459}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CMRL", "Chicas Magic Rainbow Land.vcxproj", "{7168E629-CF88-4998-AF0C-6E356FA1A459}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
