@@ -14,7 +14,11 @@ typedef enum GameScreen {
     PLAYING_MOTORIST,
     PLAYING_RAINBOW,
     EXITING
+<<<<<<< HEAD
+};
+=======
 } GameScreen;
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
 
 int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bool applyShader);
 int runMagicRainbowLand(GraphicsQuality quality);
@@ -144,8 +148,12 @@ static bool GuiButton(Rectangle bounds, const char* text, Font font, int fontSiz
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) currentBgColor = pressedColor;
         else currentBgColor = hoverColor;
 
+<<<<<<< HEAD
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
+=======
         if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
             clicked = true;
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
     }
     DrawRectangleRec(bounds, currentBgColor);
 
@@ -461,7 +469,10 @@ int main(void) {
                 } break;
 
                 case MAIN_MENU: {
+<<<<<<< HEAD
+=======
                     Font fontForMainMenuButtons = mainMenuRes.arcadeClassicFont;
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
                     if (mainMenuRes.menuMusicLoaded && !IsMusicStreamPlaying(mainMenuRes.menuMusic) && currentMenuMusicVolume > 0) {
                         PlayMusicStream(mainMenuRes.menuMusic);
                         SetMusicVolume(mainMenuRes.menuMusic, currentMenuMusicVolume * g_settings.masterVolume);
@@ -488,6 +499,8 @@ int main(void) {
                     }
                     if (IsWindowResized() && !IsWindowFullscreen())
                         SetWindowPosition((GetMonitorWidth(GetCurrentMonitor()) - GetScreenWidth()) / 2, (GetMonitorHeight(GetCurrentMonitor()) - GetScreenHeight()) / 2);
+<<<<<<< HEAD
+=======
 
                     float buttonX = logicalWidth / 2 - 150;
                     float startY = 160 + 30;
@@ -520,6 +533,7 @@ int main(void) {
                         previousScreen = currentScreen;
                         currentScreen = EXITING;
                     }
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
                 } break;
 
                 case SETTINGS: {
@@ -627,6 +641,16 @@ int main(void) {
                 BeginTextureMode(mainMenuRes.targetRenderTexture);
                 ClearBackground(RAYWHITE);
 
+<<<<<<< HEAD
+                GameScreen screenToDraw = currentScreen;
+                if (isFadingOut) screenToDraw = previousScreen;
+
+                Font titleDrawFont = mainMenuRes.bytesFont;
+                Font uiDrawFont = mainMenuRes.defaultGuiFont;
+                Font buttonFont = mainMenuRes.arcadeClassicFont;
+
+                switch (screenToDraw) {
+=======
                 GameScreen screenToActuallyDraw = currentScreen;
                 if (isFadingOut) screenToActuallyDraw = previousScreen;
 
@@ -635,12 +659,52 @@ int main(void) {
                 Font mainMenuButtonDrawFont = mainMenuRes.arcadeClassicFont;
 
                 switch (screenToActuallyDraw) {
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
                 case MAIN_MENU: {
                     if (mainMenuRes.gifLoaded && mainMenuRes.bgTexture.id > 0)
                         DrawTexturePro(mainMenuRes.bgTexture, { 0, 0, (float)mainMenuRes.bgTexture.width, (float)mainMenuRes.bgTexture.height }, { 0, 0, (float)logicalWidth, (float)logicalHeight }, { 0, 0 }, 0, WHITE);
                     else
                         ClearBackground(DARKBLUE);
 
+<<<<<<< HEAD
+                    DrawRectangleRec({ (logicalWidth - 400) / 2, 160, 400, 320 }, BLACK);
+
+                    const char* titleText = "FNaF Minigames Port";
+                    Vector2 titleSize = MeasureTextEx(titleDrawFont, titleText, 75, 1);
+                    DrawTextEx(titleDrawFont, titleText, { logicalWidth / 2 - titleSize.x / 2, 40 }, 75, 1, WHITE);
+
+                    if (GuiButton({ logicalWidth / 2 - 150, 190, 300, 50 }, "Midnight Motorist", buttonFont, 22, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
+                        previousScreen = currentScreen;
+                        fadeTargetScreen = PLAYING_MOTORIST;
+                        isFadingOut = true;
+                        fadeAlpha = 0;
+                        PlaySound(mainMenuRes.buttonSelect);
+                    }
+                    if (GuiButton({ logicalWidth / 2 - 150, 260, 300, 50 }, "Chica's Magic Rainbow Land", buttonFont, 22, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
+                        previousScreen = currentScreen;
+                        fadeTargetScreen = PLAYING_RAINBOW;
+                        isFadingOut = true;
+                        fadeAlpha = 0;
+                        PlaySound(mainMenuRes.buttonSelect);
+                    }
+                    if (GuiButton({ logicalWidth / 2 - 150, 330, 300, 50 }, "Settings", buttonFont, 22, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
+                        settingsAreInitialized = false;
+                        previousScreen = MAIN_MENU;
+                        fadeTargetScreen = SETTINGS;
+                        isFadingOut = true;
+                        fadeAlpha = 0;
+                        PlaySound(mainMenuRes.buttonSelect);
+                    }
+                    if (GuiButton({ logicalWidth / 2 - 150, 400, 300, 50 }, "Exit", buttonFont, 22, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
+                        previousScreen = currentScreen;
+                        currentScreen = EXITING;
+                    }
+
+                    //GuiButton({ buttonX, buttonStartY + 0 * buttonSpacing, 300, 50 }, "Midnight Motorist", buttonFont, 22, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos);
+                    //GuiButton({ buttonX, buttonStartY + 1 * buttonSpacing, 300, 50 }, "Chica's Magic Rainbow Land", buttonFont, 22, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos);
+                    //GuiButton({ buttonX, buttonStartY + 2 * buttonSpacing, 300, 50 }, "Settings", buttonFont, 22, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos);
+                    //GuiButton({ buttonX, buttonStartY + 3 * buttonSpacing, 300, 50 }, "Exit", buttonFont, 22, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos);
+=======
                     float overlayWidth = 400; float overlayY = 160;
                     float overlayX = (logicalWidth - overlayWidth) / 2;
                     float buttonStartY = overlayY + 30; float buttonSpacing = 70;
@@ -660,6 +724,7 @@ int main(void) {
                     GuiButton({ buttonX, buttonStartY + 1 * buttonSpacing, 300, 50 }, "Chica's Magic Rainbow Land", mainMenuButtonDrawFont, buttonFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos);
                     GuiButton({ buttonX, buttonStartY + 2 * buttonSpacing, 300, 50 }, "Settings", mainMenuButtonDrawFont, buttonFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos);
                     GuiButton({ buttonX, buttonStartY + 3 * buttonSpacing, 300, 50 }, "Exit", mainMenuButtonDrawFont, buttonFontSize, BLACK, WHITE, LIGHTGRAY, GRAY, scaledMousePos);
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
 
                     Rectangle cursorDestRect = {
                         scaledMousePos.x,

@@ -203,7 +203,11 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     vector<RainbowProjectile> activeRainbowProjectiles;
     float rainbowLeftEyeShootTimer = 0;
     float rainbowRightEyeShootTimer = 0;
+<<<<<<< HEAD
+    const float rainbowShootDelay = 0.35;
+=======
     const float rainbowShootDelay = 0.5;
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
     const float rainbowProjectileSpeed = 450;
     const float rainbowProjectileLifetime = 3;
     bool rainbowIsAttacking = false;
@@ -713,7 +717,11 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 activeRainbowProjectiles.push_back(newProjectile);
 
                 if (!soundPlayedThisFrame) {
+<<<<<<< HEAD
+                    PlaySound(resources.rbowLaserShoot);
+=======
                     PlaySound(resources.bflyLaserShoot);
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
                     soundPlayedThisFrame = true;
                 }
             }
@@ -806,7 +814,11 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         for (auto& event : sunflowerEvents) {
             if (event.hasBeenActivated) continue;
 
+<<<<<<< HEAD
+            if (!isPlayerRespawning && (currentWorldPlayerHitboxForEvents.x + currentWorldPlayerHitboxForEvents.width) > event.triggerX && (prevWorldPlayerHitboxForEvents.x + prevWorldPlayerHitboxForEvents.width) <= event.triggerX) {
+=======
             if (!isPlayerRespawning && (currentWorldPlayerHitboxForEvents.x + currentWorldPlayerHitboxForEvents.width) > event.triggerX && (prevWorldPlayerHitboxForEvents.x + prevWorldPlayerHitboxForEvents.width) <= event.triggerX) { // Event triggers only if player alive
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
                 event.hasBeenActivated = true;
                 bool soundPlayedForThisSpecificEvent = false;
 
@@ -1106,7 +1118,11 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
+<<<<<<< HEAD
+    // Rainbow lasers draw
+=======
     // Rysowanie pocisków têczy
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
         for (const auto& p : activeRainbowProjectiles) {
             if (p.active) {
                 Vector2 laserDrawPos = {(p.position.x - scrollX) - (resources.laserBeamFrame.width) / 2, p.position.y};
@@ -1157,6 +1173,21 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             DrawRectangle(0, 0, 140, 180, BLACK);
             int textY = 10;
             int lineHeight = 10;
+<<<<<<< HEAD
+            DrawText(TextFormat("Position: (%.0f, %.0f)", playerPos.x, playerPos.y), 10, textY, lineHeight, LIME); textY += lineHeight;
+
+            DrawText(TextFormat("P.Vel Y: %.0f", playerVel.y), 10, textY, lineHeight, LIME); textY += lineHeight;
+            DrawText(TextFormat("ScrollX (Cam): %.0f", scrollX), 10, textY, lineHeight, LIME); textY += lineHeight;
+            DrawText(TextFormat("MaxScrollX: %.0f", maxScrollX), 10, textY, lineHeight, ORANGE); textY += lineHeight;
+            DrawText(TextFormat("BGScroll: %.0f", bgScroll), 10, textY, lineHeight, SKYBLUE); textY += lineHeight;
+            DrawText(TextFormat("LevelWidth: %.0f", levelLogicalWidth), 10, textY, lineHeight, SKYBLUE); textY += lineHeight;
+            DrawText(TextFormat("Grounded: %s", isGrounded ? "True" : "False"), 10, textY, lineHeight, LIME); textY += lineHeight;
+            DrawText(TextFormat("Jumping(Up): %s", isJumping ? "True" : "False"), 10, textY, lineHeight, YELLOW); textY += lineHeight;
+            DrawText(TextFormat("Button Clicked: %s", isButtonClicked ? "Yes" : "No"), 10, textY, lineHeight, YELLOW); textY += lineHeight;
+            DrawText(TextFormat("rainbow Pos X: %.0f", rainbowPos.x), 10, textY, lineHeight, BLUE); textY += lineHeight;
+            DrawText(TextFormat("rainbow Pos Y: %.0f", rainbowPos.y), 10, textY, lineHeight, BLUE); textY += lineHeight;
+            DrawText(TextFormat("rainbow Target X: %.0f", rainbowTargetX), 10, textY, lineHeight, MAGENTA); textY += lineHeight;
+=======
             DrawText(TextFormat("Position: (%, %)", playerPos.x, playerPos.y), 10, textY, lineHeight, LIME); textY += lineHeight;
 
             DrawText(TextFormat("P.Vel Y: %", playerVel.y), 10, textY, lineHeight, LIME); textY += lineHeight;
@@ -1170,11 +1201,16 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             DrawText(TextFormat("rainbow Pos X: %", rainbowPos.x), 10, textY, lineHeight, BLUE); textY += lineHeight;
             DrawText(TextFormat("rainbow Pos Y: %", rainbowPos.y), 10, textY, lineHeight, BLUE); textY += lineHeight;
             DrawText(TextFormat("rainbow Target X: %", rainbowTargetX), 10, textY, lineHeight, MAGENTA); textY += lineHeight;
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
             DrawText(TextFormat("rainbow Eye Idx: %d", currentEyeIndex), 10, textY, lineHeight, WHITE); textY += lineHeight;
             DrawText(TextFormat("rainbow In Dialog: %s", israinbowInDialogue ? "Yes" : "No"), 10, textY, lineHeight, PINK); textY += lineHeight;
             DrawText(TextFormat("Konami code: %s", isSecretActivated ? "On" : "Off"), 10, textY, lineHeight, PINK); textY += lineHeight;
 
+<<<<<<< HEAD
+            DrawText(TextFormat("Music: %.0f/%.0f", GetMusicTimePlayed(resources.backgroundMusic), GetMusicTimeLength(resources.backgroundMusic)), 10, textY, lineHeight, SKYBLUE); textY += lineHeight;
+=======
             DrawText(TextFormat("Music: %.1f/%.1f", GetMusicTimePlayed(resources.backgroundMusic), GetMusicTimeLength(resources.backgroundMusic)), 10, textY, lineHeight, SKYBLUE); textY += lineHeight;
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
             DrawText("DEBUG (F3) Full (F11)", virtualScreenWidth - MeasureText("DEBUG (F3) Full (F11)", 20) - 10, 10, 20, WHITE);
 
             for (const auto& platform : platforms) {
@@ -1183,7 +1219,11 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 {
                     DrawRectangleLinesEx(platformDrawRect, 1, VIOLET);
 
+<<<<<<< HEAD
+                    const char* coordText = TextFormat("X:%.0f, Y:%.0f", platform.x, platform.y);
+=======
                     const char* coordText = TextFormat("X:%, Y:%", platform.x, platform.y);
+>>>>>>> e9b7f402a789500d272f67985d77c370b39f43ac
                     int coordFontSize = 10;
                     Color coordTextColor = WHITE;
                     Color coordBgColor = Fade(BLACK, 0.6);
