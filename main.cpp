@@ -141,7 +141,7 @@ int main()
     const float playerHitboxWidth = playerTextureWidth * 0.6f;   // Np. 70% szerokoœci
     const float playerHitboxHeight = playerTextureHeight * 0.8f; // Np. 90% wysokoœci
     const float playerHitboxOffsetX = (playerTextureWidth - playerHitboxWidth) / 2.0f; // Centrowanie X
-    const float playerHitboxOffsetY = (playerTextureHeight - playerHitboxHeight);     // Wyrównanie do do³u
+    const float playerHitboxOffsetY = (playerTextureHeight - playerHitboxHeight); // Wyrównanie do do³u
 
 
     const float groundLevelY = virtualScreenHeight - (float)tile.height;
