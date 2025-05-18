@@ -2,9 +2,6 @@
 
 #include "raylib.h"
 
-#include <iostream>
-#include <string>
-
 struct MainMenuResources {
     Texture2D helpyLoadingScreenTexture;
     bool helpyLoadingTextureLoaded;
@@ -24,15 +21,16 @@ struct MainMenuResources {
     int animFrames;
     bool gifLoaded;
 
-    // Helpy gif
+    // Helpy grooves
     Image helpyGifImage;
     Texture2D helpyTexture;
     int helpyAnimFrames;
     bool helpyGifLoaded;
 
-    // Cracked Helpy gif
+    // Helpy murdered :<
     Image helpyCrackedGifImage;
     Texture2D helpyCrackedTexture;
+    Sound helpyCrackSound;
     int helpyCrackedAnimFrames;
     bool helpyCrackedGifLoaded;
 

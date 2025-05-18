@@ -1,5 +1,10 @@
 #include "MainMenuResources.h"
 
+#include <iostream>
+#include <string>
+
+using namespace std;
+
 bool LoadInitialLoadingScreenResources(MainMenuResources& res) {
     res.helpyLoadingScreenTexture = LoadTexture("resources/helpy/helpyLoadingScreen.png");
     if (res.helpyLoadingScreenTexture.id > 0) {
@@ -27,14 +32,13 @@ static void InitializeResourceStates(MainMenuResources& res) {
 
     res.helpyGifImage = { 0 };
     res.helpyTexture = { 0 };
-    //res.helpyAnimFrames = 0;
+    res.helpyAnimFrames = 0;
     res.helpyGifLoaded = false;
 
+    res.helpyCrackedGifImage = { 0 };
+    res.helpyCrackedTexture = { 0 };
+    res.helpyCrackedAnimFrames = 0;
     res.helpyCrackedGifLoaded = false;
-    // res.helpyCrackedAnimFrames = 0;
-    res.helpyCrackedCurrentPlayingFrame = 0;
-    res.helpyCrackedFramePlayTimer = 0;
-    res.helpyCrackAnimationHasPlayed = false;
 
 
     res.defaultGuiFont = GetFontDefault();
@@ -47,6 +51,8 @@ static void InitializeResourceStates(MainMenuResources& res) {
     res.settingsMusicLoaded = false;
 
     res.targetRenderTexture = { 0 };
+    res.helpyLoadingScreenTexture = { 0 };
+    res.helpyLoadingTextureLoaded = false;
 }
 
 bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logicalHeight) {
@@ -95,7 +101,7 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
         }
     }
 
-    // --- Load Helpy GIF for Settings Screen ---
+    // --- Load Helpy ---
     if (FileExists("resources/helpy/helpyGrooves.gif")) {
         res.helpyGifImage = LoadImageAnim("resources/helpy/helpyGrooves.gif", &res.helpyAnimFrames);
         if (res.helpyGifImage.data != NULL && res.helpyAnimFrames > 0) {
@@ -104,44 +110,35 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
                 res.helpyGifLoaded = true;
                 SetTextureFilter(res.helpyTexture, TEXTURE_FILTER_BILINEAR);
             }
-            else {
-                UnloadImage(res.helpyGifImage); 
-                res.helpyGifImage = { 0 };
-            }
         }
-        else {
-            if (res.helpyGifImage.data) UnloadImage(res.helpyGifImage);
-            res.helpyGifImage = { 0 };
-        }
+        else res.helpyGifImage = { 0 };
 
     }
 
-    // Load Cracked Helpy GIF
-    if (FileExists("resources/helpy/helpy.gif")) {
-        res.helpyCrackedGifImage = LoadImageAnim("resources/helpy/helpyDead.gif", &res.helpyAnimFrames);
+    // Murdered Helpy
+    if (FileExists("resources/helpy/helpyDead.gif")) {
+        if (FileExists("resources/helpy/crack.mp3")) 
+            res.helpyCrackSound = LoadSound("resources/helpy/crack.mp3");
+
+        res.helpyCrackedGifImage = LoadImageAnim("resources/helpy/helpyDead.gif", &res.helpyCrackedAnimFrames);
         if (res.helpyCrackedGifImage.data != NULL && res.helpyCrackedAnimFrames > 0) {
             res.helpyCrackedTexture = LoadTextureFromImage(res.helpyCrackedGifImage);
             if (res.helpyCrackedTexture.id > 0) {
                 res.helpyCrackedGifLoaded = true;
                 SetTextureFilter(res.helpyCrackedTexture, TEXTURE_FILTER_BILINEAR);
             }
-            else {
-                UnloadImage(res.helpyCrackedGifImage); 
-                res.helpyCrackedGifImage = { 0 };
-            }
         }
-        else {
-            if (res.helpyCrackedGifImage.data) UnloadImage(res.helpyCrackedGifImage);
-            res.helpyCrackedGifImage = { 0 };
-        }
+        else res.helpyCrackedGifImage = { 0 };
+        
     }
+    
 
     // --- Load Settings Background ---
     if (FileExists("resources/settingsBg.png")) {
         res.settingsBgTexture = LoadTexture("resources/settingsBg.png");
-        if (res.settingsBgTexture.id > 0) {
+
+        if (res.settingsBgTexture.id > 0)
             SetTextureFilter(res.settingsBgTexture, TEXTURE_FILTER_BILINEAR);
-        }
     }
 
     // --- Load Buttons FX ---
@@ -163,30 +160,26 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
     // --- Load Menu Music ---
     if (FileExists("resources/mainMenu.mp3")) {
         res.menuMusic = LoadMusicStream("resources/mainMenu.mp3");
-        if (res.menuMusic.stream.buffer) {
+
+        if (res.menuMusic.stream.buffer)
             res.menuMusicLoaded = true;
-            SetMusicVolume(res.menuMusic, 1);
-        }
     }
 
     // --- Load Settings Music ---
     if (FileExists("resources/SETTINGS.mp3")) {
         res.settingsMusic = LoadMusicStream("resources/SETTINGS.mp3");
-        if (res.settingsMusic.stream.buffer) {
+
+        if (res.settingsMusic.stream.buffer)
             res.settingsMusicLoaded = true;
-            SetMusicVolume(res.settingsMusic, 1);
-        }
     }
 
     // --- Load Render Texture ---
     res.targetRenderTexture = LoadRenderTexture(logicalWidth, logicalHeight);
-    if (res.targetRenderTexture.id > 0) {
+    if (res.targetRenderTexture.id > 0) 
         SetTextureFilter(res.targetRenderTexture.texture, TEXTURE_FILTER_BILINEAR);
-    }
-    else allCriticalLoaded = false;
+    else 
+        allCriticalLoaded = false;
 
-
-    TraceLog(LOG_INFO, "RESOURCES: Main menu resource loading complete.");
     return allCriticalLoaded;
 }
 
@@ -216,10 +209,11 @@ void UnloadMainMenuResources(MainMenuResources& res) {
     if (res.helpyCrackedGifLoaded) {
         UnloadTexture(res.helpyCrackedTexture);
         UnloadImage(res.helpyCrackedGifImage);
-        res.helpyCrackedGifLoaded = false;
+        UnloadSound(res.helpyCrackSound);
     }
 
-    if (res.settingsBgTexture.id > 0) UnloadTexture(res.settingsBgTexture);
+    if (res.settingsBgTexture.id > 0) 
+        UnloadTexture(res.settingsBgTexture);
 
     if (res.buttonClick.stream.buffer) {
         UnloadSound(res.buttonClick);
