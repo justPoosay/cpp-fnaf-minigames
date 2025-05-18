@@ -27,8 +27,15 @@ static void InitializeResourceStates(MainMenuResources& res) {
 
     res.helpyGifImage = { 0 };
     res.helpyTexture = { 0 };
-    res.helpyAnimFrames = 0;
+    //res.helpyAnimFrames = 0;
     res.helpyGifLoaded = false;
+
+    res.helpyCrackedGifLoaded = false;
+    // res.helpyCrackedAnimFrames = 0;
+    res.helpyCrackedCurrentPlayingFrame = 0;
+    res.helpyCrackedFramePlayTimer = 0;
+    res.helpyCrackAnimationHasPlayed = false;
+
 
     res.defaultGuiFont = GetFontDefault();
     res.arcadeClassicFont = { 0 };
@@ -105,6 +112,27 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
         else {
             if (res.helpyGifImage.data) UnloadImage(res.helpyGifImage);
             res.helpyGifImage = { 0 };
+        }
+
+    }
+
+    // Load Cracked Helpy GIF
+    if (FileExists("resources/helpy/helpy.gif")) {
+        res.helpyCrackedGifImage = LoadImageAnim("resources/helpy/helpyDead.gif", &res.helpyAnimFrames);
+        if (res.helpyCrackedGifImage.data != NULL && res.helpyCrackedAnimFrames > 0) {
+            res.helpyCrackedTexture = LoadTextureFromImage(res.helpyCrackedGifImage);
+            if (res.helpyCrackedTexture.id > 0) {
+                res.helpyCrackedGifLoaded = true;
+                SetTextureFilter(res.helpyCrackedTexture, TEXTURE_FILTER_BILINEAR);
+            }
+            else {
+                UnloadImage(res.helpyCrackedGifImage); 
+                res.helpyCrackedGifImage = { 0 };
+            }
+        }
+        else {
+            if (res.helpyCrackedGifImage.data) UnloadImage(res.helpyCrackedGifImage);
+            res.helpyCrackedGifImage = { 0 };
         }
     }
 
@@ -183,6 +211,12 @@ void UnloadMainMenuResources(MainMenuResources& res) {
     if (res.helpyGifLoaded) {
         if (res.helpyTexture.id > 0) UnloadTexture(res.helpyTexture);
         if (res.helpyGifImage.data) UnloadImage(res.helpyGifImage);
+    }
+
+    if (res.helpyCrackedGifLoaded) {
+        UnloadTexture(res.helpyCrackedTexture);
+        UnloadImage(res.helpyCrackedGifImage);
+        res.helpyCrackedGifLoaded = false;
     }
 
     if (res.settingsBgTexture.id > 0) UnloadTexture(res.settingsBgTexture);

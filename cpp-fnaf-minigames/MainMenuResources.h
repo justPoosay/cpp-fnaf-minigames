@@ -1,8 +1,6 @@
 #pragma once
 
 #include "raylib.h"
-#include "raymath.h"
-#include "GameSettings.h"
 
 #include <iostream>
 #include <string>
@@ -31,6 +29,16 @@ struct MainMenuResources {
     Texture2D helpyTexture;
     int helpyAnimFrames;
     bool helpyGifLoaded;
+
+    // Cracked Helpy gif
+    Image helpyCrackedGifImage;
+    Texture2D helpyCrackedTexture;
+    int helpyCrackedAnimFrames;
+    bool helpyCrackedGifLoaded;
+
+    int helpyCrackedCurrentPlayingFrame;
+    float helpyCrackedFramePlayTimer;
+    bool helpyCrackAnimationHasPlayed;
 
     // Fonts;
     Font defaultGuiFont;
