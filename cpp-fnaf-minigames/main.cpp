@@ -22,21 +22,16 @@ typedef enum GameScreen {
     EXITING
 } GameScreen;
 
-// Definicja argumentu
+
 struct ArgumentDetail {
     string name; // np. "/?", "/T"
     string description; // Co robi ten argument
 };
 
-// Definicja komendy
 struct CommandDefinition {
-    string name;                     // Nazwa komendy, np. "TASKKILL"
-    string shortDescription;         // Krótki opis dla ogólnego HELP
-    string helpMessage;              // Pe³ny tekst pomocy (wyœwietlany dla komenda /?)
-    // Mo¿e zawieraæ "Usage: ..."
-    map<string, ArgumentDetail> acceptedArguments; // Mapa argumentów, klucz to nazwa argumentu
-    // Funkcja (wskaŸnik lub function) do wykonania komendy - to bardziej zaawansowane,
-    // na razie zostawimy logikê w if/else if, ale to jest kierunek na przysz³oœæ.
+    string name;
+    string helpMessage;
+    map<string, ArgumentDetail> acceptedArguments;
 };
 
 // --- Console Variables ---
@@ -50,31 +45,21 @@ vector<string> runningProcesses = { "helpy.ini", "fazbOS.exe" };
 vector<CommandDefinition> definedCommands = {
     { 
         "HELP",
-        "Displays help information for console commands.",
         "Provides help information for console commands.\n\nHELP [command]\n\n  command - displays help information on that command.",
         {{"/?", {"/?", "Displays this help message."}}}
     },
     {
         "CLEAR",
-        "Clears the console output.",
         "Clears all text from the console window.\n\nCLEAR [/?]",
         {{"/?", {"/?", "Displays this help message."}}}
     },
-    //{
-    //    "HISTORY",
-    //    "Displays command history (not yet implemented).",
-    //    "Displays a list of previously entered commands.\n\nHISTORY [/?]\n\n(Feature not fully implemented)",
-    //    {{"/?", {"/?", "Displays this help message."}}}
-    //},
     {
         "TASKLIST",
-        "Displays a list of simulated running processes.",
         "Displays a list of all currently running simulated processes.\n\nTASKLIST [/?]",
         {{"/?", {"/?", "Displays this help message."}}}
     },
     {
         "TASKKILL",
-        "Terminates a simulated process.",
         "Terminates a specified process.\n\nTASKKILL <process_name> [/T] [/F] [/?]\n\n"
         "  <process_name>  Specifies the process to be terminated.\n"
         "  /T              Terminates the specified process and any child processes (simulated).\n"
@@ -92,7 +77,7 @@ vector<CommandDefinition> definedCommands = {
 bool helpyKilled = false;
 
 int helpyCurrentAnimFrame = 0;
-float helpyFrameDelay = 0.73;
+float helpyFrameDelay = 0.725;
 float helpyFrameTimer = 0;
 
 int helpyCrackedCurrentPlayingFrame = 0;
@@ -100,6 +85,7 @@ float helpyCrackedAnimInternalTimer = 0;
 float helpyCrackedAnimFrameDelay = 0.25;
 
 float musicRestartKillTimer = 0;
+
 
 // --- UI Data  ---
 const char* resolutionOptions[] = { "1280x720", "1920x1080" };
@@ -139,13 +125,13 @@ void StopAndUnloadMusic(Music& music, bool& loadedFlag) {
     }
 }
 
-bool GuiButton(Rectangle bounds, const char* text, Font font, Color bgColor, Color hoverColor, Color pressedColor, Vector2 scaledMousePos) {
+bool GuiButton(Rectangle bounds, const char* text, Font font, Color bgColor, Color hoverColor, Color pressedColor, Vector2 mousePos) {
     bool clicked = false;
     Color currentBgColor = bgColor;
 
     Vector2 textSize = MeasureTextEx(font, text, settingsSelectorFontSize, 1);
 
-    if (!consoleActive && CheckCollisionPointRec(scaledMousePos, bounds)) { 
+    if (!consoleActive && CheckCollisionPointRec(mousePos, bounds)) { 
         currentBgColor = hoverColor;
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             currentBgColor = pressedColor;
@@ -160,7 +146,7 @@ bool GuiButton(Rectangle bounds, const char* text, Font font, Color bgColor, Col
     return clicked;
 }
 
-int GuiSelector(Rectangle bounds, const char* currentOptionText, Font font, Color textColor, Color boxColor, Color arrowColor, Color arrowHoverColor, Color arrowPressedColor, Vector2 scaledMousePos) {
+int GuiSelector(Rectangle bounds, const char* currentOptionText, Font font, Color textColor, Color boxColor, Color arrowColor, Color arrowHoverColor, Color arrowPressedColor, Vector2 mousePos) {
     int clicked_direction = 0;
     float arrowPaddingFromBox = 5;
     float arrowHotspotExtraPadding = 8;
@@ -187,7 +173,7 @@ int GuiSelector(Rectangle bounds, const char* currentOptionText, Font font, Colo
         leftArrowTextSize.y + arrowHotspotExtraPadding
     };
     Color currentLeftArrowColor = arrowColor;
-    if (!consoleActive && CheckCollisionPointRec(scaledMousePos, leftArrowHotspot)) {
+    if (!consoleActive && CheckCollisionPointRec(mousePos, leftArrowHotspot)) {
         currentLeftArrowColor = arrowHoverColor;
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) currentLeftArrowColor = arrowPressedColor;
         if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked_direction = -1;
@@ -204,7 +190,7 @@ int GuiSelector(Rectangle bounds, const char* currentOptionText, Font font, Colo
        rightArrowTextSize.y + arrowHotspotExtraPadding
     };
     Color currentRightArrowColor = arrowColor;
-    if (!consoleActive && CheckCollisionPointRec(scaledMousePos, rightArrowHotspot)) {
+    if (!consoleActive && CheckCollisionPointRec(mousePos, rightArrowHotspot)) {
         currentRightArrowColor = arrowHoverColor;
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) currentRightArrowColor = arrowPressedColor;
         if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && clicked_direction == 0) clicked_direction = 1;
@@ -214,7 +200,7 @@ int GuiSelector(Rectangle bounds, const char* currentOptionText, Font font, Colo
     return clicked_direction;
 }
 
-void UpdateMainMenuScreen(MainMenuResources& res, Vector2 scaledMousePos, GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha, float dt,
+void UpdateMainMenuScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha, float dt,
     int& mainMenuBgCurrentFrame, float& mainMenuBgFrameTimer, float mainMenuBgFrameDelay) {
     if (res.menuMusicLoaded && !IsMusicStreamPlaying(res.menuMusic)) {
         PlayMusicStream(res.menuMusic);
@@ -246,52 +232,50 @@ void UpdateMainMenuScreen(MainMenuResources& res, Vector2 scaledMousePos, GameSc
 
 }
 
-void DrawMainMenuScreen(MainMenuResources& res, Vector2 scaledMousePos, int mainMenuBgCurrentFrame,
-    GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha) {
+void DrawMainMenuScreen(MainMenuResources& res, Vector2 mousePos, int mainMenuBgCurrentFrame, GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha) {
     if (res.gifLoaded && res.bgTexture.id > 0) 
         DrawTexturePro(res.bgTexture, { 0, 0, (float)res.bgTexture.width, (float)res.bgTexture.height }, { 0, 0, (float)logicalWidth, (float)logicalHeight }, { 0, 0 }, 0, WHITE);
     else ClearBackground(DARKBLUE);
     
-    Vector2 titleSize = MeasureTextEx(res.bytesFont, "FNaF Minigames Port", 75, 1);
+    Vector2 titleSize = MeasureTextEx(res.bytesFont, "FNaF Minigames Port", 100, 1);
     DrawRectangleRec({ (logicalWidth - 400) / 2, 160, 400, 320 }, Fade(BLACK, 0.7));
-    DrawTextEx(res.bytesFont, "FNaF Minigames Port", { logicalWidth / 2 - titleSize.x / 2, 40 }, 75, 1, WHITE);
+    DrawTextEx(res.bytesFont, "FNaF Minigames Port", { (logicalWidth - titleSize.x) / 2, 40 }, 100, 1, WHITE);
 
-    float buttonX = logicalWidth / 2 - 150;
-    float buttonYStart = 190;
-    float buttonSpacing = 70;
     float buttonWidth = 300;
-    float buttonHeight = 50;
+    float buttonHeight = 60;
+    float buttonX = (logicalWidth - buttonWidth) / 2;
+    float buttonYStart = 180;
+    float buttonSpacing = 72;
 
-    if (GuiButton({ buttonX, buttonYStart, buttonWidth, buttonHeight }, "Midnight Motorist", res.arcadeClassicFont, WHITE, BLUE, PURPLE, scaledMousePos)) {
+    if (GuiButton({ buttonX, buttonYStart, buttonWidth, buttonHeight }, "Midnight Motorist", res.arcadeClassicFont, WHITE, BLUE, PURPLE, mousePos)) {
         previousScreen = currentScreen;
         fadeTargetScreen = PLAYING_MOTORIST;
         PlaySound(res.buttonSelect);
         isFadingOut = true;
         fadeAlpha = 0;
     }
-    if (GuiButton({ buttonX, buttonYStart + buttonSpacing, buttonWidth, buttonHeight }, "Chica's Magic Rainbow Land", res.arcadeClassicFont, WHITE, YELLOW, RED, scaledMousePos)) {
+    if (GuiButton({ buttonX, buttonYStart + buttonSpacing, buttonWidth, buttonHeight }, "Magic Rainbow Land", res.arcadeClassicFont, WHITE, YELLOW, RED, mousePos)) {
         previousScreen = currentScreen;
         fadeTargetScreen = PLAYING_RAINBOW;
         PlaySound(res.buttonSelect);
         isFadingOut = true;
         fadeAlpha = 0;
     }
-    if (GuiButton({ buttonX, buttonYStart + buttonSpacing * 2, buttonWidth, buttonHeight }, "Settings", res.arcadeClassicFont, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
+    if (GuiButton({ buttonX, buttonYStart + buttonSpacing * 2, buttonWidth, buttonHeight }, "Settings", res.arcadeClassicFont, WHITE, LIGHTGRAY, GRAY, mousePos)) {
         previousScreen = MAIN_MENU;
         fadeTargetScreen = SETTINGS;
         PlaySound(res.buttonSelect);
         isFadingOut = true;
         fadeAlpha = 0;
     }
-    if (GuiButton({ buttonX, buttonYStart + buttonSpacing * 3, buttonWidth, buttonHeight }, "Exit", res.arcadeClassicFont, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
+    if (GuiButton({ buttonX, buttonYStart + buttonSpacing * 3, buttonWidth, buttonHeight }, "Exit", res.arcadeClassicFont, WHITE, LIGHTGRAY, GRAY, mousePos)) {
         previousScreen = currentScreen;
         currentScreen = EXITING;
     }
 }
 
 
-void UpdateSettingsScreen(MainMenuResources& res, Vector2 scaledMousePos, GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha, float dt,
-    int& currentNormalHelpyFrame_param, float& normalHelpyTimer_param, float normalHelpyFrameDelay_param) { // Parameters for normal Helpy
+void UpdateSettingsScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha, float dt, int& currentNormalHelpyFrame_param, float& normalHelpyTimer_param, float normalHelpyFrameDelay_param) { // Parameters for normal Helpy
 
     // --- Settings Music Logic ---
     if (helpyKilled) {
@@ -331,7 +315,6 @@ void UpdateSettingsScreen(MainMenuResources& res, Vector2 scaledMousePos, GameSc
 
     // --- Helpy Animation Logic ---
     if (helpyKilled) {
-        // Helpy IS KILLED - Animate cracked Helpy
         if (res.helpyCrackedGifLoaded && res.helpyCrackedGifImage.data && (res.helpyCrackedAnimFrames == 0 || helpyCrackedCurrentPlayingFrame < res.helpyCrackedAnimFrames - 1)) {
             helpyCrackedAnimInternalTimer += dt; // Use the dedicated timer for THIS animation
             bool frameUpdated = false;
@@ -349,8 +332,8 @@ void UpdateSettingsScreen(MainMenuResources& res, Vector2 scaledMousePos, GameSc
                     else 
                         helpyCrackedCurrentPlayingFrame = 0;
                     
-                    frameUpdated = true; // Ensure last frame is updated to texture
-                    break; // Exit while loop, animation is done
+                    frameUpdated = true;
+                    break;
                 }
             }
 
@@ -372,7 +355,6 @@ void UpdateSettingsScreen(MainMenuResources& res, Vector2 scaledMousePos, GameSc
         }
     }
     else {
-        // Helpy is NOT KILLED - Animate normal Helpy
         if (res.helpyGifLoaded && res.helpyTexture.id > 0 && res.helpyGifImage.data) {
             normalHelpyTimer_param += dt; // Use the parameters for normal Helpy's animation
             bool normalFrameUpdated = false;
@@ -402,23 +384,22 @@ void UpdateSettingsScreen(MainMenuResources& res, Vector2 scaledMousePos, GameSc
     }
 }
 
-void DrawSettingsScreen(MainMenuResources& res, Vector2 scaledMousePos, int helpyCurrentAnimFrame, GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha) {
+void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurrentAnimFrame, GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha) {
     if (res.settingsBgTexture.id > 0) 
         DrawTexturePro(res.settingsBgTexture, { 0, 0, (float)res.settingsBgTexture.width, (float)res.settingsBgTexture.height }, { 0, 0, logicalWidth, logicalHeight }, { 0, 0 }, 0, WHITE);
     else ClearBackground(DARKGRAY);
     
+    Vector2 settingsTitleSize = MeasureTextEx(res.bytesFont, "SETTINGS", 65, 1);
+    DrawTextEx(res.bytesFont, "SETTINGS", { logicalWidth / 2 - settingsTitleSize.x / 2, 80 }, 65, 1, WHITE);
 
-    const char* settingsTitleText = "SETTINGS";
-    Vector2 settingsTitleSize = MeasureTextEx(res.bytesFont, settingsTitleText, 65, 1);
-    DrawTextEx(res.bytesFont, settingsTitleText, { logicalWidth / 2 - settingsTitleSize.x / 2, 80 }, 65, 1, WHITE);
 
-    Font uiFont = res.defaultGuiFont;
+    Font uiFont = res.arcadeClassicFont;
 
     //DrawTextEx(uiFont, "Volume:", { 100, 180 }, settingsTextFontSize, 1, WHITE);
     //Rectangle volumeSliderBaseRect = { 250, 175, 300, 30 };
     //DrawRectangleRec(volumeSliderBaseRect, WHITE);
-    //if (!consoleActive && CheckCollisionPointRec(scaledMousePos, volumeSliderBaseRect) && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-    //    g_settings.masterVolume = Clamp((scaledMousePos.x - volumeSliderBaseRect.x) / volumeSliderBaseRect.width, 0, 1);
+    //if (!consoleActive && CheckCollisionPointRec(mousePos, volumeSliderBaseRect) && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+    //    g_settings.masterVolume = Clamp((mousePos.x - volumeSliderBaseRect.x) / volumeSliderBaseRect.width, 0, 1);
     //    SetMasterVolume(g_settings.masterVolume);
     //    if (res.settingsMusicLoaded && IsMusicStreamPlaying(res.settingsMusic)) {
     //        SetMusicVolume(res.settingsMusic, currentSettingsMusicVolume * g_settings.masterVolume);
@@ -430,8 +411,8 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 scaledMousePos, int help
 
     // Resolution Selector
     DrawTextEx(uiFont, "Resolution:", { 100, 240 }, settingsTextFontSize, 1, WHITE);
-    Rectangle resolutionSelectorBounds = { selectorX, 235, selectorWidth, selectorHeight }; 
-    int resolutionChange = GuiSelector(resolutionSelectorBounds, resolutionOptions[currentResolutionIndex], uiFont, BLACK, WHITE, DARKGRAY, GRAY, BLACK, scaledMousePos);
+    Rectangle resolutionSelectorBounds = { selectorX, 235, selectorWidth, selectorHeight };
+    int resolutionChange = GuiSelector(resolutionSelectorBounds, resolutionOptions[currentResolutionIndex], uiFont, BLACK, WHITE, DARKGRAY, GRAY, BLACK, mousePos);
     if (resolutionChange != 0) {
         PlaySound(res.buttonClick);
         currentResolutionIndex = (currentResolutionIndex + resolutionChange + numResolutionOptions) % numResolutionOptions;
@@ -445,7 +426,7 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 scaledMousePos, int help
     // Quality Selector
     DrawTextEx(uiFont, "Quality:", { 100, 300 }, settingsTextFontSize, 1, WHITE);
     Rectangle qualitySelectorBounds = { selectorX, 295, selectorWidth, selectorHeight };
-    int qualityChange = GuiSelector(qualitySelectorBounds, qualityOptions[currentQualityIndex], uiFont, BLACK, WHITE, DARKGRAY, GRAY, BLACK, scaledMousePos);
+    int qualityChange = GuiSelector(qualitySelectorBounds, qualityOptions[currentQualityIndex], uiFont, BLACK, WHITE, DARKGRAY, GRAY, BLACK, mousePos);
     if (qualityChange != 0) {
         PlaySound(res.buttonClick);
         currentQualityIndex = (currentQualityIndex + qualityChange + numQualityOptions) % numQualityOptions;
@@ -455,7 +436,7 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 scaledMousePos, int help
     // Shaders Toggle
     DrawTextEx(uiFont, "Shaders:", { 100, 360 }, settingsTextFontSize, 1, WHITE);
     Rectangle crtToggleButtonBounds = { selectorX, 355, 100, 30 };
-    if (GuiButton(crtToggleButtonBounds, g_settings.useCRTShader ? "ON" : "OFF", uiFont, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
+    if (GuiButton(crtToggleButtonBounds, g_settings.useCRTShader ? "ON" : "OFF", uiFont, WHITE, LIGHTGRAY, GRAY, mousePos)) {
         if (res.shaderLoadedSuccessfully) {
             g_settings.useCRTShader = !g_settings.useCRTShader;
             if (g_settings.useCRTShader) PlaySound(res.buttonClick);
@@ -467,7 +448,7 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 scaledMousePos, int help
         DrawTextEx(uiFont, "(Shader N/A)", { crtToggleButtonBounds.x + crtToggleButtonBounds.width + 10, 360 }, 18, 1, LIGHTGRAY);
 
     // Back Button
-    if (GuiButton({ logicalWidth / 2 - 100, logicalHeight - 100, 200, 50 }, "Back", uiFont, WHITE, LIGHTGRAY, GRAY, scaledMousePos)) {
+    if (GuiButton({ logicalWidth / 2 - 100, logicalHeight - 100, 200, 50 }, "Back", uiFont, WHITE, LIGHTGRAY, GRAY, mousePos)) {
         PlaySound(res.buttonSelect);
         previousScreen = SETTINGS;
         fadeTargetScreen = MAIN_MENU;
@@ -480,69 +461,36 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 scaledMousePos, int help
     }
 
     // --- Helpy Drawing Logic ---
-    Texture2D* textureToDrawForHelpy = nullptr;
-    Image* imageForHelpyDimensions = nullptr;
+    Texture2D textureToDrawForHelpy;
+    Image imageForHelpyDimensions;
 
     if (helpyKilled) {
-        // Helpy is killed, so select the cracked Helpy texture and its original image dimensions
         if (res.helpyCrackedGifLoaded && res.helpyCrackedTexture.id > 0) {
-            textureToDrawForHelpy = &res.helpyCrackedTexture;
-            imageForHelpyDimensions = &res.helpyCrackedGifImage;
+            textureToDrawForHelpy = res.helpyCrackedTexture;
+            imageForHelpyDimensions = res.helpyCrackedGifImage;
         }
     }
     else {
-        // Helpy is NOT killed, select the normal dancing Helpy texture and its dimensions
         if (res.helpyGifLoaded && res.helpyTexture.id > 0) {
-            textureToDrawForHelpy = &res.helpyTexture;
-            imageForHelpyDimensions = &res.helpyGifImage;
+            textureToDrawForHelpy = res.helpyTexture;
+            imageForHelpyDimensions = res.helpyGifImage;
         }
     }
 
-    // Common drawing code if a Helpy texture has been selected
-    if (textureToDrawForHelpy != nullptr && textureToDrawForHelpy->id > 0 &&
-        imageForHelpyDimensions != nullptr && imageForHelpyDimensions->data != nullptr) {
 
-        float helpyDrawWidthOnScreen = 200; // Your desired draw size
-        float helpyDrawHeightOnScreen = 200;
-        float finalDrawWidth, finalDrawHeight;
-
-        float helpyOriginalAspectRatio = (float)imageForHelpyDimensions->width / imageForHelpyDimensions->height;
-
-        if (helpyOriginalAspectRatio > 0) {
-            if (imageForHelpyDimensions->width > imageForHelpyDimensions->height) {
-                finalDrawWidth = helpyDrawWidthOnScreen;
-                finalDrawHeight = helpyDrawWidthOnScreen / helpyOriginalAspectRatio;
-            }
-            else {
-                finalDrawHeight = helpyDrawHeightOnScreen;
-                finalDrawWidth = helpyDrawHeightOnScreen * helpyOriginalAspectRatio;
-            }
-            if (finalDrawHeight > helpyDrawHeightOnScreen) {
-                finalDrawHeight = helpyDrawHeightOnScreen;
-                finalDrawWidth = finalDrawHeight * helpyOriginalAspectRatio;
-            }
-            if (finalDrawWidth > helpyDrawWidthOnScreen) {
-                finalDrawWidth = helpyDrawWidthOnScreen;
-                finalDrawHeight = finalDrawWidth / helpyOriginalAspectRatio;
-            }
-        }
-        else {
-            finalDrawWidth = helpyDrawWidthOnScreen; // Fallback
-            finalDrawHeight = helpyDrawHeightOnScreen;
-        }
-
+    if (textureToDrawForHelpy.id > 0 && imageForHelpyDimensions.data) {
         Rectangle helpyDestinationRect = {
-            logicalWidth - finalDrawWidth + 10,
-            logicalHeight - finalDrawHeight - 15,
-            finalDrawWidth,
-            finalDrawHeight
+            logicalWidth - imageForHelpyDimensions.width / 1.5 - 10,
+            logicalHeight - imageForHelpyDimensions.height / 1.5 - 15,
+            imageForHelpyDimensions.width / 1.5,
+            imageForHelpyDimensions.height / 1.5
         };
-        Rectangle helpySourceRect = { 0, 0, (float)textureToDrawForHelpy->width, (float)textureToDrawForHelpy->height };
-        DrawTexturePro(*textureToDrawForHelpy, helpySourceRect, helpyDestinationRect, { 0,0 }, 0, WHITE);
+        Rectangle helpySourceRect = { 0, 0, (float)textureToDrawForHelpy.width, (float)textureToDrawForHelpy.height };
+        DrawTexturePro(textureToDrawForHelpy, helpySourceRect, helpyDestinationRect, { 0,0 }, 0, WHITE);
     }
 }
 
-void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 scaledMousePos, float dt) {
+void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, float dt) {
     if (!consoleActive) return;
     
     int keyPressedUnicode = GetCharPressed();
@@ -585,6 +533,13 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 scaledMousePos
     
 
     if (IsKeyPressed(KEY_ENTER)) {
+        Rectangle tempOutputArea = {
+            consoleRect.x + 10,
+            consoleRect.y + 10,
+            consoleRect.width - 20,
+            consoleRect.height - 58
+        };
+
         if (strlen(consoleInputBuffer) > 0) {
             string input = consoleInputBuffer;
             consoleOutputLines.push_back("> " + input);
@@ -592,22 +547,20 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 scaledMousePos
             vector<string> tokens;
             string currentToken = "";
             for (char ch : input) {
-                if (ch == ' ') { // Spacja jest separatorem
+                if (ch == ' ') {
                     if (!currentToken.empty()) {
                         tokens.push_back(currentToken);
-                        currentToken = ""; // Resetuj token
+                        currentToken = "";
                     }
                 }
-                else currentToken += ch; // Dodaj znak do bie¿¹cego tokenu
-                
+                else currentToken += ch;
             }
+            if (!currentToken.empty())
+                tokens.push_back(currentToken);
 
-            if (!currentToken.empty()) tokens.push_back(currentToken);
             bool commandExecutedSuccessfully = false;
-
             if (!tokens.empty()) {
                 string commandNameInput = tokens[0];
-                // Konwersja na wielkie litery dla spójnego porównywania z definicjami komend
                 string commandNameNormalized = commandNameInput;
                 transform(commandNameNormalized.begin(), commandNameNormalized.end(), commandNameNormalized.begin(), ::toupper);
 
@@ -620,9 +573,8 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 scaledMousePos
                 }
 
                 if (foundCmdDef) {
-                    // SprawdŸ, czy jednym z argumentów jest "/?"
                     bool helpRequestedForThisCommand = false;
-                    for (size_t i = 1; i < tokens.size(); ++i) {
+                    for (int i = 1; i < tokens.size(); i++) {
                         if (tokens[i] == "/?") {
                             helpRequestedForThisCommand = true;
                             break;
@@ -630,26 +582,23 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 scaledMousePos
                     }
 
                     if (helpRequestedForThisCommand) {
-                        // Dzielenie helpMessage na linie, jeœli zawiera '\n'
                         string line;
-                        size_t start = 0;
-                        size_t end = foundCmdDef->helpMessage.find('\n');
+                        int start = 0;
+                        int end = foundCmdDef->helpMessage.find('\n');
                         while (end != string::npos) {
                             consoleOutputLines.push_back(foundCmdDef->helpMessage.substr(start, end - start));
                             start = end + 1;
                             end = foundCmdDef->helpMessage.find('\n', start);
                         }
-                        consoleOutputLines.push_back(foundCmdDef->helpMessage.substr(start)); // Ostatnia linia
+                        consoleOutputLines.push_back(foundCmdDef->helpMessage.substr(start));
                         commandExecutedSuccessfully = true;
                     }
                     else {
-                        // --- Logika specyficzna dla komendy ---
                         if (foundCmdDef->name == "HELP") {
-                            if (tokens.size() > 1) { // HELP <command_name_target>
+                            if (tokens.size() > 1) {
                                 string helpTargetName = tokens[1];
                                 string helpTargetNameNormalized = helpTargetName;
                                 transform(helpTargetNameNormalized.begin(), helpTargetNameNormalized.end(), helpTargetNameNormalized.begin(), ::toupper);
-
                                 const CommandDefinition* targetCmdHelpDef = nullptr;
                                 for (const auto& cmdDefTarget : definedCommands) {
                                     if (cmdDefTarget.name == helpTargetNameNormalized) {
@@ -658,50 +607,42 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 scaledMousePos
                                     }
                                 }
                                 if (targetCmdHelpDef) {
-                                    // Dzielenie helpMessage na linie
-                                    string line;
-                                    size_t start = 0;
-                                    size_t end = targetCmdHelpDef->helpMessage.find('\n');
-                                    while (end != string::npos) {
-                                        consoleOutputLines.push_back(targetCmdHelpDef->helpMessage.substr(start, end - start));
-                                        start = end + 1;
-                                        end = targetCmdHelpDef->helpMessage.find('\n', start);
+                                    string line_h;
+                                    int start_h = 0;
+                                    int end_h = targetCmdHelpDef->helpMessage.find('\n');
+                                    while (end_h != string::npos) {
+                                        consoleOutputLines.push_back(targetCmdHelpDef->helpMessage.substr(start_h, end_h - start_h));
+                                        start_h = end_h + 1;
+                                        end_h = targetCmdHelpDef->helpMessage.find('\n', start_h);
                                     }
-                                    consoleOutputLines.push_back(targetCmdHelpDef->helpMessage.substr(start));
+                                    consoleOutputLines.push_back(targetCmdHelpDef->helpMessage.substr(start_h));
                                 }
                                 else {
                                     consoleOutputLines.push_back("No help topic found for '" + helpTargetName + "'.");
                                 }
                             }
-                            else { // HELP (ogólne)
+                            else {
                                 consoleOutputLines.push_back("For more information on a specific command, type HELP [command-name].");
                                 consoleOutputLines.push_back("");
-                                for (const auto& cmdDefList : definedCommands) {
-                                    consoleOutputLines.push_back(cmdDefList.name + " - " + cmdDefList.shortDescription);
-                                }
+
+                                for (const auto& cmdDefList : definedCommands)
+                                    consoleOutputLines.push_back(cmdDefList.name);
                             }
                             commandExecutedSuccessfully = true;
+
                         }
                         else if (foundCmdDef->name == "CLEAR") {
                             consoleOutputLines.clear();
                             consoleScrollOffset = 0;
                             commandExecutedSuccessfully = true;
                         }
-                        //else if (foundCmdDef->name == "HISTORY") {
-                        //    consoleOutputLines.push_back("Command history");
-                        //    commandExecutedSuccessfully = true;
-                        //}
                         else if (foundCmdDef->name == "TASKLIST") {
-                            if (runningProcesses.empty())
-                                consoleOutputLines.push_back("INFO: No tasks are running which match the specified criteria.");
-                            else {
-                                consoleOutputLines.push_back("Image Name");
-                                consoleOutputLines.push_back("=========================");
+                            consoleOutputLines.push_back("Image Name");
+                            consoleOutputLines.push_back("=========================");
 
-                                for (const auto& proc : runningProcesses)
-                                    consoleOutputLines.push_back(proc);
-                                
-                            }
+                            for (const auto& proc : runningProcesses)
+                                consoleOutputLines.push_back(proc);
+
                             commandExecutedSuccessfully = true;
                         }
                         else if (foundCmdDef->name == "TASKKILL") {
@@ -709,17 +650,14 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 scaledMousePos
                             bool argT = false;
                             bool argF = false;
 
-                            // Przetwarzanie argumentów dla TASKKILL
-                            for (size_t i = 1; i < tokens.size(); ++i) {
+                            for (int i = 1; i < tokens.size(); i++) {
                                 string currentArg = tokens[i];
-                                // Normalizuj argumenty do wielkich liter, jeœli prze³¹czniki s¹ zdefiniowane jako wielkie
                                 string normalizedArg = currentArg;
-                                transform(normalizedArg.begin(), normalizedArg.end(), normalizedArg.begin(), ::toupper); // Normalizuj argument do /T /F
-
+                                transform(normalizedArg.begin(), normalizedArg.end(), normalizedArg.begin(), ::toupper);
                                 if (normalizedArg == "/T") argT = true;
                                 else if (normalizedArg == "/F") argF = true;
                                 else if (currentArg != "/?" && targetProcess.empty()) {
-                                    targetProcess = tokens[i]; // Pierwszy nie-prze³¹cznik to nazwa procesu
+                                    targetProcess = tokens[i];
                                 }
                             }
 
@@ -728,104 +666,105 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 scaledMousePos
                                 consoleOutputLines.push_back("Type TASKKILL /? for command syntax.");
                             }
                             else {
-                                // SprawdŸ, czy proces istnieje w runningProcesses
-                                // Normalizuj targetProcess, jeœli nazwy w runningProcesses s¹ w jednym przypadku
-                                string normalizedTargetProcess = targetProcess;
-                                // transform(normalizedTargetProcess.begin(), normalizedTargetProcess.end(), normalizedTargetProcess.begin(), ::toupper); // Jeœli helpy.ini jest zawsze uppercase
-
-                                auto it = find(runningProcesses.begin(), runningProcesses.end(), targetProcess); // U¿yj oryginalnego targetProcess, jeœli w runningProcesses masz np. "helpy.ini"
-
-                                if (it == runningProcesses.end())
-                                    consoleOutputLines.push_back("ERROR: The process \"" + targetProcess + "\" not found.");
-                                else {
-                                    // ----- Logika dla helpy.ini -----
-                                    if (targetProcess == "helpy.ini") { // U¿yj oryginalnego targetProcess lub znormalizowanego, w zale¿noœci od runningProcesses
-                                        if (argT || argF) { // Jeœli podano /T lub /F
+                                if (targetProcess == "helpy.ini") {
+                                    auto it_helpy_check = find(runningProcesses.begin(), runningProcesses.end(), targetProcess);
+                                    if (helpyKilled && it_helpy_check == runningProcesses.end())
+                                        consoleOutputLines.push_back("You've already broken him...");
+                                    else {
+                                        if (argT || argF) {
                                             if (!helpyKilled) {
                                                 helpyKilled = true;
                                                 consoleOutputLines.push_back("SUCCESS: The process \"" + targetProcess + "\" has been terminated.");
-                                                // Twoja logika zabijania Helpy (animacja, dŸwiêk, muzyka)
-                                                if (res.helpyCrackedGifLoaded) {
-                                                    helpyCrackedCurrentPlayingFrame = 0;
-                                                    helpyCrackedAnimInternalTimer = 0.0f;
-                                                    musicRestartKillTimer = 0.0f;
-                                                    if (res.helpyCrackedGifImage.data && res.helpyCrackedAnimFrames > 0)
-                                                        UpdateTexture(res.helpyCrackedTexture, (unsigned char*)res.helpyCrackedGifImage.data);
-                                                }
-                                                PlaySound(res.helpyCrackSound);
+                                                helpyCrackedCurrentPlayingFrame = 0;
+                                                helpyCrackedAnimInternalTimer = 0;
+                                                musicRestartKillTimer = 0;
+                                                if (res.helpyCrackedGifImage.data)
+                                                    UpdateTexture(res.helpyCrackedTexture, (unsigned char*)res.helpyCrackedGifImage.data);
 
-                                                if (res.settingsMusicLoaded && IsMusicStreamPlaying(res.settingsMusic))
+                                                PlaySound(res.helpyCrackSound);
+                                                if (IsMusicStreamPlaying(res.settingsMusic))
                                                     StopMusicStream(res.settingsMusic);
 
-                                                runningProcesses.erase(remove(runningProcesses.begin(), runningProcesses.end(), targetProcess), runningProcesses.end());
+                                                runningProcesses.erase(it_helpy_check);
                                             }
-                                            else consoleOutputLines.push_back("You've already broken him...");
-                                            
                                         }
                                         else {
-                                            consoleOutputLines.push_back("ERROR: Invalid argument/option -  \'" + targetProcess + "\'.");
+                                            consoleOutputLines.push_back("ERROR: Invalid argument/option - '" + (tokens.size() > 1 ? tokens[1] : "") + "'.");
                                             consoleOutputLines.push_back("Type \"TASKKILL /?\" for usage.");
                                         }
                                     }
-                                    // ----- Logika dla fazbOS.exe -----
-                                    else if (targetProcess == "fazbOS.exe") {
+                                }
+                                else if (targetProcess == "fazbOS.exe") {
+                                    auto it_fazbos = find(runningProcesses.begin(), runningProcesses.end(), targetProcess);
+                                    if (it_fazbos == runningProcesses.end())
+                                        consoleOutputLines.push_back("ERROR: The process \"" + targetProcess + "\" not found.");
+                                    else {
                                         if (argF) {
                                             consoleOutputLines.push_back("SUCCESS: The process \"" + targetProcess + "\" has been terminated.");
                                             consoleOutputLines.push_back("...");
                                             consoleOutputLines.push_back("CRITICAL_PROCESS_DIED");
-                                            // Tu logika Easter Egga
-
-                                            runningProcesses.erase(remove(runningProcesses.begin(), runningProcesses.end(), targetProcess), runningProcesses.end());
+                                            runningProcesses.erase(it_fazbos);
+                                            // TODO: EASTER EGG
                                         }
                                         else if (argT) {
                                             consoleOutputLines.push_back("ERROR: The process \"" + targetProcess + "\" could not be terminated (graceful termination not supported).");
                                             consoleOutputLines.push_back("Reason: This process can only be terminated forcefully (with /F).");
                                         }
-                                        else { // Jeœli dla fazbOS.exe nie podano /F ani /T
-                                            consoleOutputLines.push_back("ERROR: Invalid argument/option. No valid termination switch (/F) provided for fazbOS.exe.");
-                                            consoleOutputLines.push_back("Type TASKKILL /? for command syntax.");
+                                        else {
+                                            consoleOutputLines.push_back("ERROR: Invalid argument/option.");
+                                            consoleOutputLines.push_back("Type \"TASKKILL /?\" for command syntax.");
                                         }
                                     }
-                                    // ----- Dla innych procesów z listy runningProcesses, które nie s¹ specjalnie obs³ugiwane -----
-                                    else {
-                                        consoleOutputLines.push_back("INFO: The process \"" + targetProcess + "\" cannot be terminated by this utility (not a recognized user process for termination).");
-                                    }
                                 }
+                                else
+                                    if (find(runningProcesses.begin(), runningProcesses.end(), targetProcess) == runningProcesses.end())
+                                        consoleOutputLines.push_back("ERROR: The process \"" + targetProcess + "\" not found.");
+                                    else
+                                        consoleOutputLines.push_back("INFO: The process \"" + targetProcess + "\" cannot be terminated by this utility (not a recognized user process for termination).");
+
                             }
                             commandExecutedSuccessfully = true;
 
                         }
                     }
                 }
-                else { // foundCmdDef jest nullptr -> Nie znaleziono komendy
-                    consoleOutputLines.push_back("'" + commandNameInput + "' is not recognized as an internal or external command,");
-                    consoleOutputLines.push_back("operable program or batch file. Type HELP for a list of commands.");
-                }
+                else consoleOutputLines.push_back("'" + commandNameInput + "' is not recognized as an internal or external command,\noperable program or batch file. Type HELP for a list of commands.");
             }
 
-            // Czyszczenie bufora i przewijanie
             memset(consoleInputBuffer, 0, consoleMaxChars + 1);
             consoleInputCursorPos = 0;
-            if (consoleOutputLines.size() > consoleLinesToDraw)
-                consoleScrollOffset = consoleOutputLines.size() - consoleLinesToDraw;
-            else
-                consoleScrollOffset = 0;
-        }
-    }
 
-    while (consoleOutputLines.size() > 100) {
-        consoleOutputLines.erase(consoleOutputLines.begin());
-        if (consoleScrollOffset > 0) consoleScrollOffset--;
+            int actualConsoleLinesToDraw = 0;
+            if (tempOutputArea.height > 0)
+                actualConsoleLinesToDraw = (tempOutputArea.height / 20);
+
+            if (consoleOutputLines.size() > actualConsoleLinesToDraw)
+                consoleScrollOffset = consoleOutputLines.size() - actualConsoleLinesToDraw;
+            else consoleScrollOffset = 0;
+
+
+        }
+        else {
+            consoleOutputLines.push_back(">");
+
+            int actualConsoleLinesToDraw = 0;
+            if (tempOutputArea.height > 0)
+                actualConsoleLinesToDraw = (tempOutputArea.height / 20);
+
+            if (consoleOutputLines.size() > actualConsoleLinesToDraw)
+                consoleScrollOffset = consoleOutputLines.size() - actualConsoleLinesToDraw;
+            else consoleScrollOffset = 0;
+        }
     }
 
     float mouseWheelMove = GetMouseWheelMove();
     if (mouseWheelMove != 0) {
-        consoleScrollOffset -= (int)(mouseWheelMove * 2);
+        consoleScrollOffset -= mouseWheelMove * 2;
 
         if (consoleScrollOffset < 0) consoleScrollOffset = 0;
         int maxPossibleScroll = 0;
 
-        if (consoleOutputLines.size() > (size_t)consoleLinesToDraw)
+        if (consoleOutputLines.size() > consoleLinesToDraw)
             maxPossibleScroll = consoleOutputLines.size() - consoleLinesToDraw;
 
         if (consoleScrollOffset > maxPossibleScroll)
@@ -834,54 +773,61 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 scaledMousePos
 
 
 // --- Console Drawing ---
+    DrawRectangleRec(consoleRect, Fade(DARKGRAY, 0.92));
+    DrawRectangleLinesEx(consoleRect, 1, LIGHTGRAY);
+
+    Rectangle inputBgArea = {
+        consoleRect.x + 10,
+        consoleRect.y + consoleRect.height - 40,
+        consoleRect.width - 20,
+        30
+    };
+    DrawRectangleRec(inputBgArea, Fade(BLACK, 0.75));
+
     Rectangle outputArea = {
         consoleRect.x + 10,
         consoleRect.y + 10,
         consoleRect.width - 20,
-        consoleRect.height - 55
+        inputBgArea.y - consoleRect.y - 18
     };
 
-    Rectangle inputBgArea = {
-        consoleRect.x + 5,
-        consoleRect.y + consoleRect.height - 35,
-        consoleRect.width - 10,
-        consoleRect.height - (consoleRect.height - 30)
-    };
-
-    DrawRectangleRec(consoleRect, GRAY);
-    DrawRectangleLinesEx(consoleRect, 1, WHITE);
-
-    int outputFontSize = 16;
+    float outputFontSize = 14;
+    float lineHeight = 26; 
+    int calculatedConsoleLinesToDraw = 0;
+    if (outputArea.height > 0)
+        calculatedConsoleLinesToDraw = (outputArea.height / lineHeight);
+    
+    int currentConsoleLinesToDraw = calculatedConsoleLinesToDraw;
 
     int startLineToDraw = consoleScrollOffset;
-    if (consoleOutputLines.size() <= consoleLinesToDraw)
+    if (consoleOutputLines.empty() || consoleOutputLines.size() <= currentConsoleLinesToDraw) {
         startLineToDraw = 0;
-    else if (startLineToDraw > consoleOutputLines.size() - consoleLinesToDraw)
-        startLineToDraw = consoleOutputLines.size() - consoleLinesToDraw;
-    
-    for (int i = 0; i < consoleLinesToDraw; ++i) {
-        int currentLineInHistory = startLineToDraw + i;
-        if (currentLineInHistory >= 0 && currentLineInHistory < (int)consoleOutputLines.size()) {
-            DrawTextEx(font, consoleOutputLines[currentLineInHistory].c_str(),
-                { outputArea.x, outputArea.y + (i * 18)},
-                outputFontSize, 1, WHITE);
-        }
-        else break;
-        
+        consoleScrollOffset = 0;
     }
+    else {
+        if (startLineToDraw < 0) startLineToDraw = 0;
+        int maxScroll = consoleOutputLines.size() - currentConsoleLinesToDraw;
+        if (startLineToDraw > maxScroll) startLineToDraw = maxScroll;
+        consoleScrollOffset = startLineToDraw;
+    }
+
+    BeginScissorMode(outputArea.x, outputArea.y, outputArea.width, outputArea.height);
+    for (int i = 0; i < currentConsoleLinesToDraw; i++) {
+        int currentLineInHistory = startLineToDraw + i;
+        if (currentLineInHistory >= 0 && currentLineInHistory < consoleOutputLines.size())
+            DrawTextEx(font, consoleOutputLines[currentLineInHistory].c_str(), { outputArea.x + 2, outputArea.y + 2 + i * lineHeight }, outputFontSize, 1, WHITE);
+        else break;
+    }
+    EndScissorMode();
+
     float textInputY = inputBgArea.y + (inputBgArea.height - outputFontSize) / 2;
-    DrawRectangleRec(inputBgArea, Fade(BLACK, 0.75));
-    DrawRectangleLinesEx(inputBgArea, 1, DARKGRAY);
     DrawTextEx(font, TextFormat("> %s", consoleInputBuffer), { inputBgArea.x + 5, textInputY }, outputFontSize, 1, LIME);
 
-
-
-    char tempCursorBuffer[consoleMaxChars + 3];
-    snprintf(tempCursorBuffer, sizeof(tempCursorBuffer), "> %.*s", consoleInputCursorPos, consoleInputBuffer);
-    Vector2 cursorPosTextSize = MeasureTextEx(font, tempCursorBuffer, outputFontSize, 1);
-
     if (((int)(GetTime() * 2.5)) % 2 == 0) {
-        DrawRectangle(inputBgArea.x + 5 + cursorPosTextSize.x, textInputY - 1, 2, outputFontSize + 2, LIME);
+        char tempCursorBuffer[consoleMaxChars + 3];
+        snprintf(tempCursorBuffer, sizeof(tempCursorBuffer), "> %.*s", consoleInputCursorPos, consoleInputBuffer);
+        Vector2 cursorPosTextSize = MeasureTextEx(font, tempCursorBuffer, (float)outputFontSize, 1);
+        DrawRectangle(inputBgArea.x + 5 + (int)cursorPosTextSize.x, textInputY - 1, 2, outputFontSize + 2, LIME);
     }
 }
 
@@ -907,8 +853,8 @@ static bool CheckRainbowLandResourcesLoaded(const RainbowLandGameResources& res)
     if (res.sunflower.id == 0) missingResources.push_back("sunflower");
     if (res.checkpoint.id == 0) missingResources.push_back("checkpoint");
     if (res.rbowBodyTexture.id == 0) missingResources.push_back("rbowBodyTexture");
-    for (size_t i = 0; i < res.rbowEyeTextures.size(); ++i) if (res.rbowEyeTextures[i].id == 0) missingResources.push_back("rbowEyeTextures[" + to_string(i) + "]");
-    for (size_t i = 0; i < res.sunflowerPetals.size(); ++i) if (res.sunflowerPetals[i].id == 0) missingResources.push_back("sunflowerPetals[" + to_string(i) + "]");
+    for (int i = 0; i < res.rbowEyeTextures.size(); i++) if (res.rbowEyeTextures[i].id == 0) missingResources.push_back("rbowEyeTextures[" + to_string(i) + "]");
+    for (int i = 0; i < res.sunflowerPetals.size(); i++) if (res.sunflowerPetals[i].id == 0) missingResources.push_back("sunflowerPetals[" + to_string(i) + "]");
     if (res.buttonVoicesOn.id == 0) missingResources.push_back("buttonVoicesOn");
     if (res.buttonVoicesOff.id == 0) missingResources.push_back("buttonVoicesOff");
     if (!res.backgroundMusicLoaded) missingResources.push_back("backgroundMusic");
@@ -917,7 +863,7 @@ static bool CheckRainbowLandResourcesLoaded(const RainbowLandGameResources& res)
     if (!res.spikesSoundLoaded) missingResources.push_back("FX: spikesPush");
     if (!res.deathSoundLoaded) missingResources.push_back("FX: death");
     if (!res.checkpointSoundLoaded) missingResources.push_back("FX: checkpoint");
-    for (size_t i = 0; i < res.rbowDialogues.size(); ++i) if (res.rbowDialogues[i].frameCount == 0) missingResources.push_back("rbowDialogues[" + to_string(i) + "]");
+    for (int i = 0; i < res.rbowDialogues.size(); i++) if (res.rbowDialogues[i].frameCount == 0) missingResources.push_back("rbowDialogues[" + to_string(i) + "]");
     if (!res.rbowVoiceOffSoundLoaded) missingResources.push_back("rbowVoiceOff");
     if (!res.rbowYouStillSuckSoundLoaded) missingResources.push_back("rbowYouStillSuck");
 
@@ -934,7 +880,7 @@ static bool CheckRainbowLandResourcesLoaded(const RainbowLandGameResources& res)
 static bool CheckMotoristResourcesLoaded(const MotoristGameResources& res) {
     vector<string> missingResources;
     if (res.car.id == 0) missingResources.push_back("car");
-    for (size_t i = 0; i < res.carSpinFrames.size(); ++i) if (res.carSpinFrames[i].id == 0) missingResources.push_back("carSpinFrames[" + to_string(i) + "]");
+    for (int i = 0; i < res.carSpinFrames.size(); i++) if (res.carSpinFrames[i].id == 0) missingResources.push_back("carSpinFrames[" + to_string(i) + "]");
     if (res.leftCarNPC.id == 0) missingResources.push_back("leftCarNPC");
     if (res.rightCarNPC.id == 0) missingResources.push_back("rightCarNPC");
     if (res.bg.id == 0) missingResources.push_back("bg");
@@ -965,9 +911,8 @@ static bool CheckMotoristResourcesLoaded(const MotoristGameResources& res) {
 }
 
 
-// --- MAIN FUNCTION ---
 int main(void) {
-    InitializeGameSettings(); // £aduje ustawienia z pliku lub ustawia domyœlne
+    InitializeGameSettings();
 
     for (int i = 0; i < numResolutionOptions; i++) 
         if (g_settings.currentResolution == resolutionValues[i]) {
@@ -984,16 +929,16 @@ int main(void) {
         }
     
 
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT);
+    SetConfigFlags(FLAG_WINDOW_UNDECORATED);
     InitWindow(g_settings.screenWidth, g_settings.screenHeight, "FNaF Minigames - Loading...");
     InitAudioDevice();
     HideCursor();
 
-    MainMenuResources mainMenuRes;
-    Font consoleFont = GetFontDefault(); // TODO: change console font
+    MainMenuResources mainMenuRes{};
+    Font consoleFont = mainMenuRes.consolasFont;
 
     bool initialStaticLoadScreenReady = LoadInitialLoadingScreenResources(mainMenuRes);
-    float loadingScreenMinVisibleTime = 1; // Skrócony czas dla testów
+    float loadingScreenMinVisibleTime = 2;
     float loadingScreenVisibleTimer = 0;
 
     SetWindowPosition((GetMonitorWidth(GetCurrentMonitor()) - g_settings.screenWidth) / 2, (GetMonitorHeight(GetCurrentMonitor()) - g_settings.screenHeight) / 2);
@@ -1020,10 +965,7 @@ int main(void) {
 
     while (!shouldExit && !WindowShouldClose()) {
         float dt = GetFrameTime();
-        Vector2 mousePointWindow = GetMousePosition();
-        float mouseScaleX = (float)logicalWidth / GetScreenWidth();
-        float mouseScaleY = (float)logicalHeight / GetScreenHeight();
-        Vector2 scaledMousePos = { mousePointWindow.x * mouseScaleX, mousePointWindow.y * mouseScaleY };
+        Vector2 mousePos = GetMousePosition();
 
         // --- Fading Logic ---
         if (isFadingOut) {
@@ -1074,7 +1016,6 @@ int main(void) {
                 previousScreen = currentScreen;
 
                 if (fadeTargetScreen == PLAYING_MOTORIST || fadeTargetScreen == PLAYING_RAINBOW) currentScreen = screenAfterGame;
-                
                 else currentScreen = fadeTargetScreen;
                 
                 if (IsWindowMinimized()) RestoreWindow();
@@ -1157,7 +1098,6 @@ int main(void) {
 
                         if (!mainMenuRes.shaderLoadedSuccessfully) g_settings.useCRTShader = false;
                         SetWindowTitle("FNaF Minigames Port"); 
-                        consoleFont = mainMenuRes.defaultGuiFont; // TODO: change default console font
                     }
 
                     if (mainMenuResourcesLoaded && loadingScreenVisibleTimer >= loadingScreenMinVisibleTime) {
@@ -1176,10 +1116,10 @@ int main(void) {
                     }
                 } break;
                 case MAIN_MENU: {
-                    UpdateMainMenuScreen(mainMenuRes, scaledMousePos, currentScreen, previousScreen, fadeTargetScreen, isFadingOut, fadeAlpha, dt, mainMenuBgCurrentFrame, mainMenuBgFrameTimer, mainMenuBgFrameDelay);
+                    UpdateMainMenuScreen(mainMenuRes, mousePos, currentScreen, previousScreen, fadeTargetScreen, isFadingOut, fadeAlpha, dt, mainMenuBgCurrentFrame, mainMenuBgFrameTimer, mainMenuBgFrameDelay);
                 } break;
                 case SETTINGS: {
-                    UpdateSettingsScreen(mainMenuRes, scaledMousePos, currentScreen, previousScreen, fadeTargetScreen, isFadingOut, fadeAlpha, dt, helpyCurrentAnimFrame, helpyFrameTimer, helpyFrameDelay);
+                    UpdateSettingsScreen(mainMenuRes, mousePos, currentScreen, previousScreen, fadeTargetScreen, isFadingOut, fadeAlpha, dt, helpyCurrentAnimFrame, helpyFrameTimer, helpyFrameDelay);
                 } break;
                 case EXITING: {
                     shouldExit = true;
@@ -1193,12 +1133,12 @@ int main(void) {
         ClearBackground(BLACK);
 
         if (currentScreen == LOADING && !isFadingOut && !isFadingIn) {
-            if (mainMenuRes.helpyLoadingTextureLoaded && mainMenuRes.helpyLoadingScreenTexture.id > 0) {
+            if (mainMenuRes.helpyLoadingScreenTexture.id > 0) {
                 float imgDrawWidth = (float)mainMenuRes.helpyLoadingScreenTexture.width;
                 float imgDrawHeight = (float)mainMenuRes.helpyLoadingScreenTexture.height;
-                DrawTexture(mainMenuRes.helpyLoadingScreenTexture, (GetScreenWidth() - imgDrawWidth) / 2, (GetScreenHeight() - imgDrawHeight) / 2 - 60, WHITE);
+                DrawTexture(mainMenuRes.helpyLoadingScreenTexture, (GetScreenWidth() - imgDrawWidth) / 2, (GetScreenHeight() - imgDrawHeight - 120) / 2, WHITE);
             }
-            else DrawText("Loading...", GetScreenWidth() / 2 - MeasureText("Loading...", 40) / 2, GetScreenHeight() / 2 - 20, 40, LIGHTGRAY);
+            else DrawText("Loading...", (GetScreenWidth() - MeasureText("Loading...", 40)) / 2, (GetScreenHeight() - 40) / 2, 40, LIGHTGRAY);
         }
         else if (mainMenuRes.targetRenderTexture.id > 0) {
             BeginTextureMode(mainMenuRes.targetRenderTexture);
@@ -1207,19 +1147,19 @@ int main(void) {
             GameScreen screenToDrawForContent = currentScreen;
             if (isFadingOut) screenToDrawForContent = previousScreen;
             switch (screenToDrawForContent) {
-                case MAIN_MENU:
-                    DrawMainMenuScreen(mainMenuRes, scaledMousePos, mainMenuBgCurrentFrame, currentScreen, previousScreen, fadeTargetScreen, isFadingOut, fadeAlpha);
+            case MAIN_MENU:
+                DrawMainMenuScreen(mainMenuRes, mousePos, mainMenuBgCurrentFrame, currentScreen, previousScreen, fadeTargetScreen, isFadingOut, fadeAlpha);
                 break;
-                case SETTINGS: {
-                    DrawSettingsScreen(mainMenuRes, scaledMousePos, helpyCurrentAnimFrame, currentScreen, previousScreen, fadeTargetScreen, isFadingOut, fadeAlpha);
-                    if (consoleActive) UpdateDrawConsole(mainMenuRes, consoleFont, scaledMousePos, dt);
-                } break;
-                case PLAYING_MOTORIST:
-                case PLAYING_RAINBOW:
-                    ClearBackground(BLACK);
-                    DrawText("IN GAME...", logicalWidth / 2 - MeasureText("IN GAME...", 20) / 2, logicalHeight / 2 - 10, 20, WHITE);
-                    break;
-                default: break;
+            case SETTINGS: {
+                DrawSettingsScreen(mainMenuRes, mousePos, helpyCurrentAnimFrame, currentScreen, previousScreen, fadeTargetScreen, isFadingOut, fadeAlpha);
+                if (consoleActive) UpdateDrawConsole(mainMenuRes, consoleFont, mousePos, dt);
+            } break;
+            case PLAYING_MOTORIST:
+            case PLAYING_RAINBOW:
+                ClearBackground(BLACK);
+                DrawText("IN GAME...", logicalWidth / 2 - MeasureText("IN GAME...", 20) / 2, logicalHeight / 2 - 10, 20, WHITE);
+                break;
+            default: break;
             }
             EndTextureMode();
 
@@ -1232,14 +1172,14 @@ int main(void) {
 
         }
         else if (currentScreen != LOADING) DrawText("Error: Render Target Failed", 100, 100, 20, RED);
-        
+
         if ((isFadingOut || isFadingIn) && fadeAlpha > 0)
             DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, fadeAlpha));
-        
+
         if (mainMenuRes.cursor.id > 0 && (currentScreen == MAIN_MENU || currentScreen == SETTINGS) && !(isFadingIn || isFadingOut && fadeAlpha > 0.9))
-            DrawTexture(mainMenuRes.cursor, (int)mousePointWindow.x - mainMenuRes.cursor.width / 2, (int)mousePointWindow.y - mainMenuRes.cursor.height / 2, WHITE);
-        
-        DrawFPS(10, 10);
+            DrawTexture(mainMenuRes.cursor, mousePos.x, mousePos.y, WHITE);
+
+        //DrawFPS(10, 10);
         EndDrawing();
     }
 

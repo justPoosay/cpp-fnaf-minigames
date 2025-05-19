@@ -16,7 +16,6 @@ typedef enum GraphicsQuality {
     QUALITY_HIGH
 } GraphicsQuality;
 
-
 typedef struct GameSettingsData {
     // Display
     ScreenResolution currentResolution;
@@ -45,7 +44,7 @@ const int consoleMaxChars = 255;
 const int consoleLinesToDraw = 15;
 
 const int settingsTextFontSize = 25;
-const int settingsSelectorFontSize = 23;
+const int settingsSelectorFontSize = 27;
 
 const float selectorWidth = 125;
 const float selectorHeight = 30;

@@ -106,3 +106,4 @@ struct RainbowLandGameResources {
 
 RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality);
 void UnloadRainbowLandResources(RainbowLandGameResources& resources);
+bool CheckRainbowLandResourcesLoaded(const RainbowLandGameResources& res);

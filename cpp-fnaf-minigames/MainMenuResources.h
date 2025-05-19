@@ -39,7 +39,7 @@ struct MainMenuResources {
     bool helpyCrackAnimationHasPlayed;
 
     // Fonts;
-    Font defaultGuiFont;
+    Font consolasFont;
     Font arcadeClassicFont; 
     Font bytesFont;
 

@@ -41,7 +41,7 @@ static void InitializeResourceStates(MainMenuResources& res) {
     res.helpyCrackedGifLoaded = false;
 
 
-    res.defaultGuiFont = GetFontDefault();
+    res.consolasFont = { 0 };
     res.arcadeClassicFont = { 0 };
     res.bytesFont = { 0 };
 
@@ -149,13 +149,14 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
     }
 
     // --- Load Custom Fonts ---
-    if (FileExists("resources/ARCADECLASSIC.TTF")) {
-        res.arcadeClassicFont = LoadFont("resources/ARCADECLASSIC.TTF");
-        res.bytesFont = LoadFont("resources/Bytes.otf");
+    if (FileExists("resources/consolas.ttf"))
+        res.consolasFont = LoadFont("resources/consolas.ttf");
 
-        if (res.arcadeClassicFont.texture.id > 0) 
-            SetTextureFilter(res.arcadeClassicFont.texture, TEXTURE_FILTER_POINT);
-    }
+    if (FileExists("resources/arcadeclassic.ttf"))
+        res.arcadeClassicFont = LoadFont("resources/arcadeclassic.ttf");
+
+    if (FileExists("resources/TwoFiftySixBytes.otf"))
+        res.bytesFont = LoadFont("resources/TwoFiftySixBytes.otf");
 
     // --- Load Menu Music ---
     if (FileExists("resources/mainMenu.mp3")) {
@@ -222,6 +223,7 @@ void UnloadMainMenuResources(MainMenuResources& res) {
     }
     
     if (res.arcadeClassicFont.texture.id > 0) {
+        UnloadFont(res.consolasFont);
         UnloadFont(res.arcadeClassicFont);
         UnloadFont(res.bytesFont);
     }
