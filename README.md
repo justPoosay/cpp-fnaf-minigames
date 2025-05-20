@@ -1,7 +1,4 @@
 # FNaF Arcade C++ Port
-
-[![Raylib Logo](https://github.com/raysan5/raylib/raw/master/logo/raylib_logo_animation.gif)](https://www.raylib.com/)
-
 Projekt szkolny :p
 
 ## Playable Minigames
