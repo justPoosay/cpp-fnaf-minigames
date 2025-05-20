@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -46,3 +47,4 @@ struct MotoristGameResources {
 
 MotoristGameResources LoadMotoristResources(GraphicsQuality quality);
 void UnloadMotoristResources(MotoristGameResources& resources);
+bool CheckMotoristResourcesLoaded(MotoristGameResources& res);

@@ -70,8 +70,7 @@ struct SunflowerActivationEvent {
 };
 
 // Define animations :p
-static void UpdatePlayerAnimation(bool isGrounded, bool isMoving, bool facingRight, Texture2D& currentTexture, int& currentFrame, int animUpdateRate, int maxFrames, int& frameCounter, Texture2D idleRight, Texture2D idleLeft, Texture2D walkRight, Texture2D walkLeft, Texture2D jumpRight, Texture2D jumpLeft)
-{
+static void UpdatePlayerAnimation(bool isGrounded, bool isMoving, bool facingRight, Texture2D& currentTexture, int& currentFrame, int animUpdateRate, int maxFrames, int& frameCounter, Texture2D idleRight, Texture2D idleLeft, Texture2D walkRight, Texture2D walkLeft, Texture2D jumpRight, Texture2D jumpLeft) {
     frameCounter++;
     if (frameCounter >= animUpdateRate) {
         frameCounter = 0;
@@ -103,15 +102,13 @@ static void UpdateButterflyAnimation(Texture2D& currentDisplayTexture, int& curr
 }
 
 static int CalculateEyeIndexForAngle(Vector2 eyePosition, Vector2 targetPosition, int numEyeSprites) {
-    if (numEyeSprites <= 0)
-        return 0; 
+    if (numEyeSprites <= 0) return 0; 
 
     float deltaX = targetPosition.x - eyePosition.x;
     float deltaY = targetPosition.y - eyePosition.y;
     float angleRad = atan2f(-deltaY, deltaX);
 
-    if (angleRad < 0) 
-        angleRad += 2 * PI;
+    if (angleRad < 0) angleRad += 2 * PI;
     
 
     int index = roundf(angleRad / (2 * PI) * numEyeSprites);
@@ -121,9 +118,8 @@ static int CalculateEyeIndexForAngle(Vector2 eyePosition, Vector2 targetPosition
 }
 
 static float MoveTowards(float current, float target, float maxDelta) {
-    if (fabsf(target - current) <= maxDelta) {
-        return target;
-    }
+    if (fabsf(target - current) <= maxDelta) return target;
+    
     return current + copysignf(maxDelta, target - current);
 }
 
@@ -138,7 +134,7 @@ static void StopAllRainbowLandSounds(RainbowLandGameResources& res) {
     if (IsMusicStreamPlaying(res.backgroundMusic)) 
         StopMusicStream(res.backgroundMusic);
 
-    for (size_t i = 0; i < res.rbowDialogues.size(); ++i) 
+    for (int i = 0; i < res.rbowDialogues.size(); i++) 
         if (res.rbowDialogues[i].frameCount > 0 && IsSoundPlaying(res.rbowDialogues[i])) 
             StopSound(res.rbowDialogues[i]);
         
@@ -160,8 +156,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
     int konamiCodeProgress = 0;
     bool isSecretActivated = false;
-
-    bool showDebugInfo = false; // temporary DEBUG SCREEN
+    bool showDebugInfo = false;
 
 // --------- RESOURCE LOADER ---------
     RainbowLandGameResources resources = LoadRainbowLandResources(quality);
@@ -377,7 +372,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         }
 
         if (IsKeyPressed(KEY_ESCAPE)) gameShouldEnd = true;
-        if (IsKeyPressed(KEY_F3)) showDebugInfo = !showDebugInfo;
+        if (IsKeyPressed(KEY_F3)) showDebugInfo = !showDebugInfo; // temp debug mode
         if (IsKeyPressed(KEY_F11)) {
             if (IsWindowFullscreen()) {
                 ToggleFullscreen();

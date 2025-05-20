@@ -59,3 +59,4 @@ struct MainMenuResources {
 bool LoadInitialLoadingScreenResources(MainMenuResources& res);
 bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logicalHeight);
 void UnloadMainMenuResources(MainMenuResources& res);
+

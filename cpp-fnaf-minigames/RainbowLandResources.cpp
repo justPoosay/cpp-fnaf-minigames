@@ -1,10 +1,8 @@
 #include "RainbowLandResources.h"
 
-RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // Loading Resources Function
-    TraceLog(LOG_INFO, "Loading game resources...");
-
+RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) {
+    cout << "Loading game resources..." << endl;
     RainbowLandGameResources resources;
-
 
 // Chica (player)
     resources.idleRight = LoadTexture("resources/cmrl/textures/chica_idle_right.png");
@@ -21,11 +19,10 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
 
     resources.rbowEyeTextures.resize(resources.numEyeSprites);
     for (int i = 0; i < resources.numEyeSprites; i++) {
-        std::string filePath = "resources/cmrl/textures/eye";
-        if (i < 9) {
-            filePath += "0";
-        }
-        filePath += std::to_string(i + 1);
+        string filePath = "resources/cmrl/textures/eye";
+        if (i < 9) filePath += "0";
+        
+        filePath += to_string(i + 1);
         filePath += ".png";
         resources.rbowEyeTextures[i] = LoadTexture(filePath.c_str());
     }
@@ -75,11 +72,10 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
 // Music & FX
     resources.rbowDialogues.resize(resources.numRbowVoiceLines);
     for (int i = 0; i < resources.numRbowVoiceLines; i++) {
-        std::string filePath = "resources/cmrl/audio/voice";
-        if (i < 9) {
-            filePath += "0";
-        }
-        filePath += std::to_string(i + 1);
+        string filePath = "resources/cmrl/audio/voice";
+        if (i < 9) filePath += "0";
+        
+        filePath += to_string(i + 1);
         filePath += ".mp3";
         resources.rbowDialogues[i] = LoadSound(filePath.c_str());
     }
@@ -118,13 +114,13 @@ RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality) { // 
     resources.rbowYouStillSuckSoundLoaded = (resources.rbowYouStillSuck.frameCount > 0);
     resources.rbowDialoguesSoundLoaded = (resources.rbowDialogues.size() > 0);
 
-    TraceLog(LOG_INFO, "Game resources loaded successfully.");
+    cout << "Game resources loaded successfully." << endl;
 
     return resources;
 }
 
 void UnloadRainbowLandResources(RainbowLandGameResources& resources) {
-    TraceLog(LOG_INFO, "Unloading game resources...");
+    cout << "Unloading game resources..." << endl;
 
     if (resources.idleRight.id > 0) UnloadTexture(resources.idleRight);
     if (resources.idleLeft.id > 0) UnloadTexture(resources.idleLeft);
@@ -193,6 +189,67 @@ void UnloadRainbowLandResources(RainbowLandGameResources& resources) {
     if (resources.rbowYouStillSuckSoundLoaded) UnloadSound(resources.rbowYouStillSuck);
 
     if (resources.rbowDialoguesSoundLoaded) 
-        for (size_t i = 0; i < resources.rbowDialogues.size(); i++) 
+        for (int i = 0; i < resources.rbowDialogues.size(); i++) 
             UnloadSound(resources.rbowDialogues[i]);
+}
+
+bool CheckRainbowLandResourcesLoaded(RainbowLandGameResources& res) {
+    vector<string> missingResources;
+
+    if (res.idleRight.id == 0) missingResources.push_back("idleRight");
+    if (res.idleLeft.id == 0) missingResources.push_back("idleLeft");
+    if (res.walkRight.id == 0) missingResources.push_back("walkRight");
+    if (res.walkLeft.id == 0) missingResources.push_back("walkLeft");
+    if (res.jumpRight.id == 0) missingResources.push_back("jumpRight");
+    if (res.jumpLeft.id == 0) missingResources.push_back("jumpLeft");
+    if (res.bg.id == 0) missingResources.push_back("bg");
+    if (res.tile.id == 0) missingResources.push_back("tile");
+    if (res.platformTexture.id == 0) missingResources.push_back("platformTexture");
+    if (res.butterfly.id == 0) missingResources.push_back("butterfly");
+    if (res.spikesUp.id == 0) missingResources.push_back("spikesUp");
+    if (res.spikesDown.id == 0) missingResources.push_back("spikesDown");
+    if (res.controlKeysInfo.id == 0) missingResources.push_back("controlKeysInfo");
+    if (res.fenceProp.id == 0) missingResources.push_back("fenceProp");
+    if (res.flowerSmallProp.id == 0) missingResources.push_back("flowerSmallProp");
+    if (res.flowerBigProp.id == 0) missingResources.push_back("flowerBigProp");
+    if (res.checkpointFlag.id == 0) missingResources.push_back("checkpointFlag");
+    if (res.sunflower.id == 0) missingResources.push_back("sunflower");
+    if (res.checkpoint.id == 0) missingResources.push_back("checkpoint");
+    if (res.rbowBodyTexture.id == 0) missingResources.push_back("rbowBodyTexture");
+
+    for (int i = 0; i < res.rbowEyeTextures.size(); i++)
+        if (res.rbowEyeTextures[i].id == 0)
+            missingResources.push_back("rbowEyeTextures[" + to_string(i) + "]");
+
+    for (int i = 0; i < res.sunflowerPetals.size(); i++)
+        if (res.sunflowerPetals[i].id == 0)
+            missingResources.push_back("sunflowerPetals[" + to_string(i) + "]");
+
+    if (res.buttonVoicesOn.id == 0) missingResources.push_back("buttonVoicesOn");
+    if (res.buttonVoicesOff.id == 0) missingResources.push_back("buttonVoicesOff");
+    if (!res.backgroundMusicLoaded) missingResources.push_back("backgroundMusic");
+    if (!res.jumpSoundLoaded) missingResources.push_back("FX: jump");
+    if (!res.petalSoundLoaded) missingResources.push_back("FX: petalShoot");
+    if (!res.spikesSoundLoaded) missingResources.push_back("FX: spikesPush");
+    if (!res.deathSoundLoaded) missingResources.push_back("FX: death");
+    if (!res.checkpointSoundLoaded) missingResources.push_back("FX: checkpoint");
+
+    for (int i = 0; i < res.rbowDialogues.size(); i++)
+        if (res.rbowDialogues[i].frameCount == 0)
+            missingResources.push_back("rbowDialogues[" + to_string(i) + "]");
+
+    if (!res.rbowVoiceOffSoundLoaded) missingResources.push_back("rbowVoiceOff");
+    if (!res.rbowYouStillSuckSoundLoaded) missingResources.push_back("rbowYouStillSuck");
+
+
+    if (!missingResources.empty()) {
+        cout << "RAINBOW LAND: Critical error - failed to load resources:" << endl;
+
+        for (const string& resourceName : missingResources)
+            cout << resourceName << endl;
+
+        return false;
+    }
+
+    return true;
 }

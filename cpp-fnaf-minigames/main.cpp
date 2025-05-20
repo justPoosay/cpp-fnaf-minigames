@@ -1,3 +1,7 @@
+#ifndef _DEBUG
+#pragma comment(linker, "/ENTRY:mainCRTStartup")
+#endif
+
 #include "raylib.h"
 
 #include <sstream>
@@ -12,6 +16,7 @@
 
 using namespace std;
 
+
 // --- Game states ---
 typedef enum GameScreen {
     LOADING,
@@ -24,8 +29,8 @@ typedef enum GameScreen {
 
 
 struct ArgumentDetail {
-    string name; // np. "/?", "/T"
-    string description; // Co robi ten argument
+    string name;
+    string description;
 };
 
 struct CommandDefinition {
@@ -146,56 +151,55 @@ bool GuiButton(Rectangle bounds, const char* text, Font font, Color bgColor, Col
     return clicked;
 }
 
-int GuiSelector(Rectangle bounds, const char* currentOptionText, Font font, Color textColor, Color boxColor, Color arrowColor, Color arrowHoverColor, Color arrowPressedColor, Vector2 mousePos) {
+int GuiSelector(Rectangle bounds, const char* currentOptionText, Font font, Color textColor, Color boxColor, Color arrowColor, Vector2 mousePos) {
     int clicked_direction = 0;
-    float arrowPaddingFromBox = 5;
-    float arrowHotspotExtraPadding = 8;
-    float fontSize = settingsSelectorFontSize;
+
+    float arrowSize = 15;
+    float arrowPaddingFromBox = 8;
 
     DrawRectangleRec(bounds, boxColor);
     DrawRectangleLinesEx(bounds, 1, Fade(BLACK, 0.3));
 
     Vector2 optionTextSize = MeasureTextEx(font, currentOptionText, settingsSelectorFontSize, 1);
-    DrawTextEx(font, currentOptionText,
-        { bounds.x + (bounds.width - optionTextSize.x) / 2,
-          bounds.y + (bounds.height - optionTextSize.y) / 2 },
-        settingsSelectorFontSize, 1, textColor);
+    DrawTextEx(font, currentOptionText, { bounds.x + (bounds.width - optionTextSize.x) / 2, bounds.y + (bounds.height - optionTextSize.y) / 2 }, settingsSelectorFontSize, 1, textColor);
 
-    float arrowFontSize = settingsSelectorFontSize * 2;
+    // Left arrow
+    Vector2 leftArrowPoints[3];
+    leftArrowPoints[1] = { bounds.x - arrowPaddingFromBox - arrowSize, bounds.y + bounds.height / 2 };
+    leftArrowPoints[0] = { bounds.x - arrowPaddingFromBox, bounds.y + bounds.height / 2 - arrowSize};
+    leftArrowPoints[2] = { bounds.x - arrowPaddingFromBox, bounds.y + bounds.height / 2 + arrowSize };
 
-    // Left Arrow
-    const char* leftArrowChar = "<";
-    Vector2 leftArrowTextSize = MeasureTextEx(font, leftArrowChar, arrowFontSize, 1);
     Rectangle leftArrowHotspot = {
-        bounds.x - leftArrowTextSize.x - arrowPaddingFromBox - arrowHotspotExtraPadding,
-        bounds.y + (bounds.height - leftArrowTextSize.y) / 2 - arrowHotspotExtraPadding / 2,
-        leftArrowTextSize.x + arrowHotspotExtraPadding * 2,
-        leftArrowTextSize.y + arrowHotspotExtraPadding
+        leftArrowPoints[0].x,
+        bounds.y + bounds.height / 2 - arrowSize,
+        arrowSize + 2,
+        arrowSize * 2 + 2
     };
-    Color currentLeftArrowColor = arrowColor;
-    if (!consoleActive && CheckCollisionPointRec(mousePos, leftArrowHotspot)) {
-        currentLeftArrowColor = arrowHoverColor;
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) currentLeftArrowColor = arrowPressedColor;
-        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked_direction = -1;
-    }
-    DrawTextEx(font, leftArrowChar, { leftArrowHotspot.x + arrowHotspotExtraPadding, leftArrowHotspot.y + arrowHotspotExtraPadding / 2 }, arrowFontSize, 1, currentLeftArrowColor);
 
-    // Right Arrow
-    const char* rightArrowChar = ">";
-    Vector2 rightArrowTextSize = MeasureTextEx(font, rightArrowChar, arrowFontSize, 1);
+    if (!consoleActive && CheckCollisionPointRec(mousePos, leftArrowHotspot))
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
+            clicked_direction = -1;
+    
+    DrawTriangle(leftArrowPoints[0], leftArrowPoints[1], leftArrowPoints[2], arrowColor);
+
+    // --- PRAWA STRZA£KA (TRÓJK¥T) ---
+    Vector2 rightArrowPoints[3];
+    rightArrowPoints[0] = { bounds.x + bounds.width + arrowPaddingFromBox + arrowSize, bounds.y + bounds.height / 2 };
+    rightArrowPoints[1] = { bounds.x + bounds.width + arrowPaddingFromBox, bounds.y + bounds.height / 2 - arrowSize / 1.5f };
+    rightArrowPoints[2] = { bounds.x + bounds.width + arrowPaddingFromBox, bounds.y + bounds.height / 2 + arrowSize / 1.5f };
+
     Rectangle rightArrowHotspot = {
-       bounds.x + bounds.width + arrowPaddingFromBox - arrowHotspotExtraPadding,
-       bounds.y + (bounds.height - rightArrowTextSize.y) / 2 - arrowHotspotExtraPadding / 2,
-       rightArrowTextSize.x + arrowHotspotExtraPadding * 2,
-       rightArrowTextSize.y + arrowHotspotExtraPadding
+        bounds.x + bounds.width + arrowPaddingFromBox,
+        bounds.y + bounds.height / 2 - arrowSize,
+        arrowSize + 2,
+        arrowSize * 2 + 2
     };
-    Color currentRightArrowColor = arrowColor;
+    
     if (!consoleActive && CheckCollisionPointRec(mousePos, rightArrowHotspot)) {
-        currentRightArrowColor = arrowHoverColor;
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) currentRightArrowColor = arrowPressedColor;
         if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && clicked_direction == 0) clicked_direction = 1;
     }
-    DrawTextEx(font, rightArrowChar, { rightArrowHotspot.x + arrowHotspotExtraPadding, rightArrowHotspot.y + arrowHotspotExtraPadding / 2 }, arrowFontSize, 1, currentRightArrowColor);
+    DrawTriangle(rightArrowPoints[0], rightArrowPoints[1], rightArrowPoints[2], arrowColor);
+    DrawTriangleLines(rightArrowPoints[0], rightArrowPoints[1], rightArrowPoints[2], Fade(BLACK, 0.5f));
 
     return clicked_direction;
 }
@@ -222,19 +226,18 @@ void UpdateMainMenuScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& 
         }
         if (bgFrameUpdated) {
             int frameDataSize = GetPixelDataSize(res.bgGifImage.width, res.bgGifImage.height, res.bgGifImage.format);
-            unsigned char* frameDataOffset = (unsigned char*)res.bgGifImage.data + (mainMenuBgCurrentFrame * frameDataSize);
+            char* frameDataOffset = (char*)res.bgGifImage.data + (mainMenuBgCurrentFrame * frameDataSize);
             UpdateTexture(res.bgTexture, frameDataOffset);
         }
     }
 
     if (IsWindowResized() && !IsWindowFullscreen())
         SetWindowPosition((GetMonitorWidth(GetCurrentMonitor()) - GetScreenWidth()) / 2, (GetMonitorHeight(GetCurrentMonitor()) - GetScreenHeight()) / 2);
-
 }
 
 void DrawMainMenuScreen(MainMenuResources& res, Vector2 mousePos, int mainMenuBgCurrentFrame, GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha) {
     if (res.gifLoaded && res.bgTexture.id > 0) 
-        DrawTexturePro(res.bgTexture, { 0, 0, (float)res.bgTexture.width, (float)res.bgTexture.height }, { 0, 0, (float)logicalWidth, (float)logicalHeight }, { 0, 0 }, 0, WHITE);
+        DrawTexturePro(res.bgTexture, { 0, 0, (float)res.bgTexture.width, (float)res.bgTexture.height }, { 0, 0, logicalWidth, logicalHeight }, { 0, 0 }, 0, WHITE);
     else ClearBackground(DARKBLUE);
     
     Vector2 titleSize = MeasureTextEx(res.bytesFont, "FNaF Minigames Port", 100, 1);
@@ -275,37 +278,37 @@ void DrawMainMenuScreen(MainMenuResources& res, Vector2 mousePos, int mainMenuBg
 }
 
 
-void UpdateSettingsScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha, float dt, int& currentNormalHelpyFrame_param, float& normalHelpyTimer_param, float normalHelpyFrameDelay_param) { // Parameters for normal Helpy
+void UpdateSettingsScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha, float dt, int& currentNormalHelpyFrame_param, float& normalHelpyTimer_param, float normalHelpyFrameDelay_param) {
 
     // --- Settings Music Logic ---
     if (helpyKilled) {
-        musicRestartKillTimer += dt; // Increment dedicated music timer
+        musicRestartKillTimer += dt;
 
         if (res.settingsMusicLoaded && !IsMusicStreamPlaying(res.settingsMusic)) {
             if (musicRestartKillTimer >= 3) {
                 SeekMusicStream(res.settingsMusic, 0);
                 PlayMusicStream(res.settingsMusic);
                 SetMusicVolume(res.settingsMusic, currentSettingsMusicVolume * g_settings.masterVolume);
-                SetMusicPitch(res.settingsMusic, 0.4); // Killed pitch
+                SetMusicPitch(res.settingsMusic, 0.4);
             }
         }
         else if (res.settingsMusicLoaded && IsMusicStreamPlaying(res.settingsMusic)) {
             UpdateMusicStream(res.settingsMusic);
             
             if (GetMusicTimePlayed(res.settingsMusic) >= GetMusicTimeLength(res.settingsMusic))
-                SeekMusicStream(res.settingsMusic, 0); // Loop
+                SeekMusicStream(res.settingsMusic, 0);
         }
     }
     else {
         // Normal music behavior
-        if (res.settingsMusicLoaded && !IsMusicStreamPlaying(res.settingsMusic) && currentSettingsMusicVolume > 0.01f) {
+        if (res.settingsMusicLoaded && !IsMusicStreamPlaying(res.settingsMusic) && currentSettingsMusicVolume > 0) {
             PlayMusicStream(res.settingsMusic);
             SetMusicVolume(res.settingsMusic, currentSettingsMusicVolume * g_settings.masterVolume);
-            SetMusicPitch(res.settingsMusic, 1.0f); // Normal pitch
+            SetMusicPitch(res.settingsMusic, 1);
         }
         if (res.settingsMusicLoaded && IsMusicStreamPlaying(res.settingsMusic)) {
             UpdateMusicStream(res.settingsMusic);
-            SetMusicPitch(res.settingsMusic, 1.0f);
+            SetMusicPitch(res.settingsMusic, 1);
 
             if (GetMusicTimePlayed(res.settingsMusic) >= GetMusicTimeLength(res.settingsMusic)) {
                 SeekMusicStream(res.settingsMusic, 0);
@@ -316,11 +319,11 @@ void UpdateSettingsScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& 
     // --- Helpy Animation Logic ---
     if (helpyKilled) {
         if (res.helpyCrackedGifLoaded && res.helpyCrackedGifImage.data && (res.helpyCrackedAnimFrames == 0 || helpyCrackedCurrentPlayingFrame < res.helpyCrackedAnimFrames - 1)) {
-            helpyCrackedAnimInternalTimer += dt; // Use the dedicated timer for THIS animation
+            helpyCrackedAnimInternalTimer += dt;
             bool frameUpdated = false;
 
             while (helpyCrackedAnimInternalTimer >= helpyCrackedAnimFrameDelay) {
-                helpyCrackedAnimInternalTimer -= helpyCrackedAnimFrameDelay; // Consume time
+                helpyCrackedAnimInternalTimer -= helpyCrackedAnimFrameDelay;
 
                 if (helpyCrackedCurrentPlayingFrame < res.helpyCrackedAnimFrames - 1) {
                     helpyCrackedCurrentPlayingFrame++;
@@ -346,9 +349,9 @@ void UpdateSettingsScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& 
                 if (frameToUpdate < 0) 
                     frameToUpdate = 0;
 
-                if (res.helpyCrackedAnimFrames > 0) { // Proceed only if there are frames
+                if (res.helpyCrackedAnimFrames > 0) {
                     int frameDataSize = GetPixelDataSize(res.helpyCrackedGifImage.width, res.helpyCrackedGifImage.height, res.helpyCrackedGifImage.format);
-                    unsigned char* frameDataOffset = (unsigned char*)res.helpyCrackedGifImage.data + (frameToUpdate * frameDataSize);
+                    char* frameDataOffset = (char*)res.helpyCrackedGifImage.data + (frameToUpdate * frameDataSize);
                     UpdateTexture(res.helpyCrackedTexture, frameDataOffset);
                 }
             }
@@ -356,16 +359,16 @@ void UpdateSettingsScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& 
     }
     else {
         if (res.helpyGifLoaded && res.helpyTexture.id > 0 && res.helpyGifImage.data) {
-            normalHelpyTimer_param += dt; // Use the parameters for normal Helpy's animation
+            normalHelpyTimer_param += dt;
             bool normalFrameUpdated = false;
-            while (normalHelpyTimer_param >= normalHelpyFrameDelay_param) { // Use parameters
+            while (normalHelpyTimer_param >= normalHelpyFrameDelay_param) {
                 normalHelpyTimer_param -= normalHelpyFrameDelay_param;
-                currentNormalHelpyFrame_param = (currentNormalHelpyFrame_param + 1) % res.helpyAnimFrames; // Use res.helpyAnimFrames
+                currentNormalHelpyFrame_param = (currentNormalHelpyFrame_param + 1) % res.helpyAnimFrames;
                 normalFrameUpdated = true;
             }
             if (normalFrameUpdated) {
                 int frameDataSize = GetPixelDataSize(res.helpyGifImage.width, res.helpyGifImage.height, res.helpyGifImage.format);
-                unsigned char* frameDataOffset = (unsigned char*)res.helpyGifImage.data + (currentNormalHelpyFrame_param * frameDataSize);
+                char* frameDataOffset = (char*)res.helpyGifImage.data + (currentNormalHelpyFrame_param * frameDataSize);
                 UpdateTexture(res.helpyTexture, frameDataOffset);
             }
         }
@@ -376,21 +379,18 @@ void UpdateSettingsScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& 
         consoleActive = !consoleActive;
 
         if (consoleActive) {
-            SetMouseCursor(MOUSE_CURSOR_IBEAM);
             memset(consoleInputBuffer, 0, 256);
             consoleInputCursorPos = 0;
         }
-        else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
     }
 }
 
 void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurrentAnimFrame, GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha) {
-    if (res.settingsBgTexture.id > 0) 
-        DrawTexturePro(res.settingsBgTexture, { 0, 0, (float)res.settingsBgTexture.width, (float)res.settingsBgTexture.height }, { 0, 0, logicalWidth, logicalHeight }, { 0, 0 }, 0, WHITE);
+    if (res.settingsBgTexture.id > 0) DrawTexturePro(res.settingsBgTexture, { 0, 0, (float)res.settingsBgTexture.width, (float)res.settingsBgTexture.height }, { 0, 0, logicalWidth, logicalHeight }, { 0, 0 }, 0, WHITE);
     else ClearBackground(DARKGRAY);
     
     Vector2 settingsTitleSize = MeasureTextEx(res.bytesFont, "SETTINGS", 65, 1);
-    DrawTextEx(res.bytesFont, "SETTINGS", { logicalWidth / 2 - settingsTitleSize.x / 2, 80 }, 65, 1, WHITE);
+    DrawTextEx(res.bytesFont, "SETTINGS", { (logicalWidth - settingsTitleSize.x) / 2, 80 }, 65, 1, WHITE);
 
 
     Font uiFont = res.arcadeClassicFont;
@@ -406,13 +406,13 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurre
     //    }
     //}
     //DrawRectangle(volumeSliderBaseRect.x, volumeSliderBaseRect.y, volumeSliderBaseRect.width * g_settings.masterVolume, volumeSliderBaseRect.height, VIOLET);
-    //DrawTextEx(uiFont, TextFormat("%.0f %", g_settings.masterVolume * 100), { volumeSliderBaseRect.x + volumeSliderBaseRect.width + 15, 180 }, settingsTextFontSize, 1, WHITE);
+    //DrawTextEx(uiFont, TextFormat("% %", g_settings.masterVolume * 100), { volumeSliderBaseRect.x + volumeSliderBaseRect.width + 15, 180 }, settingsTextFontSize, 1, WHITE);
 
 
     // Resolution Selector
     DrawTextEx(uiFont, "Resolution:", { 100, 240 }, settingsTextFontSize, 1, WHITE);
     Rectangle resolutionSelectorBounds = { selectorX, 235, selectorWidth, selectorHeight };
-    int resolutionChange = GuiSelector(resolutionSelectorBounds, resolutionOptions[currentResolutionIndex], uiFont, BLACK, WHITE, DARKGRAY, GRAY, BLACK, mousePos);
+    int resolutionChange = GuiSelector(resolutionSelectorBounds, resolutionOptions[currentResolutionIndex], uiFont, BLACK, WHITE, DARKGRAY, mousePos);
     if (resolutionChange != 0) {
         PlaySound(res.buttonClick);
         currentResolutionIndex = (currentResolutionIndex + resolutionChange + numResolutionOptions) % numResolutionOptions;
@@ -426,7 +426,7 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurre
     // Quality Selector
     DrawTextEx(uiFont, "Quality:", { 100, 300 }, settingsTextFontSize, 1, WHITE);
     Rectangle qualitySelectorBounds = { selectorX, 295, selectorWidth, selectorHeight };
-    int qualityChange = GuiSelector(qualitySelectorBounds, qualityOptions[currentQualityIndex], uiFont, BLACK, WHITE, DARKGRAY, GRAY, BLACK, mousePos);
+    int qualityChange = GuiSelector(qualitySelectorBounds, qualityOptions[currentQualityIndex], uiFont, BLACK, WHITE, DARKGRAY, mousePos);
     if (qualityChange != 0) {
         PlaySound(res.buttonClick);
         currentQualityIndex = (currentQualityIndex + qualityChange + numQualityOptions) % numQualityOptions;
@@ -442,10 +442,11 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurre
             if (g_settings.useCRTShader) PlaySound(res.buttonClick);
             else PlaySound(res.buttonPoof);
         }
-        else PlaySound(res.buttonPoof);
+        else { 
+            PlaySound(res.buttonPoof); 
+            DrawTextEx(uiFont, "(Shader N/A)", { crtToggleButtonBounds.x + crtToggleButtonBounds.width + 10, 360 }, 18, 1, LIGHTGRAY);
+        }
     }
-    if (!res.shaderLoadedSuccessfully)
-        DrawTextEx(uiFont, "(Shader N/A)", { crtToggleButtonBounds.x + crtToggleButtonBounds.width + 10, 360 }, 18, 1, LIGHTGRAY);
 
     // Back Button
     if (GuiButton({ logicalWidth / 2 - 100, logicalHeight - 100, 200, 50 }, "Back", uiFont, WHITE, LIGHTGRAY, GRAY, mousePos)) {
@@ -461,8 +462,8 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurre
     }
 
     // --- Helpy Drawing Logic ---
-    Texture2D textureToDrawForHelpy;
-    Image imageForHelpyDimensions;
+    Texture2D textureToDrawForHelpy = { 0 };
+    Image imageForHelpyDimensions = { 0 };
 
     if (helpyKilled) {
         if (res.helpyCrackedGifLoaded && res.helpyCrackedTexture.id > 0) {
@@ -480,12 +481,12 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurre
 
     if (textureToDrawForHelpy.id > 0 && imageForHelpyDimensions.data) {
         Rectangle helpyDestinationRect = {
-            logicalWidth - imageForHelpyDimensions.width / 1.5 - 10,
-            logicalHeight - imageForHelpyDimensions.height / 1.5 - 15,
+            logicalWidth - (imageForHelpyDimensions.width / 1.5) - 10,
+            logicalHeight - (imageForHelpyDimensions.height / 1.5) - 15,
             imageForHelpyDimensions.width / 1.5,
             imageForHelpyDimensions.height / 1.5
         };
-        Rectangle helpySourceRect = { 0, 0, (float)textureToDrawForHelpy.width, (float)textureToDrawForHelpy.height };
+        Rectangle helpySourceRect = { 0, 0, textureToDrawForHelpy.width, textureToDrawForHelpy.height };
         DrawTexturePro(textureToDrawForHelpy, helpySourceRect, helpyDestinationRect, { 0,0 }, 0, WHITE);
     }
 }
@@ -494,6 +495,7 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
     if (!consoleActive) return;
     
     int keyPressedUnicode = GetCharPressed();
+    bool inputChangedByTyping = false;
     while (keyPressedUnicode > 0) {
         char actualChar = (char)keyPressedUnicode;
 
@@ -509,6 +511,7 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
                 if (i + 1 <= consoleMaxChars)
                     consoleInputBuffer[i + 1] = consoleInputBuffer[i];
 
+            inputChangedByTyping = true;
             consoleInputBuffer[consoleInputCursorPos] = actualChar;
             consoleInputCursorPos++;            
         }
@@ -656,9 +659,7 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
                                 transform(normalizedArg.begin(), normalizedArg.end(), normalizedArg.begin(), ::toupper);
                                 if (normalizedArg == "/T") argT = true;
                                 else if (normalizedArg == "/F") argF = true;
-                                else if (currentArg != "/?" && targetProcess.empty()) {
-                                    targetProcess = tokens[i];
-                                }
+                                else if (currentArg != "/?" && targetProcess.empty()) targetProcess = tokens[i];
                             }
 
                             if (targetProcess.empty()) {
@@ -679,7 +680,7 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
                                                 helpyCrackedAnimInternalTimer = 0;
                                                 musicRestartKillTimer = 0;
                                                 if (res.helpyCrackedGifImage.data)
-                                                    UpdateTexture(res.helpyCrackedTexture, (unsigned char*)res.helpyCrackedGifImage.data);
+                                                    UpdateTexture(res.helpyCrackedTexture, (char*)res.helpyCrackedGifImage.data);
 
                                                 PlaySound(res.helpyCrackSound);
                                                 if (IsMusicStreamPlaying(res.settingsMusic))
@@ -792,28 +793,26 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
     };
 
     float outputFontSize = 14;
-    float lineHeight = 26; 
+    float lineHeight = 28; 
     int calculatedConsoleLinesToDraw = 0;
     if (outputArea.height > 0)
         calculatedConsoleLinesToDraw = (outputArea.height / lineHeight);
     
-    int currentConsoleLinesToDraw = calculatedConsoleLinesToDraw;
-
     int startLineToDraw = consoleScrollOffset;
-    if (consoleOutputLines.empty() || consoleOutputLines.size() <= currentConsoleLinesToDraw) {
+    if (consoleOutputLines.empty() || consoleOutputLines.size() <= calculatedConsoleLinesToDraw) {
         startLineToDraw = 0;
         consoleScrollOffset = 0;
     }
     else {
         if (startLineToDraw < 0) startLineToDraw = 0;
-        int maxScroll = consoleOutputLines.size() - currentConsoleLinesToDraw;
+        int maxScroll = consoleOutputLines.size() - calculatedConsoleLinesToDraw;
         if (startLineToDraw > maxScroll) startLineToDraw = maxScroll;
         consoleScrollOffset = startLineToDraw;
     }
 
     BeginScissorMode(outputArea.x, outputArea.y, outputArea.width, outputArea.height);
-    for (int i = 0; i < currentConsoleLinesToDraw; i++) {
-        int currentLineInHistory = startLineToDraw + i;
+    for (int i = 0; i < consoleLinesToDraw; i++) {
+        int currentLineInHistory = consoleScrollOffset + i;
         if (currentLineInHistory >= 0 && currentLineInHistory < consoleOutputLines.size())
             DrawTextEx(font, consoleOutputLines[currentLineInHistory].c_str(), { outputArea.x + 2, outputArea.y + 2 + i * lineHeight }, outputFontSize, 1, WHITE);
         else break;
@@ -823,93 +822,13 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
     float textInputY = inputBgArea.y + (inputBgArea.height - outputFontSize) / 2;
     DrawTextEx(font, TextFormat("> %s", consoleInputBuffer), { inputBgArea.x + 5, textInputY }, outputFontSize, 1, LIME);
 
-    if (((int)(GetTime() * 2.5)) % 2 == 0) {
+    if (((int)(GetTime() * 3)) % 2 == 0) {
         char tempCursorBuffer[consoleMaxChars + 3];
         snprintf(tempCursorBuffer, sizeof(tempCursorBuffer), "> %.*s", consoleInputCursorPos, consoleInputBuffer);
-        Vector2 cursorPosTextSize = MeasureTextEx(font, tempCursorBuffer, (float)outputFontSize, 1);
-        DrawRectangle(inputBgArea.x + 5 + (int)cursorPosTextSize.x, textInputY - 1, 2, outputFontSize + 2, LIME);
+        Vector2 cursorPosTextSize = MeasureTextEx(font, tempCursorBuffer, outputFontSize, 1);
+        DrawRectangle(inputBgArea.x + 5 + cursorPosTextSize.x, textInputY - 1, 2, outputFontSize + 2, LIME);
     }
 }
-
-static bool CheckRainbowLandResourcesLoaded(const RainbowLandGameResources& res) {
-    vector<string> missingResources;
-    if (res.idleRight.id == 0) missingResources.push_back("idleRight");
-    if (res.idleLeft.id == 0) missingResources.push_back("idleLeft");
-    if (res.walkRight.id == 0) missingResources.push_back("walkRight");
-    if (res.walkLeft.id == 0) missingResources.push_back("walkLeft");
-    if (res.jumpRight.id == 0) missingResources.push_back("jumpRight");
-    if (res.jumpLeft.id == 0) missingResources.push_back("jumpLeft");
-    if (res.bg.id == 0) missingResources.push_back("bg");
-    if (res.tile.id == 0) missingResources.push_back("tile");
-    if (res.platformTexture.id == 0) missingResources.push_back("platformTexture");
-    if (res.butterfly.id == 0) missingResources.push_back("butterfly");
-    if (res.spikesUp.id == 0) missingResources.push_back("spikesUp");
-    if (res.spikesDown.id == 0) missingResources.push_back("spikesDown");
-    if (res.controlKeysInfo.id == 0) missingResources.push_back("controlKeysInfo");
-    if (res.fenceProp.id == 0) missingResources.push_back("fenceProp");
-    if (res.flowerSmallProp.id == 0) missingResources.push_back("flowerSmallProp");
-    if (res.flowerBigProp.id == 0) missingResources.push_back("flowerBigProp");
-    if (res.checkpointFlag.id == 0) missingResources.push_back("checkpointFlag");
-    if (res.sunflower.id == 0) missingResources.push_back("sunflower");
-    if (res.checkpoint.id == 0) missingResources.push_back("checkpoint");
-    if (res.rbowBodyTexture.id == 0) missingResources.push_back("rbowBodyTexture");
-    for (int i = 0; i < res.rbowEyeTextures.size(); i++) if (res.rbowEyeTextures[i].id == 0) missingResources.push_back("rbowEyeTextures[" + to_string(i) + "]");
-    for (int i = 0; i < res.sunflowerPetals.size(); i++) if (res.sunflowerPetals[i].id == 0) missingResources.push_back("sunflowerPetals[" + to_string(i) + "]");
-    if (res.buttonVoicesOn.id == 0) missingResources.push_back("buttonVoicesOn");
-    if (res.buttonVoicesOff.id == 0) missingResources.push_back("buttonVoicesOff");
-    if (!res.backgroundMusicLoaded) missingResources.push_back("backgroundMusic");
-    if (!res.jumpSoundLoaded) missingResources.push_back("FX: jump");
-    if (!res.petalSoundLoaded) missingResources.push_back("FX: petalShoot");
-    if (!res.spikesSoundLoaded) missingResources.push_back("FX: spikesPush");
-    if (!res.deathSoundLoaded) missingResources.push_back("FX: death");
-    if (!res.checkpointSoundLoaded) missingResources.push_back("FX: checkpoint");
-    for (int i = 0; i < res.rbowDialogues.size(); i++) if (res.rbowDialogues[i].frameCount == 0) missingResources.push_back("rbowDialogues[" + to_string(i) + "]");
-    if (!res.rbowVoiceOffSoundLoaded) missingResources.push_back("rbowVoiceOff");
-    if (!res.rbowYouStillSuckSoundLoaded) missingResources.push_back("rbowYouStillSuck");
-
-
-    if (!missingResources.empty()) {
-        cout << "RAINBOW LAND: Critical error - failed to load resources:" << endl;
-        for (const string& resourceName : missingResources) 
-            cout << resourceName << endl;
-
-        return false;
-    }
-    return true;
-}
-static bool CheckMotoristResourcesLoaded(const MotoristGameResources& res) {
-    vector<string> missingResources;
-    if (res.car.id == 0) missingResources.push_back("car");
-    for (int i = 0; i < res.carSpinFrames.size(); i++) if (res.carSpinFrames[i].id == 0) missingResources.push_back("carSpinFrames[" + to_string(i) + "]");
-    if (res.leftCarNPC.id == 0) missingResources.push_back("leftCarNPC");
-    if (res.rightCarNPC.id == 0) missingResources.push_back("rightCarNPC");
-    if (res.bg.id == 0) missingResources.push_back("bg");
-    if (res.one.id == 0) missingResources.push_back("one");
-    if (res.two.id == 0) missingResources.push_back("two");
-    if (res.three.id == 0) missingResources.push_back("three");
-    if (res.go.id == 0) missingResources.push_back("go");
-    if (res.wasd.id == 0) missingResources.push_back("wasd");
-    if (res.lap.id == 0) missingResources.push_back("lap");
-    if (res.goal.id == 0) missingResources.push_back("goal");
-    if (!res.backgroundMusicLoaded) missingResources.push_back("backgroundMusic");
-    if (!res.bgNoiseLoaded) missingResources.push_back("FX: bgNoise");
-    if (!res.countdownSoundLoaded) missingResources.push_back("FX: countdown");
-    if (!res.goSoundLoaded) missingResources.push_back("FX: ctdwnGo");
-    if (!res.carCrashSoundLoaded) missingResources.push_back("FX: carCrash");
-    if (!res.lapSoundLoaded) missingResources.push_back("FX: lapReached");
-    if (!res.goalSoundLoaded) missingResources.push_back("FX: goalReached");
-
-
-    if (!missingResources.empty()) {
-        cout << "MOTORIST: Critical error - failed to load resources:" << endl;
-        for (const string& resourceName : missingResources)
-            cout << resourceName << endl;
-
-        return false;
-    }
-    return true;
-}
-
 
 int main(void) {
     InitializeGameSettings();
@@ -967,6 +886,9 @@ int main(void) {
         float dt = GetFrameTime();
         Vector2 mousePos = GetMousePosition();
 
+        if (IsKeyPressed(KEY_F11))
+            ToggleFullscreen();
+
         // --- Fading Logic ---
         if (isFadingOut) {
             fadeAlpha += fadeSpeed * dt;
@@ -994,7 +916,6 @@ int main(void) {
                 if (fadeTargetScreen == PLAYING_MOTORIST) {
                     MotoristGameResources motoristRes = LoadMotoristResources(g_settings.quality);
                     if (CheckMotoristResourcesLoaded(motoristRes)) {
-                        ShowCursor();
                         runMidnightMotorist(g_settings.quality, mainMenuRes.crtShader, g_settings.useCRTShader && mainMenuRes.shaderLoadedSuccessfully);
                         HideCursor();
                     }
@@ -1005,7 +926,6 @@ int main(void) {
                 else if (fadeTargetScreen == PLAYING_RAINBOW) {
                     RainbowLandGameResources rainbowRes = LoadRainbowLandResources(g_settings.quality);
                     if (CheckRainbowLandResourcesLoaded(rainbowRes)) {
-                        ShowCursor();
                         runMagicRainbowLand(g_settings.quality);
                         HideCursor();
                     }
@@ -1042,22 +962,21 @@ int main(void) {
                     }
                     if (mainMenuRes.settingsMusicLoaded) {
                         PlayMusicStream(mainMenuRes.settingsMusic);
-                        if (helpyKilled) SetMusicPitch(mainMenuRes.settingsMusic, 0.4); // Your pitch
+                        if (helpyKilled) SetMusicPitch(mainMenuRes.settingsMusic, 0.4);
                         else SetMusicPitch(mainMenuRes.settingsMusic, 1);
                         
-                        // Reset NORMAL Helpy animation state
                         helpyCurrentAnimFrame = 0; 
                         helpyFrameTimer = 0;
 
                         if (helpyKilled && mainMenuRes.helpyCrackedGifLoaded) {
                             if (mainMenuRes.helpyCrackedAnimFrames > 0 &&
-                                helpyCrackedCurrentPlayingFrame >= mainMenuRes.helpyCrackedAnimFrames - 1) { // Inferring completion
+                                helpyCrackedCurrentPlayingFrame >= mainMenuRes.helpyCrackedAnimFrames - 1) {
 
                                 int lastFrameIndex = mainMenuRes.helpyCrackedAnimFrames - 1;
-                                helpyCrackedCurrentPlayingFrame = lastFrameIndex; // Lock to last frame
+                                helpyCrackedCurrentPlayingFrame = lastFrameIndex;
 
                                 int frameDataSize = GetPixelDataSize(mainMenuRes.helpyCrackedGifImage.width, mainMenuRes.helpyCrackedGifImage.height, mainMenuRes.helpyCrackedGifImage.format);
-                                unsigned char* frameDataOffset = (unsigned char*)mainMenuRes.helpyCrackedGifImage.data + (lastFrameIndex * frameDataSize);
+                                char* frameDataOffset = (char*)mainMenuRes.helpyCrackedGifImage.data + (lastFrameIndex * frameDataSize);
                                 UpdateTexture(mainMenuRes.helpyCrackedTexture, frameDataOffset);
                             }
                         }
@@ -1134,8 +1053,8 @@ int main(void) {
 
         if (currentScreen == LOADING && !isFadingOut && !isFadingIn) {
             if (mainMenuRes.helpyLoadingScreenTexture.id > 0) {
-                float imgDrawWidth = (float)mainMenuRes.helpyLoadingScreenTexture.width;
-                float imgDrawHeight = (float)mainMenuRes.helpyLoadingScreenTexture.height;
+                float imgDrawWidth = mainMenuRes.helpyLoadingScreenTexture.width;
+                float imgDrawHeight = mainMenuRes.helpyLoadingScreenTexture.height;
                 DrawTexture(mainMenuRes.helpyLoadingScreenTexture, (GetScreenWidth() - imgDrawWidth) / 2, (GetScreenHeight() - imgDrawHeight - 120) / 2, WHITE);
             }
             else DrawText("Loading...", (GetScreenWidth() - MeasureText("Loading...", 40)) / 2, (GetScreenHeight() - 40) / 2, 40, LIGHTGRAY);
@@ -1157,16 +1076,16 @@ int main(void) {
             case PLAYING_MOTORIST:
             case PLAYING_RAINBOW:
                 ClearBackground(BLACK);
-                DrawText("IN GAME...", logicalWidth / 2 - MeasureText("IN GAME...", 20) / 2, logicalHeight / 2 - 10, 20, WHITE);
+                DrawText("IN GAME...", (logicalWidth - MeasureText("IN GAME...", 20)) / 2, (logicalHeight - 20) / 2, 20, WHITE);
                 break;
             default: break;
             }
             EndTextureMode();
 
-            float finalScale = fminf((float)GetScreenWidth() / logicalWidth, (float)GetScreenHeight() / logicalHeight);
+            float finalScale = fminf(GetScreenWidth() / logicalWidth, GetScreenHeight() / logicalHeight);
             float finalOffsetX = (GetScreenWidth() - (logicalWidth * finalScale)) * 0.5;
             float finalOffsetY = (GetScreenHeight() - (logicalHeight * finalScale)) * 0.5;
-            Rectangle srcRect = { 0, 0, (float)mainMenuRes.targetRenderTexture.texture.width, -(float)mainMenuRes.targetRenderTexture.texture.height };
+            Rectangle srcRect = { 0, 0, mainMenuRes.targetRenderTexture.texture.width, -mainMenuRes.targetRenderTexture.texture.height };
             Rectangle destRect = { finalOffsetX, finalOffsetY, logicalWidth * finalScale, logicalHeight * finalScale };
             DrawTexturePro(mainMenuRes.targetRenderTexture.texture, srcRect, destRect, { 0, 0 }, 0, WHITE);
 
@@ -1176,7 +1095,7 @@ int main(void) {
         if ((isFadingOut || isFadingIn) && fadeAlpha > 0)
             DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, fadeAlpha));
 
-        if (mainMenuRes.cursor.id > 0 && (currentScreen == MAIN_MENU || currentScreen == SETTINGS) && !(isFadingIn || isFadingOut && fadeAlpha > 0.9))
+        if (mainMenuRes.cursor.id > 0 && !consoleActive && (currentScreen == MAIN_MENU || currentScreen == SETTINGS))
             DrawTexture(mainMenuRes.cursor, mousePos.x, mousePos.y, WHITE);
 
         //DrawFPS(10, 10);

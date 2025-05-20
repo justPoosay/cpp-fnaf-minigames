@@ -11,65 +11,66 @@
 using namespace std;
 
 
-constexpr float defaultBackgroundWidth = 1920;
-constexpr float defaultBackgroundHeight = 1080;
+const float defaultBackgroundWidth = 1920;
+const float defaultBackgroundHeight = 1080;
 
-constexpr float virtualScreenWidth = 960;
-constexpr float virtualScreenHeight = 540;
-constexpr float motoristRoadMargin = 25;
-constexpr float motoristRoadYTop = motoristRoadMargin;
-constexpr float motoristRoadYBottom = virtualScreenHeight - motoristRoadMargin;
-constexpr float LAP_DISTANCE = 10000;
+const float virtualScreenWidth = 960;
+const float virtualScreenHeight = 540;
+const float motoristRoadMargin = 25;
+const float motoristRoadYTop = motoristRoadMargin;
+const float motoristRoadYBottom = virtualScreenHeight - motoristRoadMargin;
+const float lapDistance = 12500;
 
-constexpr float PLAYER_MOVE_SPEED = 250;
-constexpr float VIRTUAL_SPEED_INITIAL = 0;
-constexpr float VIRTUAL_SPEED_MAX = 1690;
-constexpr float VIRTUAL_SPEED_ACCELERATION = 45;
-constexpr float bgScrollMultiplier = 1.5;
-constexpr float spinDurationPerFrame = 0.05;
+const float playerMoveSpeed = 250;
+const float virtualSpeedInitial = 0;
+const float virtualSpeedMax = 1690;
+const float virtualSpeedAcceleration = 47.5;
+const float bgScrollMultiplier = 1.75;
+const float spinFrameDuration = 0.05;
 
-constexpr float MIN_NPC_SPEED = 150;
-constexpr float MAX_NPC_SPEED = 300;
 
-constexpr float npcSpawnRate = 2.5;
-constexpr float minNpcSpacing = 25;
+const float minNpcSpeed = 200;
+const float maxNpcSpeed = 350;
 
-constexpr int LAP_ANIM_TOTAL_BLINKS = 16;
-constexpr float LAP_ANIM_BLINK_DURATION = 0.025;
-constexpr float LAP_ANIM_SCALE = 0.35;
+const float npcSpawnRate = 3.25;
+const float minNpcSpacing = 30;
 
-constexpr float laneCenterY1Ratio = 95 / defaultBackgroundHeight;
-constexpr float laneCenterY2Ratio = 191 / defaultBackgroundHeight;
-constexpr float laneCenterY3Ratio = 349 / defaultBackgroundHeight;
-constexpr float laneCenterY4Ratio = 455 / defaultBackgroundHeight;
-constexpr float laneCenterY5Ratio = 611 / defaultBackgroundHeight;
-constexpr float laneCenterY6Ratio = 717 / defaultBackgroundHeight;
-constexpr float laneCenterY7Ratio = 877 / defaultBackgroundHeight;
-constexpr float laneCenterY8Ratio = 981 / defaultBackgroundHeight;
+const int lapAnimBlinks = 16;
+const float lapAnimBlinkDuration = 0.025;
+const float lapAnimScale = 0.35;
 
-constexpr float UI_TEXT_SIZE_INFO = 60;
-constexpr float UI_TEXT_SPACING = 1.5;
-constexpr float UI_MARGIN = 10;
+const float laneCenterY1Ratio = 95 / defaultBackgroundHeight;
+const float laneCenterY2Ratio = 191 / defaultBackgroundHeight;
+const float laneCenterY3Ratio = 349 / defaultBackgroundHeight;
+const float laneCenterY4Ratio = 455 / defaultBackgroundHeight;
+const float laneCenterY5Ratio = 611 / defaultBackgroundHeight;
+const float laneCenterY6Ratio = 717 / defaultBackgroundHeight;
+const float laneCenterY7Ratio = 877 / defaultBackgroundHeight;
+const float laneCenterY8Ratio = 981 / defaultBackgroundHeight;
 
-constexpr float playerScaleFactor = 0.75;
-constexpr float defaultPlayerWidth = 160;
-constexpr float defaultPlayerHeight = 131;
-constexpr float baseScaleY = virtualScreenHeight / defaultBackgroundHeight;
-constexpr float baseScaleX = baseScaleY;
-constexpr float playerTextureWidth = defaultPlayerWidth * baseScaleX * playerScaleFactor;
-constexpr float playerTextureHeight = defaultPlayerHeight * baseScaleY * playerScaleFactor;
-constexpr float playerHalfWidth = playerTextureWidth / 2;
-constexpr float playerHalfHeight = playerTextureHeight / 2;
+const float uiTextSize = 60;
+const float uiTextSpacing = 1.5;
+const float uiMargin = 10;
 
-constexpr float npcScaleFactor = 0.75;
-constexpr float defaultNpcWidth = 160;
-constexpr float defaultNpcHeight = 131;
-constexpr float npcTextureWidth = defaultNpcWidth * baseScaleX * npcScaleFactor;
-constexpr float npcTextureHeight = defaultNpcHeight * baseScaleY * npcScaleFactor;
-constexpr float npcHalfWidth = npcTextureWidth / 2;
-constexpr float npcHalfHeight = npcTextureHeight / 2;
+const float playerScaleFactor = 0.75;
+const float defaultPlayerWidth = 160;
+const float defaultPlayerHeight = 131;
+const float baseScaleY = virtualScreenHeight / defaultBackgroundHeight;
+const float baseScaleX = baseScaleY;
+const float playerTextureWidth = defaultPlayerWidth * baseScaleX * playerScaleFactor;
+const float playerTextureHeight = defaultPlayerHeight * baseScaleY * playerScaleFactor;
+const float playerHalfWidth = playerTextureWidth / 2;
+const float playerHalfHeight = playerTextureHeight / 2;
 
-constexpr float npcCollisionMarginX_raw = 10;
-constexpr float npcCollisionMarginY_raw = 5;
-constexpr float npcCollisionMarginX = npcCollisionMarginX_raw * baseScaleX * npcScaleFactor;
-constexpr float npcCollisionMarginY = npcCollisionMarginY_raw * baseScaleY * npcScaleFactor;
+const float npcScaleFactor = 0.75;
+const float defaultNpcWidth = 160;
+const float defaultNpcHeight = 131;
+const float npcTextureWidth = defaultNpcWidth * baseScaleX * npcScaleFactor;
+const float npcTextureHeight = defaultNpcHeight * baseScaleY * npcScaleFactor;
+const float npcHalfWidth = npcTextureWidth / 2;
+const float npcHalfHeight = npcTextureHeight / 2;
+
+const float npcCollisionMarginX_raw = 10;
+const float npcCollisionMarginY_raw = 5;
+const float npcCollisionMarginX = npcCollisionMarginX_raw * baseScaleX * npcScaleFactor;
+const float npcCollisionMarginY = npcCollisionMarginY_raw * baseScaleY * npcScaleFactor;
