@@ -1,11 +1,6 @@
 #pragma once
 
 #include "raylib.h"
-#include "raymath.h"
-#include "GameSettings.h"
-
-#include <iostream>
-#include <string>
 
 struct MainMenuResources {
     Texture2D helpyLoadingScreenTexture;
@@ -15,9 +10,14 @@ struct MainMenuResources {
 
 // --- Rendering Variables ---
     Shader crtShader;
+    Shader fruityMazeShader;
+
+    bool fruityMazeShaderLoaded;
+    bool shaderLoadedSuccessfully;
+
     int crtResolutionLoc; 
     int crtTimeLoc;
-    bool shaderLoadedSuccessfully;
+
 
 // --- Asset Variables ---
     Image bgGifImage; 
@@ -26,14 +26,25 @@ struct MainMenuResources {
     int animFrames;
     bool gifLoaded;
 
-    // Helpy gif
+    // Helpy grooves
     Image helpyGifImage;
     Texture2D helpyTexture;
     int helpyAnimFrames;
     bool helpyGifLoaded;
 
+    // Helpy murdered :<
+    Image helpyCrackedGifImage;
+    Texture2D helpyCrackedTexture;
+    Sound helpyCrackSound;
+    int helpyCrackedAnimFrames;
+    bool helpyCrackedGifLoaded;
+
+    int helpyCrackedCurrentPlayingFrame;
+    float helpyCrackedFramePlayTimer;
+    bool helpyCrackAnimationHasPlayed;
+
     // Fonts;
-    Font defaultGuiFont;
+    Font consolasFont;
     Font arcadeClassicFont; 
     Font bytesFont;
 
@@ -53,3 +64,4 @@ struct MainMenuResources {
 bool LoadInitialLoadingScreenResources(MainMenuResources& res);
 bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logicalHeight);
 void UnloadMainMenuResources(MainMenuResources& res);
+

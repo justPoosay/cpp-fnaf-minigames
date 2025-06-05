@@ -1,5 +1,10 @@
 #include "MainMenuResources.h"
 
+#include <iostream>
+#include <string>
+
+using namespace std;
+
 bool LoadInitialLoadingScreenResources(MainMenuResources& res) {
     res.helpyLoadingScreenTexture = LoadTexture("resources/helpy/helpyLoadingScreen.png");
     if (res.helpyLoadingScreenTexture.id > 0) {
@@ -18,6 +23,7 @@ static void InitializeResourceStates(MainMenuResources& res) {
     res.crtResolutionLoc = -1;
     res.crtTimeLoc = -1;
     res.shaderLoadedSuccessfully = false;
+    res.fruityMazeShaderLoaded = false;
 
     res.bgGifImage = { 0 };
     res.bgTexture = { 0 };
@@ -30,7 +36,13 @@ static void InitializeResourceStates(MainMenuResources& res) {
     res.helpyAnimFrames = 0;
     res.helpyGifLoaded = false;
 
-    res.defaultGuiFont = GetFontDefault();
+    res.helpyCrackedGifImage = { 0 };
+    res.helpyCrackedTexture = { 0 };
+    res.helpyCrackedAnimFrames = 0;
+    res.helpyCrackedGifLoaded = false;
+
+
+    res.consolasFont = { 0 };
     res.arcadeClassicFont = { 0 };
     res.bytesFont = { 0 };
 
@@ -40,6 +52,8 @@ static void InitializeResourceStates(MainMenuResources& res) {
     res.settingsMusicLoaded = false;
 
     res.targetRenderTexture = { 0 };
+    res.helpyLoadingScreenTexture = { 0 };
+    res.helpyLoadingTextureLoaded = false;
 }
 
 bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logicalHeight) {
@@ -68,6 +82,12 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
         }
     }
 
+    if (FileExists("FruityMaze.fs")) {
+        res.fruityMazeShader = LoadShader(0, "FruityMaze.fs");
+        if (res.fruityMazeShader.id > 0)
+            res.fruityMazeShaderLoaded = true;
+    }
+
     // --- Load GIF Background for Main Menu ---
     if (FileExists("resources/menuBg.gif")) {
         res.bgGifImage = LoadImageAnim("resources/menuBg.gif", &res.animFrames);
@@ -88,7 +108,7 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
         }
     }
 
-    // --- Load Helpy GIF for Settings Screen ---
+    // --- Load Helpy ---
     if (FileExists("resources/helpy/helpyGrooves.gif")) {
         res.helpyGifImage = LoadImageAnim("resources/helpy/helpyGrooves.gif", &res.helpyAnimFrames);
         if (res.helpyGifImage.data != NULL && res.helpyAnimFrames > 0) {
@@ -97,23 +117,35 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
                 res.helpyGifLoaded = true;
                 SetTextureFilter(res.helpyTexture, TEXTURE_FILTER_BILINEAR);
             }
-            else {
-                UnloadImage(res.helpyGifImage); 
-                res.helpyGifImage = { 0 };
+        }
+        else res.helpyGifImage = { 0 };
+
+    }
+
+    // Murdered Helpy
+    if (FileExists("resources/helpy/helpyDead.gif")) {
+        if (FileExists("resources/helpy/crack.mp3")) 
+            res.helpyCrackSound = LoadSound("resources/helpy/crack.mp3");
+
+        res.helpyCrackedGifImage = LoadImageAnim("resources/helpy/helpyDead.gif", &res.helpyCrackedAnimFrames);
+        if (res.helpyCrackedGifImage.data != NULL && res.helpyCrackedAnimFrames > 0) {
+            res.helpyCrackedTexture = LoadTextureFromImage(res.helpyCrackedGifImage);
+            if (res.helpyCrackedTexture.id > 0) {
+                res.helpyCrackedGifLoaded = true;
+                SetTextureFilter(res.helpyCrackedTexture, TEXTURE_FILTER_BILINEAR);
             }
         }
-        else {
-            if (res.helpyGifImage.data) UnloadImage(res.helpyGifImage);
-            res.helpyGifImage = { 0 };
-        }
+        else res.helpyCrackedGifImage = { 0 };
+        
     }
+    
 
     // --- Load Settings Background ---
     if (FileExists("resources/settingsBg.png")) {
         res.settingsBgTexture = LoadTexture("resources/settingsBg.png");
-        if (res.settingsBgTexture.id > 0) {
+
+        if (res.settingsBgTexture.id > 0)
             SetTextureFilter(res.settingsBgTexture, TEXTURE_FILTER_BILINEAR);
-        }
     }
 
     // --- Load Buttons FX ---
@@ -124,41 +156,38 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
     }
 
     // --- Load Custom Fonts ---
-    if (FileExists("resources/ARCADECLASSIC.TTF")) {
-        res.arcadeClassicFont = LoadFont("resources/ARCADECLASSIC.TTF");
-        res.bytesFont = LoadFont("resources/Bytes.otf");
+    if (FileExists("resources/consolas.ttf"))
+        res.consolasFont = LoadFont("resources/consolas.ttf");
 
-        if (res.arcadeClassicFont.texture.id > 0) 
-            SetTextureFilter(res.arcadeClassicFont.texture, TEXTURE_FILTER_POINT);
-    }
+    if (FileExists("resources/arcadeclassic.ttf"))
+        res.arcadeClassicFont = LoadFont("resources/arcadeclassic.ttf");
+
+    if (FileExists("resources/TwoFiftySixBytes.otf"))
+        res.bytesFont = LoadFont("resources/TwoFiftySixBytes.otf");
 
     // --- Load Menu Music ---
     if (FileExists("resources/mainMenu.mp3")) {
         res.menuMusic = LoadMusicStream("resources/mainMenu.mp3");
-        if (res.menuMusic.stream.buffer) {
+
+        if (res.menuMusic.stream.buffer)
             res.menuMusicLoaded = true;
-            SetMusicVolume(res.menuMusic, 1);
-        }
     }
 
     // --- Load Settings Music ---
     if (FileExists("resources/SETTINGS.mp3")) {
         res.settingsMusic = LoadMusicStream("resources/SETTINGS.mp3");
-        if (res.settingsMusic.stream.buffer) {
+
+        if (res.settingsMusic.stream.buffer)
             res.settingsMusicLoaded = true;
-            SetMusicVolume(res.settingsMusic, 1);
-        }
     }
 
     // --- Load Render Texture ---
     res.targetRenderTexture = LoadRenderTexture(logicalWidth, logicalHeight);
-    if (res.targetRenderTexture.id > 0) {
+    if (res.targetRenderTexture.id > 0) 
         SetTextureFilter(res.targetRenderTexture.texture, TEXTURE_FILTER_BILINEAR);
-    }
-    else allCriticalLoaded = false;
+    else 
+        allCriticalLoaded = false;
 
-
-    TraceLog(LOG_INFO, "RESOURCES: Main menu resource loading complete.");
     return allCriticalLoaded;
 }
 
@@ -185,7 +214,14 @@ void UnloadMainMenuResources(MainMenuResources& res) {
         if (res.helpyGifImage.data) UnloadImage(res.helpyGifImage);
     }
 
-    if (res.settingsBgTexture.id > 0) UnloadTexture(res.settingsBgTexture);
+    if (res.helpyCrackedGifLoaded) {
+        UnloadTexture(res.helpyCrackedTexture);
+        UnloadImage(res.helpyCrackedGifImage);
+        UnloadSound(res.helpyCrackSound);
+    }
+
+    if (res.settingsBgTexture.id > 0) 
+        UnloadTexture(res.settingsBgTexture);
 
     if (res.buttonClick.stream.buffer) {
         UnloadSound(res.buttonClick);
@@ -194,11 +230,16 @@ void UnloadMainMenuResources(MainMenuResources& res) {
     }
     
     if (res.arcadeClassicFont.texture.id > 0) {
+        UnloadFont(res.consolasFont);
         UnloadFont(res.arcadeClassicFont);
         UnloadFont(res.bytesFont);
     }
 
-    if (res.shaderLoadedSuccessfully && res.crtShader.id > 0) UnloadShader(res.crtShader);
+    if (res.shaderLoadedSuccessfully && res.crtShader.id > 0) 
+        UnloadShader(res.crtShader);
+
+    if (res.fruityMazeShaderLoaded && res.fruityMazeShader.id > 0) 
+        UnloadShader(res.fruityMazeShader);
 
     InitializeResourceStates(res);
 
