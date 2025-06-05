@@ -1,12 +1,12 @@
 #include "MotoristResources.h"
 
-MotoristGameResources LoadMotoristResources(GraphicsQuality quality) { // Loading Resources Function
-    TraceLog(LOG_INFO, "Loading game resources...");
-
+MotoristGameResources LoadMotoristResources(GraphicsQuality quality) {
+    cout << "Loading game resources..." << endl;
     MotoristGameResources resources;
 
     // Car (player & NPC)
     resources.car = LoadTexture("resources/mm/textures/car.png");
+
     resources.carSpinFrames.resize(19);
     for (int i = 0; i < 19; i++) {
         string filename = TextFormat("resources/mm/textures/carSpin_%02d.png", i + 1);
@@ -47,8 +47,7 @@ MotoristGameResources LoadMotoristResources(GraphicsQuality quality) { // Loadin
     resources.lapSoundLoaded = (resources.lapReached.frameCount > 0);
     resources.goalSoundLoaded = (resources.goalReached.frameCount > 0);
 
-    SetTextureFilter(resources.gameFont.texture, TEXTURE_FILTER_BILINEAR);
-    TraceLog(LOG_INFO, "Game resources loaded successfully.");
+    cout << "Game resources loaded successfully." << endl;
 
     return resources;
 }
@@ -56,12 +55,11 @@ MotoristGameResources LoadMotoristResources(GraphicsQuality quality) { // Loadin
 
 // Unloadind Resources
 void UnloadMotoristResources(MotoristGameResources& resources) {
-    TraceLog(LOG_INFO, "Unloading game resources...");
+    cout << "Unloading game resources..." << endl;
 
     if (resources.car.id > 0) UnloadTexture(resources.car);
-    for (const auto& frame : resources.carSpinFrames) {
-        UnloadTexture(frame);
-    }
+    for (const auto& frame : resources.carSpinFrames) UnloadTexture(frame);
+
     if (resources.leftCarNPC.id > 0) UnloadTexture(resources.leftCarNPC);
     if (resources.rightCarNPC.id > 0) UnloadTexture(resources.rightCarNPC);
 
@@ -82,4 +80,43 @@ void UnloadMotoristResources(MotoristGameResources& resources) {
     if (resources.lapSoundLoaded) UnloadSound(resources.lapReached);
 
     UnloadFont(resources.gameFont);
+}
+
+bool CheckMotoristResourcesLoaded(MotoristGameResources& res) {
+    vector<string> missingResources;
+
+    if (res.car.id == 0) missingResources.push_back("car");
+
+    for (int i = 0; i < res.carSpinFrames.size(); i++)
+        if (res.carSpinFrames[i].id == 0)
+            missingResources.push_back("carSpinFrames[" + to_string(i) + "]");
+
+    if (res.leftCarNPC.id == 0) missingResources.push_back("leftCarNPC");
+    if (res.rightCarNPC.id == 0) missingResources.push_back("rightCarNPC");
+    if (res.bg.id == 0) missingResources.push_back("bg");
+    if (res.one.id == 0) missingResources.push_back("one");
+    if (res.two.id == 0) missingResources.push_back("two");
+    if (res.three.id == 0) missingResources.push_back("three");
+    if (res.go.id == 0) missingResources.push_back("go");
+    if (res.wasd.id == 0) missingResources.push_back("wasd");
+    if (res.lap.id == 0) missingResources.push_back("lap");
+    if (res.goal.id == 0) missingResources.push_back("goal");
+    if (!res.backgroundMusicLoaded) missingResources.push_back("backgroundMusic");
+    if (!res.bgNoiseLoaded) missingResources.push_back("FX: bgNoise");
+    if (!res.countdownSoundLoaded) missingResources.push_back("FX: countdown");
+    if (!res.goSoundLoaded) missingResources.push_back("FX: ctdwnGo");
+    if (!res.carCrashSoundLoaded) missingResources.push_back("FX: carCrash");
+    if (!res.lapSoundLoaded) missingResources.push_back("FX: lapReached");
+    if (!res.goalSoundLoaded) missingResources.push_back("FX: goalReached");
+
+
+    if (!missingResources.empty()) {
+        cout << "MOTORIST: Critical error - failed to load resources:" << endl;
+        for (const string& resourceName : missingResources)
+            cout << resourceName << endl;
+
+        return false;
+    }
+
+    return true;
 }

@@ -101,8 +101,8 @@ struct RainbowLandGameResources {
     bool rbowGonnaKillYouSoundLoaded;
     bool rbowYouStillSuckSoundLoaded;
     bool rbowDialoguesSoundLoaded;
-
 };
 
 RainbowLandGameResources LoadRainbowLandResources(GraphicsQuality quality);
 void UnloadRainbowLandResources(RainbowLandGameResources& resources);
+bool CheckRainbowLandResourcesLoaded(RainbowLandGameResources& res);

@@ -203,15 +203,15 @@ static void AddScore(int points, const FruityMazeGameResources& resources) {
     int oldScore = gameState.score;
     gameState.score += points;
 
-    // Check for time bonus (every 200 points)
-    int oldBonuses = oldScore / 200;
-    int newBonuses = gameState.score / 200;
+    // Check for time bonus (every 75 points)
+    int oldBonuses = oldScore / 75;
+    int newBonuses = gameState.score / 75;
 
     if (newBonuses > oldBonuses) {
         if (resources.timeExtendedSoundLoaded) PlaySound(resources.timeExtendedSound);
 
-        gameState.gameTimer += 12;
-        cout << "Time bonus! +12 seconds for reaching " << (newBonuses * 200) << " points!" << endl;
+        gameState.gameTimer += 5;
+        cout << "Time bonus! +5 seconds for reaching " << (newBonuses * 75) << " points!" << endl;
     }
 }
 
@@ -283,8 +283,8 @@ static void UpdatePowerUps(float deltaTime, const FruityMazeGameResources& resou
         if (powerUps.magnetTimeLeft <= 0) {
             powerUps.magnetTimeLeft = 0;
             powerUps.magnetActive = false;
-            for (auto& prop : gameProps) 
-                prop.beingAttracted = false;
+            //for (auto& prop : gameProps) 
+            //    prop.beingAttracted = false;
 
             cout << "Magnet effect ended!" << endl;
         }
@@ -300,7 +300,7 @@ static void UpdateProps(float deltaTime) {
 
             prop.bobOffset += propBobSpeed * deltaTime;
 
-            if (powerUps.magnetActive && (prop.type == PROP_CHERRY || prop.type == PROP_ORANGE || prop.type == PROP_GRAPES)) {
+            if (powerUps.magnetActive && prop.type != PROP_MAGNET) {
                 float distanceToPlayer = Vector3Distance(prop.position, playerPosition);
 
                 if (distanceToPlayer <= magnetRange || prop.beingAttracted) {
@@ -339,7 +339,7 @@ static void ActivatePowerUp(PropType powerUpType, const FruityMazeGameResources&
 
         default: break;
     }
-    AddScore(40, resources);
+    //AddScore(40, resources);
 
     if (resources.powerUpSoundLoaded) PlaySound(resources.powerUpSound);
 }
@@ -371,7 +371,7 @@ static void CheckPropCollection(Vector3 playerPos, const FruityMazeGameResources
                 if (prop.type == PROP_LIGHTNING || prop.type == PROP_GUMMYBEAR || prop.type == PROP_MAGNET)
                     ActivatePowerUp(prop.type, resources);
                 else {
-                    AddScore(20, resources);
+                    AddScore(5, resources);
 
                     switch (prop.type) {
                         case PROP_ORANGE:

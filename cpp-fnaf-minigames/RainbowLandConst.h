@@ -159,5 +159,5 @@ Vector2 petalDirections[] = {
 // voices button specs
 const float buttonTextureWidth = 126;
 const float buttonTextureHeight = 26;
-Vector2 buttonPos = { 6, virtualScreenHeight - 20 / 2 };
+Vector2 buttonPos = { 6, virtualScreenHeight - 20 };
 Rectangle buttonRect = { buttonPos.x, buttonPos.y, buttonTextureWidth / 2, buttonTextureHeight / 2 };

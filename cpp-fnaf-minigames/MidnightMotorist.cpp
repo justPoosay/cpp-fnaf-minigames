@@ -44,7 +44,6 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
         UnloadMotoristResources(resources);
         return 1;
     }
-    SetTextureFilter(target.texture, TEXTURE_FILTER_BILINEAR);
 
     int shaderTimeLoc = -1;
     int shaderResolutionLoc = -1;
@@ -52,7 +51,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
         shaderTimeLoc = GetShaderLocation(postProcessingShader, "time");
         shaderResolutionLoc = GetShaderLocation(postProcessingShader, "resolution");
         if (shaderResolutionLoc != -1) {
-            float gameResolution[2] = { (float)virtualScreenWidth, (float)virtualScreenHeight };
+            float gameResolution[2] = { virtualScreenWidth, virtualScreenHeight };
             SetShaderValue(postProcessingShader, shaderResolutionLoc, gameResolution, SHADER_UNIFORM_VEC2);
         }
     }
@@ -79,7 +78,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
     random_device rd;
     mt19937 gen(rd());
     uniform_real_distribution<> spawnChanceDist(0, 1);
-    uniform_real_distribution<> npcSpeedDist(MIN_NPC_SPEED, MAX_NPC_SPEED);
+    uniform_real_distribution<> npcSpeedDist(minNpcSpeed, maxNpcSpeed);
 
     vector<float> currentLaneSpeeds(npcSpawnYPositions.size());
 
@@ -113,8 +112,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
                 PlayMusicStream(resources.bgNoise);
         }
 
-        if (IsKeyPressed(KEY_F3)) 
-            showDebugInfo = !showDebugInfo;
+        if (IsKeyPressed(KEY_F3)) showDebugInfo = !showDebugInfo; // temp debug
         if (IsKeyPressed(KEY_ESCAPE)) break;
         
 
@@ -161,8 +159,8 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
                 currentGameState = PLAYING;
                 countdownTimer = 1.2;
                 npcSpawnTimer = 0;
-                motoristVirtualSpeed = VIRTUAL_SPEED_INITIAL;
-                for (size_t i = 0; i < currentLaneSpeeds.size(); i++) 
+                motoristVirtualSpeed = virtualSpeedInitial;
+                for (int i = 0; i < currentLaneSpeeds.size(); i++) 
                     currentLaneSpeeds[i] = npcSpeedDist(gen);
                 
                 if (!IsMusicStreamPlaying(resources.backgroundMusic)) {
@@ -174,13 +172,13 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
         case PLAYING:
             motoristPlayerVel = { 0, 0 };
             if (IsKeyDown(KEY_A)) 
-                motoristPlayerVel.x = -PLAYER_MOVE_SPEED;
+                motoristPlayerVel.x = -playerMoveSpeed;
             if (IsKeyDown(KEY_D)) 
-                motoristPlayerVel.x = PLAYER_MOVE_SPEED;
+                motoristPlayerVel.x = playerMoveSpeed;
             if (IsKeyDown(KEY_W)) 
-                motoristPlayerVel.y = -PLAYER_MOVE_SPEED;
+                motoristPlayerVel.y = -playerMoveSpeed;
             if (IsKeyDown(KEY_S))
-                motoristPlayerVel.y = PLAYER_MOVE_SPEED;
+                motoristPlayerVel.y = playerMoveSpeed;
 
             motoristPlayerPos.x += motoristPlayerVel.x * dt;
             motoristPlayerPos.y += motoristPlayerVel.y * dt;
@@ -197,7 +195,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
                         isSpinning = true;
                         spinFrame = 0;
                         spinTimer = 0;
-                        motoristVirtualSpeed = VIRTUAL_SPEED_INITIAL;
+                        motoristVirtualSpeed = virtualSpeedInitial;
                         PlaySound(resources.carCrash);
                         playerLives--;
                         if (playerLives <= 0) 
@@ -208,26 +206,26 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
 
             if (currentGameState == PLAYING) {
                 if (!isSpinning) {
-                    motoristVirtualSpeed += VIRTUAL_SPEED_ACCELERATION * dt;
-                    if (motoristVirtualSpeed > VIRTUAL_SPEED_MAX)
-                        motoristVirtualSpeed = VIRTUAL_SPEED_MAX;
+                    motoristVirtualSpeed += virtualSpeedAcceleration * dt;
+                    if (motoristVirtualSpeed > virtualSpeedMax)
+                        motoristVirtualSpeed = virtualSpeedMax;
                 }
 
                 distanceThisLap += motoristVirtualSpeed * dt;
-                if (distanceThisLap >= LAP_DISTANCE) {
+                if (distanceThisLap >= lapDistance) {
                     currentLap++;
-                    distanceThisLap -= LAP_DISTANCE;
+                    distanceThisLap -= lapDistance;
                     PlaySound(resources.lapReached);
-                    lapAnimBlinkCount = LAP_ANIM_TOTAL_BLINKS;
+                    lapAnimBlinkCount = lapAnimBlinks;
                     showLapAnim = true;
-                    lapAnimTimer = LAP_ANIM_BLINK_DURATION;
+                    lapAnimTimer = lapAnimBlinkDuration;
                 }
 
                 if (lapAnimBlinkCount > 0) {
                     lapAnimTimer -= dt;
                     if (lapAnimTimer <= 0) {
                         showLapAnim = !showLapAnim;
-                        lapAnimTimer = LAP_ANIM_BLINK_DURATION;
+                        lapAnimTimer = lapAnimBlinkDuration;
                         if (!showLapAnim) {
                             lapAnimBlinkCount--;
                             if (lapAnimBlinkCount <= 0) showLapAnim = false;
@@ -245,7 +243,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
 
                         float NpcSpeedForLane = currentLaneSpeeds[randomLaneIndex];
                         newCar.speed = NpcSpeedForLane + motoristVirtualSpeed / 5;
-                        newCar.speed = Clamp(newCar.speed, MIN_NPC_SPEED, MAX_NPC_SPEED + VIRTUAL_SPEED_MAX * 0.3);
+                        newCar.speed = Clamp(newCar.speed, minNpcSpeed, maxNpcSpeed + virtualSpeedMax * 0.3);
 
                         if (randomLaneIndex < 4) {
                             newCar.movingLeft = true;
@@ -257,6 +255,7 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
                             newCar.textureIndex = 0;
                             newCar.position.x = -npcTextureWidth;
                         }
+
                         bool canSpawn = true;
                         for (const auto& existingCar : motoristCars) {
                             if (abs(existingCar.position.y - newCar.position.y) < 1 && existingCar.movingLeft == newCar.movingLeft) {
@@ -289,23 +288,22 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
 
                 motoristBgScroll -= motoristVirtualSpeed * bgScrollMultiplier * dt;
                 if (resources.bg.id > 0) {
-                    float scaledBgWidth = (float)resources.bg.width * baseScaleY;
-                    if (motoristBgScroll <= -scaledBgWidth) {
+                    float scaledBgWidth = resources.bg.width * baseScaleY;
+                    if (motoristBgScroll <= -scaledBgWidth)
                         motoristBgScroll += scaledBgWidth;
-                    }
+                    
                 }
 
                 if (isSpinning) {
-                    float spinDurationPerFrame_local = 0.05;
                     spinTimer += dt;
-                    if (spinTimer >= spinDurationPerFrame_local) {
-                        spinTimer -= spinDurationPerFrame_local;
+                    if (spinTimer >= spinFrameDuration) {
+                        spinTimer -= spinFrameDuration;
                         spinFrame++;
-                        if (!resources.carSpinFrames.empty() && spinFrame >= resources.carSpinFrames.size()) {
+                        if (spinFrame >= resources.carSpinFrames.size()) {
                             isSpinning = false;
                             spinFrame = 0;
                         }
-                        else if (resources.carSpinFrames.empty()) {
+                        else if(resources.carSpinFrames.empty()) {
                             isSpinning = false;
                             spinFrame = 0;
                         }
@@ -346,13 +344,13 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
         ClearBackground(BLACK);
 
         if (resources.bg.id > 0) {
-            float scaleYBg = (float)virtualScreenHeight / resources.bg.height;
-            float scaledBgWidth = (float)resources.bg.width * scaleYBg;
+            float scaleYBg = virtualScreenHeight / resources.bg.height;
+            float scaledBgWidth = resources.bg.width * scaleYBg;
             float currentScroll = (currentGameState == PLAYING || currentGameState == GAME_OVER_STATE) ? motoristBgScroll : 0;
             for (float i = -1; i < (virtualScreenWidth / scaledBgWidth) + 2; i++) {
                 DrawTexturePro(resources.bg,
                     { 0, 0, (float)resources.bg.width, (float)resources.bg.height },
-                    { currentScroll + i * scaledBgWidth, 0, scaledBgWidth, (float)virtualScreenHeight },
+                    { currentScroll + i * scaledBgWidth, 0, scaledBgWidth, virtualScreenHeight },
                     { 0, 0 }, 0, WHITE);
             }
         }
@@ -389,15 +387,15 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
         }
 
         if (showLapAnim && resources.lap.id > 0) {
-            float lapAnimTextureWidth = (float)resources.lap.width;
-            float lapAnimTextureHeight = (float)resources.lap.height;
-            float drawWidth = lapAnimTextureWidth * LAP_ANIM_SCALE;
-            float drawHeight = lapAnimTextureHeight * LAP_ANIM_SCALE;
+            float lapAnimTextureWidth = resources.lap.width;
+            float lapAnimTextureHeight = resources.lap.height;
+            float drawWidth = lapAnimTextureWidth * lapAnimScale;
+            float drawHeight = lapAnimTextureHeight * lapAnimScale;
             Vector2 drawPos = {
                 virtualScreenWidth / 2 - drawWidth / 2,
                 virtualScreenHeight / 2 - drawHeight / 2
             };
-            DrawTextureEx(resources.lap, drawPos, 0, LAP_ANIM_SCALE, WHITE);
+            DrawTextureEx(resources.lap, drawPos, 0, lapAnimScale, WHITE);
         }
 
         Texture2D textureToDrawForCountdown = { 0 };
@@ -418,9 +416,9 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
             default: break;
         }
         if (textureToDrawForCountdown.id > 0) {
-            float imgWidth = (float)textureToDrawForCountdown.width * countdownImageScale;
-            float imgHeight = (float)textureToDrawForCountdown.height * countdownImageScale;
-            Vector2 imgPos = { virtualScreenWidth / 2 - imgWidth / 2, virtualScreenHeight / 2 - imgHeight / 2 };
+            float imgWidth = textureToDrawForCountdown.width * countdownImageScale;
+            float imgHeight = textureToDrawForCountdown.height * countdownImageScale;
+            Vector2 imgPos = { (virtualScreenWidth - imgWidth) / 2, (virtualScreenHeight - imgHeight) / 2 };
             DrawTextureEx(textureToDrawForCountdown, imgPos, 0, countdownImageScale, WHITE);
         }
 
@@ -429,20 +427,20 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
             Font uiFont = resources.gameFont;
 
             string lapTextStr = "LAP " + to_string(currentLap);
-            Vector2 lapTextSize = MeasureTextEx(uiFont, lapTextStr.c_str(), UI_TEXT_SIZE_INFO, UI_TEXT_SPACING);
-            Vector2 lapTextPos = { UI_MARGIN, UI_MARGIN };
-            DrawTextEx(uiFont, lapTextStr.c_str(), lapTextPos, UI_TEXT_SIZE_INFO, UI_TEXT_SPACING, WHITE);
+            Vector2 lapTextSize = MeasureTextEx(uiFont, lapTextStr.c_str(), uiTextSize, uiTextSpacing);
+            Vector2 lapTextPos = { uiMargin, uiMargin };
+            DrawTextEx(uiFont, lapTextStr.c_str(), lapTextPos, uiTextSize, uiTextSpacing, WHITE);
 
             string speedTextStr = "MPH " + to_string(static_cast<int>(motoristVirtualSpeed / 10));
-            float speedTextY = lapTextSize.y + UI_MARGIN;
-            Vector2 speedTextSize = MeasureTextEx(uiFont, speedTextStr.c_str(), UI_TEXT_SIZE_INFO, UI_TEXT_SPACING);
-            Vector2 speedTextPos = { UI_MARGIN, speedTextY };
-            DrawTextEx(uiFont, speedTextStr.c_str(), speedTextPos, UI_TEXT_SIZE_INFO, UI_TEXT_SPACING, WHITE);
+            float speedTextY = lapTextSize.y + uiMargin;
+            Vector2 speedTextSize = MeasureTextEx(uiFont, speedTextStr.c_str(), uiTextSize, uiTextSpacing);
+            Vector2 speedTextPos = { uiMargin, speedTextY };
+            DrawTextEx(uiFont, speedTextStr.c_str(), speedTextPos, uiTextSize, uiTextSpacing, WHITE);
 
             string livesTextStr = "LIVES: " + to_string(playerLives);
-            Vector2 livesTextSize = MeasureTextEx(uiFont, livesTextStr.c_str(), UI_TEXT_SIZE_INFO, UI_TEXT_SPACING);
-            Vector2 livesTextPos = { UI_MARGIN, virtualScreenHeight - livesTextSize.y - UI_MARGIN };
-            DrawTextEx(uiFont, livesTextStr.c_str(), livesTextPos, UI_TEXT_SIZE_INFO, UI_TEXT_SPACING, WHITE);
+            Vector2 livesTextSize = MeasureTextEx(uiFont, livesTextStr.c_str(), uiTextSize, uiTextSpacing);
+            Vector2 livesTextPos = { uiMargin, virtualScreenHeight - livesTextSize.y - uiMargin };
+            DrawTextEx(uiFont, livesTextStr.c_str(), livesTextPos, uiTextSize, uiTextSpacing, WHITE);
         }
 
         if (showDebugInfo && (currentGameState == PLAYING || currentGameState == GAME_OVER_STATE)) {
@@ -451,23 +449,23 @@ int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bo
 
         if (currentGameState == GAME_OVER_STATE) {
             DrawRectangle(0, 0, virtualScreenWidth, virtualScreenHeight, Fade(BLACK, 0.5));
-            DrawText("GAME OVER", virtualScreenWidth / 2 - (float)MeasureText("GAME OVER", 40) / 2, virtualScreenHeight / 2 - 60, 40, RED);
-            DrawText("Press R to Restart", virtualScreenWidth / 2 - (float)MeasureText("Press R to Restart", 20) / 2, virtualScreenHeight / 2 + 0, 20, WHITE);
-            DrawText("Press ESC to Menu", virtualScreenWidth / 2 - (float)MeasureText("Press ESC to Menu", 20) / 2, virtualScreenHeight / 2 + 30, 20, LIGHTGRAY);
+            DrawText("GAME OVER", virtualScreenWidth / 2 - MeasureText("GAME OVER", 40) / 2, virtualScreenHeight / 2 - 60, 40, RED);
+            DrawText("Press R to Restart", virtualScreenWidth / 2 - MeasureText("Press R to Restart", 20) / 2, virtualScreenHeight / 2 + 0, 20, WHITE);
+            DrawText("Press ESC to Menu", virtualScreenWidth / 2 - MeasureText("Press ESC to Menu", 20) / 2, virtualScreenHeight / 2 + 30, 20, LIGHTGRAY);
         }
         EndTextureMode();
 
         BeginDrawing();
         ClearBackground(BLACK);
-        float finalScale = min((float)GetScreenWidth() / virtualScreenWidth, (float)GetScreenHeight() / virtualScreenHeight);
-        float finalOffsetX = ((float)GetScreenWidth() - (virtualScreenWidth * finalScale)) / 2;
-        float finalOffsetY = ((float)GetScreenHeight() - (virtualScreenHeight * finalScale)) / 2;
-        Rectangle src = { 0, 0, (float)target.texture.width, -(float)target.texture.height };
+        float finalScale = min(GetScreenWidth() / virtualScreenWidth, GetScreenHeight() / virtualScreenHeight);
+        float finalOffsetX = (GetScreenWidth() - (virtualScreenWidth * finalScale)) / 2;
+        float finalOffsetY = (GetScreenHeight() - (virtualScreenHeight * finalScale)) / 2;
+        Rectangle src = { 0, 0, target.texture.width, -target.texture.height };
         Rectangle dst = { finalOffsetX, finalOffsetY, virtualScreenWidth * finalScale, virtualScreenHeight * finalScale };
 
         if (applyShader && postProcessingShader.id > 0) {
             if (shaderTimeLoc != -1) {
-                float currentTime = (float)GetTime();
+                float currentTime = GetTime();
                 SetShaderValue(postProcessingShader, shaderTimeLoc, &currentTime, SHADER_UNIFORM_FLOAT);
             }
             BeginShaderMode(postProcessingShader);

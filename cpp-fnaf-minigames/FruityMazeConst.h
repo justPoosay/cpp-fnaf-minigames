@@ -46,7 +46,7 @@ const float UI_SMALL_FONT_SIZE = 24;
 const float rightMargin = virtualScreenWidth - 300;
 
 // --- POWER-UP CONSTANTS ---
-const float lightningSpeedMultiplier = 1.65;
+const float lightningSpeedMultiplier = 2;
 const float lightningDuration = 30;
 const float gummybearDuration = 14;
 const float magnetDuration = 23;
