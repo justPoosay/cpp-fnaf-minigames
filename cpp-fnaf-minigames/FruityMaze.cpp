@@ -1,5 +1,7 @@
 #include "FruityMazeResources.h"
 #include "FruityMazeConst.h"
+#include <sys/stat.h>
+#include <iostream>
 
 using namespace std;
 
@@ -22,6 +24,7 @@ struct GameState {
     bool outOfBounds;
     int lastTickSecond;
     bool temporaryNoclip;
+    bool gameWon;
 };
 
 // Prop structure
@@ -39,7 +42,11 @@ float playerRotationAngle = 0;
 Vector3 playerPosition = { 0 };
 vector<Prop> gameProps;
 PowerUpState powerUps = { false, 0, false, 0, false, 0 };
-GameState gameState = { 60, 0, false, 0, false, -1, false };
+GameState gameState = { 60, 0, false, 0, false, -1, false, false };
+
+// Shader hot-reload variables
+static const char* shaderPath = "FruityMaze.fs";  // Adjust path as needed
+static time_t lastShaderModTime = 0;
 
 static Rectangle GetPlayerHitbox(Vector3 playerPos, float rotationAngle) {
     return {
@@ -86,11 +93,6 @@ static bool IsColliding(Vector3 entityPos, Vector3 mapModelOrigin, const Image& 
 static void SpawnPropsInMaze(const FruityMazeGameResources& resources) {
     gameProps.clear();
 
-    //if (!resources.mapPixels || !resources.mapLoaded) {
-    //    cout << "Cannot spawn props: map not loaded properly" << endl;
-    //    return;
-    //}
-
     cout << "Spawning props in maze using manual coordinates..." << endl;
 
     int numPowerupPositions = sizeof(POWERUP_POSITIONS) / sizeof(POWERUP_POSITIONS[0]);
@@ -116,10 +118,10 @@ static void SpawnPropsInMaze(const FruityMazeGameResources& resources) {
                 PropType powerupType;
                 int randomPowerup = GetRandomValue(0, 2);
                 switch (randomPowerup) {
-                    case 0: powerupType = PROP_LIGHTNING; break;
-                    case 1: powerupType = PROP_GUMMYBEAR; break;
-                    case 2: powerupType = PROP_MAGNET; break;
-                    default: powerupType = PROP_LIGHTNING; break;
+                case 0: powerupType = PROP_LIGHTNING; break;
+                case 1: powerupType = PROP_GUMMYBEAR; break;
+                case 2: powerupType = PROP_MAGNET; break;
+                default: powerupType = PROP_LIGHTNING; break;
                 }
 
                 Prop powerup;
@@ -161,10 +163,10 @@ static void SpawnPropsInMaze(const FruityMazeGameResources& resources) {
                 int randomFruit = GetRandomValue(0, 2);
 
                 switch (randomFruit) {
-                    case 0: fruitType = PROP_CHERRY; break;
-                    case 1: fruitType = PROP_ORANGE; break;
-                    case 2: fruitType = PROP_GRAPES; break;
-                    default: fruitType = PROP_CHERRY; break;
+                case 0: fruitType = PROP_CHERRY; break;
+                case 1: fruitType = PROP_ORANGE; break;
+                case 2: fruitType = PROP_GRAPES; break;
+                default: fruitType = PROP_CHERRY; break;
                 }
 
                 Prop fruit;
@@ -194,7 +196,7 @@ static bool IsPlayerOutOfBounds(Vector3 playerPos, const FruityMazeGameResources
 
     if (mapX < 0 || mapX >= resources.mapWidth || mapZ < 0 || mapZ >= resources.mapHeight)
         return true;
-    
+
     return false;
 }
 
@@ -283,10 +285,8 @@ static void UpdatePowerUps(float deltaTime, const FruityMazeGameResources& resou
         if (powerUps.magnetTimeLeft <= 0) {
             powerUps.magnetTimeLeft = 0;
             powerUps.magnetActive = false;
-            //for (auto& prop : gameProps) 
-            //    prop.beingAttracted = false;
-
-            cout << "Magnet effect ended!" << endl;
+            cout << "Magnet effect ended! Props continue being attracted until collected." << endl;
+            // Note: We don't reset prop.beingAttracted here - they continue until collected
         }
     }
 }
@@ -300,46 +300,85 @@ static void UpdateProps(float deltaTime) {
 
             prop.bobOffset += propBobSpeed * deltaTime;
 
-            if (powerUps.magnetActive && prop.type != PROP_MAGNET) {
+            // **Enhanced magnet logic with natural pickup animation**
+            if (prop.type != PROP_MAGNET) {
                 float distanceToPlayer = Vector3Distance(prop.position, playerPosition);
 
-                if (distanceToPlayer <= magnetRange || prop.beingAttracted) {
-                    Vector3 directionToPlayer = Vector3Normalize(Vector3Subtract(playerPosition, prop.position));
-                    Vector3 attraction = Vector3Scale(directionToPlayer, magnetPropSpeed * deltaTime);
+                // **Natural pickup magnet effect - very close range for smooth collection**
+                const float naturalPickupRange = 0.8f; // Small range for natural pickup animation
+                const float naturalPickupSpeed = 3.0f; // Faster speed for pickup animation
 
-                    prop.position = Vector3Add(prop.position, attraction);
+                // Start natural pickup attraction when very close
+                if (distanceToPlayer <= naturalPickupRange) {
+                    Vector3 directionToPlayer = Vector3Normalize(Vector3Subtract(playerPosition, prop.position));
+                    Vector3 naturalAttraction = Vector3Scale(directionToPlayer, naturalPickupSpeed * deltaTime);
+                    prop.position = Vector3Add(prop.position, naturalAttraction);
+                }
+                // **Magnet power-up effect - larger range, slower speed**
+                else if (powerUps.magnetActive && distanceToPlayer <= magnetRange) {
                     prop.beingAttracted = true;
                 }
+
+                // Continue attraction if prop is already being attracted by magnet power-up
+                if (prop.beingAttracted) {
+                    Vector3 directionToPlayer = Vector3Normalize(Vector3Subtract(playerPosition, prop.position));
+                    Vector3 attraction = Vector3Scale(directionToPlayer, magnetPropSpeed * deltaTime);
+                    prop.position = Vector3Add(prop.position, attraction);
+
+                    // Props continue being attracted until collected, even after magnet ends
+                }
             }
-            else prop.beingAttracted = false;
         }
     }
 }
 
-// Function to activate power-ups
+// **MODIFIED Function to activate power-ups - Now adds time instead of hard-setting**
 static void ActivatePowerUp(PropType powerUpType, const FruityMazeGameResources& resources) {
     switch (powerUpType) {
-        case PROP_LIGHTNING:
+    case PROP_LIGHTNING:
+        if (powerUps.lightningActive) {
+            // Add time to existing effect
+            powerUps.lightningTimeLeft += lightningDuration;
+            cout << "Lightning speed boost extended! (+" << lightningDuration << "s, total: " << powerUps.lightningTimeLeft << "s)" << endl;
+        }
+        else {
+            // Start new effect
             powerUps.lightningActive = true;
             powerUps.lightningTimeLeft = lightningDuration;
             cout << "Lightning speed boost activated! (" << lightningDuration << "s)" << endl;
-            break;
+        }
+        break;
 
-        case PROP_GUMMYBEAR:
+    case PROP_GUMMYBEAR:
+        if (powerUps.gummybearActive) {
+            // Add time to existing effect
+            powerUps.gummybearTimeLeft += gummybearDuration;
+            cout << "Gummybear noclip extended! (+" << gummybearDuration << "s, total: " << powerUps.gummybearTimeLeft << "s)" << endl;
+        }
+        else {
+            // Start new effect
             powerUps.gummybearActive = true;
             powerUps.gummybearTimeLeft = gummybearDuration;
             cout << "Gummybear noclip activated! (" << gummybearDuration << "s)" << endl;
-            break;
+        }
+        break;
 
-        case PROP_MAGNET:
+    case PROP_MAGNET:
+        if (powerUps.magnetActive) {
+            // Add time to existing effect
+            powerUps.magnetTimeLeft += magnetDuration;
+            cout << "Magnet attraction extended! (+" << magnetDuration << "s, total: " << powerUps.magnetTimeLeft << "s)" << endl;
+        }
+        else {
+            // Start new effect
             powerUps.magnetActive = true;
             powerUps.magnetTimeLeft = magnetDuration;
             cout << "Magnet attraction activated! (" << magnetDuration << "s)" << endl;
-            break;
+        }
+        break;
 
-        default: break;
+    default: break;
     }
-    //AddScore(40, resources);
 
     if (resources.powerUpSoundLoaded) PlaySound(resources.powerUpSound);
 }
@@ -352,7 +391,16 @@ static float GetCurrentPlayerSpeed() {
     return baseSpeed;
 }
 
-// Function to check prop collection
+// **Function to check if all fruits are collected (for win condition)**
+static bool AreAllFruitsCollected() {
+    for (const auto& prop : gameProps) {
+        if (!prop.collected && (prop.type == PROP_CHERRY || prop.type == PROP_ORANGE || prop.type == PROP_GRAPES)) {
+            return false; // Found an uncollected fruit
+        }
+    }
+    return true; // All fruits collected
+}
+
 static void CheckPropCollection(Vector3 playerPos, const FruityMazeGameResources& resources) {
     for (auto& prop : gameProps) {
         if (!prop.collected) {
@@ -367,6 +415,8 @@ static void CheckPropCollection(Vector3 playerPos, const FruityMazeGameResources
 
             if (CheckCollisionRecs(playerHitbox, propHitbox)) {
                 prop.collected = true;
+                // **Reset attraction state when collected (safety cleanup)**
+                prop.beingAttracted = false;
 
                 if (prop.type == PROP_LIGHTNING || prop.type == PROP_GUMMYBEAR || prop.type == PROP_MAGNET)
                     ActivatePowerUp(prop.type, resources);
@@ -374,19 +424,26 @@ static void CheckPropCollection(Vector3 playerPos, const FruityMazeGameResources
                     AddScore(5, resources);
 
                     switch (prop.type) {
-                        case PROP_ORANGE:
-                            if (resources.fruit1SoundLoaded) PlaySound(resources.fruit1Sound);
-                            break;
+                    case PROP_ORANGE:
+                        if (resources.fruit1SoundLoaded) PlaySound(resources.fruit1Sound);
+                        break;
 
-                        case PROP_CHERRY:
-                            if (resources.fruit2SoundLoaded) PlaySound(resources.fruit2Sound);
-                            break;
+                    case PROP_CHERRY:
+                        if (resources.fruit2SoundLoaded) PlaySound(resources.fruit2Sound);
+                        break;
 
-                        case PROP_GRAPES:
-                            if (resources.fruit3SoundLoaded) PlaySound(resources.fruit3Sound);
-                            break;
+                    case PROP_GRAPES:
+                        if (resources.fruit3SoundLoaded) PlaySound(resources.fruit3Sound);
+                        break;
 
-                        default: break;
+                    default: break;
+                    }
+                    // **Check for win condition after collecting a fruit**
+                    if (AreAllFruitsCollected() && !gameState.gameOver) {
+                        gameState.gameWon = true;
+                        gameState.gameOver = true;
+                        gameState.gameOverTimer = 0;
+                        cout << "Congratulations! All fruits collected! You win! Final score: " << gameState.score << endl;
                     }
                 }
                 cout << "Collected prop at (" << prop.position.x << ", " << prop.position.z << ") | Score: " << gameState.score << endl;
@@ -424,7 +481,7 @@ static void DrawProps(const FruityMazeGameResources& resources, float time, cons
 
             if (!prop.beingAttracted)
                 drawPosition.y += sinf(time * propBobSpeed + prop.bobOffset) * propBobHeight;
-            
+
             Model* modelToDraw = nullptr;
             bool modelAvailable = false;
 
@@ -468,33 +525,20 @@ static void DrawProps(const FruityMazeGameResources& resources, float time, cons
                 break;
             }
 
-            //// Determine tint color for special effects
-            //Color tintColor = WHITE;
-            //if (prop.beingAttracted) {
-            //    // Pulse between white and BLUE for attracted props
-            //    float pulse = (sinf(time * 10) + 1) * 0.5;
-            //    tintColor = ColorLerp(WHITE, BLUE, pulse * 0.5);
-            //}
-
             // Draw the model if available, otherwise draw a placeholder
             if (modelAvailable && modelToDraw)
                 DrawModelEx(*modelToDraw, drawPosition, { 0, 1, 0 }, prop.rotationY, { propScale, propScale, propScale }, WHITE);
-                //DrawModelEx(*modelToDraw, drawPosition, { 0, 1, 0 }, prop.rotationY, { propScale, propScale, propScale }, tintColor);
             else {
                 // Draw a simple cube as placeholder
                 Color propColor = RED;
                 switch (prop.type) {
-                    case PROP_CHERRY: propColor = RED; break;
-                    case PROP_ORANGE: propColor = ORANGE; break;
-                    case PROP_GRAPES: propColor = PURPLE; break;
-                    case PROP_LIGHTNING: propColor = YELLOW; break;
-                    case PROP_GUMMYBEAR: propColor = GREEN; break;
-                    case PROP_MAGNET: propColor = GRAY; break;
+                case PROP_CHERRY: propColor = RED; break;
+                case PROP_ORANGE: propColor = ORANGE; break;
+                case PROP_GRAPES: propColor = PURPLE; break;
+                case PROP_LIGHTNING: propColor = YELLOW; break;
+                case PROP_GUMMYBEAR: propColor = GREEN; break;
+                case PROP_MAGNET: propColor = GRAY; break;
                 }
-
-                //// Apply tint to placeholder color
-                //if (prop.beingAttracted)
-                //    propColor = ColorTint(propColor, tintColor);
 
                 DrawCube(drawPosition, propScale, propScale, propScale, propColor);
             }
@@ -511,7 +555,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
 
     // Initialize power-ups and game state
     powerUps = { false, 0, false, 0, false, 0 };
-    gameState = { 60, 0, false, 0, false, -1, false };
+    gameState = { 60, 0, false, 0, false, -1, false, false };
 
     // Load game resources
     FruityMazeGameResources resources = LoadFruityMazeResources(quality);
@@ -576,25 +620,12 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             startFound = true;
             TraceLog(LOG_INFO, "Found %d potential safe spawn points. Selected one at random.", potentialSpawnPoints.size());
         }
-        //else {
-        //    // Fallback: Use first black pixel (any path)
-        //    for (int i = 0; i < resources.mapWidth * resources.mapHeight; i++) {
-        //        int x = i % resources.mapWidth;
-        //        int z = i / resources.mapWidth;
-
-        //        if (resources.mapPixels[i].r == 0) {
-        //            initialSpawnPoint = { resources.mapModelPosition.x + x, 0, resources.mapModelPosition.z + z };
-        //            startFound = true;
-        //            break;
-        //        }
-        //    }
-        //}
     }
 
     if (startFound) {
         playerRotationAngle = 0;
         playerPosition = initialSpawnPoint;
-        if (!resources.playerModelLoaded) 
+        if (!resources.playerModelLoaded)
             currentCameraMode = VIEW_CAMERA_FIRST_PERSON;
 
         SpawnPropsInMaze(resources);
@@ -616,6 +647,38 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
     // Main game loop
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
+
+        // **Safer Shader Hot-Reload - Press F5 to reload shader**
+        if (IsKeyPressed(KEY_F5)) {
+            cout << "Manual shader reload..." << endl;
+
+            // Try to load new shader first
+            Shader newShader = LoadShader(0, shaderPath);
+
+            if (newShader.id > 0) {
+                // Only unload old shader if new one loaded successfully
+                if (postProcessingShader.id > 0) {
+                    UnloadShader(postProcessingShader);
+                }
+
+                // Replace with new shader
+                postProcessingShader = newShader;
+
+                // Reconfigure shader uniforms
+                if (applyShader) {
+                    shaderTimeLoc = GetShaderLocation(postProcessingShader, "time");
+                    shaderResolutionLoc = GetShaderLocation(postProcessingShader, "resolution");
+                    if (shaderResolutionLoc != -1) {
+                        float gameResolution[2] = { virtualScreenWidth, virtualScreenHeight };
+                        SetShaderValue(postProcessingShader, shaderResolutionLoc, gameResolution, SHADER_UNIFORM_VEC2);
+                    }
+                }
+                cout << "Shader reloaded successfully!" << endl;
+            }
+            else {
+                cout << "Failed to reload shader - keeping current version" << endl;
+            }
+        }
 
         if (resources.backgroundMusicLoaded) {
             UpdateMusicStream(resources.backgroundMusic);
@@ -644,9 +707,9 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             }
         }
 
-        if (gameState.gameOver && gameState.gameOverTimer >= 4)
+        if (gameState.gameOver && gameState.gameOverTimer >= (gameState.gameWon ? 3 : 4))
             break;
-        
+
         UpdatePowerUps(dt, resources);
         UpdateProps(dt);
 
@@ -712,7 +775,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
                 bool canMove = true;
                 if (!powerUps.gummybearActive && !gameState.temporaryNoclip)
                     canMove = !IsColliding(tempPos, resources.mapModelPosition, resources.mapImage, resources.mapPixels, playerRotationAngle);
-                
+
                 if (canMove) {
                     playerPosition.x = tempPos.x;
                     playerPosition.z = tempPos.z;
@@ -776,7 +839,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             }
         }
         else UpdateCamera(&camera, CAMERA_ORBITAL);
-        
+
         // Rendering
         BeginTextureMode(target);
         ClearBackground(BLACK);
@@ -784,7 +847,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
 
         // Draw maze
         if (resources.mazeModel.meshCount > 0 && resources.mazeModel.meshes[0].vertexCount > 0) {
-            DrawPlane({resources.mapModelPosition.x + (resources.mapWidth / 2), 0.01, resources.mapModelPosition.z + (resources.mapHeight / 2)}, {(float)resources.mapWidth + 20, (float)resources.mapHeight + 20}, BLACK);
+            DrawPlane({ resources.mapModelPosition.x + (resources.mapWidth / 2), 0.01, resources.mapModelPosition.z + (resources.mapHeight / 2) }, { (float)resources.mapWidth + 20, (float)resources.mapHeight + 20 }, BLACK);
             DrawModel(resources.mazeModel, resources.mapModelPosition, 1, WHITE);
         }
 
@@ -877,7 +940,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
                     }
                 }
                 DrawCubeWires(playerPosition, playerHitboxWidth, 1.5, playerHitboxDepth, RED);
-                
+
                 // Draw magnet range when active
                 if (powerUps.magnetActive)
                     DrawCylinderWires(playerPosition, magnetRange, magnetRange, 0.1, 32, BLUE);
@@ -941,6 +1004,8 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
         }
 
         DrawFPS(10, 10);
+
+        // **REPOSITIONED UI SECTION**
         if (startFound) {
             const char* camModeStr;
             switch (currentCameraMode) {
@@ -950,55 +1015,120 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             default: camModeStr = "UNKNOWN"; break;
             }
 
-            // **Main game info - positioned on the RIGHT side with extra margin to avoid shader frame**
-            DrawText(TextFormat("TIME: %.0fs", gameState.gameTimer),
-                rightMargin, virtualScreenHeight - 120, UI_LARGE_FONT_SIZE, WHITE);
-            DrawText(TextFormat("SCORE: %d", gameState.score),
-                rightMargin, virtualScreenHeight - 70, UI_LARGE_FONT_SIZE, WHITE);
+            // Define consistent padding
+            const int textPadding = 30;
 
-            //// Position info (smaller, top-left, away from shader border)
-            //float leftSafeMargin = UI_MARGIN + 20; // Extra margin to avoid shader border
-            //DrawText(TextFormat("Pos: X:%.1f Z:%.1f (%s)", playerPosition.x, playerPosition.z, camModeStr),
-            //    leftSafeMargin, UI_MARGIN + 10, UI_SMALL_FONT_SIZE, WHITE);
-            //DrawText(TextFormat("Angle: %.1f | Speed: %.1f", playerRotationAngle, GetCurrentPlayerSpeed()),
-            //    leftSafeMargin, UI_MARGIN + 10 + UI_SMALL_FONT_SIZE + UI_LINE_SPACING, UI_SMALL_FONT_SIZE, WHITE);
+            // **TIME - Top-left corner**
+            DrawText(TextFormat("%.0f", gameState.gameTimer),
+                textPadding, textPadding, UI_LARGE_FONT_SIZE, WHITE);
 
-            //// Draw power-up status with safe left positioning
-            //float powerUpYOffset = UI_MARGIN + 60; // Position below position info
-            //if (powerUps.lightningActive) {
-            //    DrawText(TextFormat("LIGHTNING SPEED: %.1fs", powerUps.lightningTimeLeft),
-            //        leftSafeMargin, powerUpYOffset, UI_SMALL_FONT_SIZE, YELLOW);
-            //    powerUpYOffset += UI_SMALL_FONT_SIZE + UI_LINE_SPACING;
-            //}
+            // **SCORE - Bottom-right corner with label**
+            const char* scoreLabel = "SCORE";
+            const char* scoreValue = TextFormat("%d", gameState.score);
+            int scoreLabelWidth = MeasureText(scoreLabel, UI_LARGE_FONT_SIZE);
+            int scoreValueWidth = MeasureText(scoreValue, UI_LARGE_FONT_SIZE);
+            int maxScoreWidth = max(scoreLabelWidth, scoreValueWidth);
 
-            //if (powerUps.gummybearActive) {
-            //    DrawText(TextFormat("NOCLIP: %.1fs", powerUps.gummybearTimeLeft),
-            //        leftSafeMargin, powerUpYOffset, UI_SMALL_FONT_SIZE, LIME);
-            //    powerUpYOffset += UI_SMALL_FONT_SIZE + UI_LINE_SPACING;
-            //}
+            // Position from right edge
+            int scoreX = virtualScreenWidth - maxScoreWidth - textPadding;
+            DrawText(scoreLabel, scoreX, virtualScreenHeight - (UI_LARGE_FONT_SIZE * 2) - textPadding, UI_LARGE_FONT_SIZE, WHITE);
+            DrawText(scoreValue, scoreX, virtualScreenHeight - UI_LARGE_FONT_SIZE - textPadding, UI_LARGE_FONT_SIZE, WHITE);
 
-            //if (gameState.temporaryNoclip) {
-            //    DrawText("EMERGENCY NOCLIP: ACTIVE",
-            //        leftSafeMargin, powerUpYOffset, UI_SMALL_FONT_SIZE, ORANGE);
-            //    powerUpYOffset += UI_SMALL_FONT_SIZE + UI_LINE_SPACING;
-            //}
+            // **POWER-UP TIMERS - Top-right corner in column**
+            float powerUpYOffset = textPadding; // Starting position for power-up display
 
-            //if (powerUps.magnetActive) {
-            //    DrawText(TextFormat("MAGNET: %.1fs", powerUps.magnetTimeLeft),
-            //        leftSafeMargin, powerUpYOffset, UI_SMALL_FONT_SIZE, BLUE);
-            //    powerUpYOffset += UI_SMALL_FONT_SIZE + UI_LINE_SPACING;
-            //}
+            // **Lightning Speed Power-up Timer**
+            if (powerUps.lightningActive) {
+                Color lightningColor = YELLOW;
+                // Add pulsing effect when time is running low (last 3 seconds)
+                if (powerUps.lightningTimeLeft <= 3.0f) {
+                    float pulse = (sinf(GetTime() * 6) + 1) * 0.5f;
+                    lightningColor = ColorLerp(YELLOW, RED, pulse * 0.7f);
+                }
+
+                const char* lightningText = TextFormat("%.0f", powerUps.lightningTimeLeft);
+                int lightningWidth = MeasureText(lightningText, UI_LARGE_FONT_SIZE);
+                DrawText(lightningText,
+                    virtualScreenWidth - lightningWidth - textPadding, powerUpYOffset, UI_LARGE_FONT_SIZE, lightningColor);
+                powerUpYOffset += UI_LARGE_FONT_SIZE + 10;
+            }
+
+            // **Gummybear Noclip Power-up Timer**
+            if (powerUps.gummybearActive) {
+                Color gummybearColor = LIME;
+                // Add pulsing effect when time is running low (last 3 seconds)
+                if (powerUps.gummybearTimeLeft <= 3.0f) {
+                    float pulse = (sinf(GetTime() * 6) + 1) * 0.5f;
+                    gummybearColor = ColorLerp(LIME, RED, pulse * 0.7f);
+                }
+
+                const char* gummybearText = TextFormat("%.0f", powerUps.gummybearTimeLeft);
+                int gummybearWidth = MeasureText(gummybearText, UI_LARGE_FONT_SIZE);
+                DrawText(gummybearText,
+                    virtualScreenWidth - gummybearWidth - textPadding, powerUpYOffset, UI_LARGE_FONT_SIZE, gummybearColor);
+                powerUpYOffset += UI_LARGE_FONT_SIZE + 10;
+            }
+
+            // **Magnet Power-up Timer**
+            if (powerUps.magnetActive) {
+                Color magnetColor = BLUE;
+                // Add pulsing effect when time is running low (last 3 seconds)
+                if (powerUps.magnetTimeLeft <= 3.0f) {
+                    float pulse = (sinf(GetTime() * 6) + 1) * 0.5f;
+                    magnetColor = ColorLerp(BLUE, RED, pulse * 0.7f);
+                }
+
+                const char* magnetText = TextFormat("%.0f", powerUps.magnetTimeLeft);
+                int magnetWidth = MeasureText(magnetText, UI_LARGE_FONT_SIZE);
+                DrawText(magnetText,
+                    virtualScreenWidth - magnetWidth - textPadding, powerUpYOffset, UI_LARGE_FONT_SIZE, magnetColor);
+                powerUpYOffset += UI_LARGE_FONT_SIZE + 10;
+            }
+
+            // **Emergency Noclip Status (non-timer based)**
+            if (gameState.temporaryNoclip) {
+                // Pulsing orange for emergency noclip
+                float pulse = (sinf(GetTime() * 8) + 1) * 0.5f;
+                Color emergencyColor = ColorLerp(ORANGE, RED, pulse * 0.5f);
+
+                const char* emergencyText = "EMERGENCY";
+                int emergencyWidth = MeasureText(emergencyText, UI_SMALL_FONT_SIZE);
+                DrawText(emergencyText,
+                    virtualScreenWidth - emergencyWidth - textPadding, powerUpYOffset, UI_SMALL_FONT_SIZE, emergencyColor);
+                powerUpYOffset += UI_SMALL_FONT_SIZE + 5;
+            }
+
+            // **Camera and position info (moved to debug mode only)**
+            if (debug) {
+                float debugYOffset = textPadding + UI_LARGE_FONT_SIZE + 20; // Below the time display
+                DrawText(TextFormat("Pos: X:%.1f Z:%.1f (%s)", playerPosition.x, playerPosition.z, camModeStr),
+                    textPadding, debugYOffset, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
+                DrawText(TextFormat("Angle: %.1f | Speed: %.1f", playerRotationAngle, GetCurrentPlayerSpeed()),
+                    textPadding, debugYOffset + UI_SMALL_FONT_SIZE + 2, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
+            }
 
             // Draw game over message
             if (gameState.gameOver) {
-                const char* gameOverMsg = gameState.outOfBounds ?
-                    "GAME OVER - OUT OF BOUNDS!" :
-                    "GAME OVER - TIME'S UP!";
+                const char* gameOverMsg;
+                Color messageColor;
+
+                if (gameState.gameWon) {
+                    gameOverMsg = "CONGRATULATIONS! YOU WIN!";
+                    messageColor = GREEN;
+                }
+                else if (gameState.outOfBounds) {
+                    gameOverMsg = "GAME OVER - OUT OF BOUNDS!";
+                    messageColor = RED;
+                }
+                else {
+                    gameOverMsg = "GAME OVER - TIME'S UP!";
+                    messageColor = RED;
+                }
 
                 int textWidth = MeasureText(gameOverMsg, UI_LARGE_FONT_SIZE);
                 DrawText(gameOverMsg,
                     (virtualScreenWidth - textWidth) / 2,
-                    virtualScreenHeight / 2 - 50, UI_LARGE_FONT_SIZE, RED);
+                    virtualScreenHeight / 2 - 50, UI_LARGE_FONT_SIZE, messageColor);
 
                 const char* finalScoreMsg = TextFormat("Final Score: %d", gameState.score);
                 int scoreWidth = MeasureText(finalScoreMsg, UI_MEDIUM_FONT_SIZE);
@@ -1006,7 +1136,8 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
                     (virtualScreenWidth - scoreWidth) / 2,
                     virtualScreenHeight / 2 - 10, UI_MEDIUM_FONT_SIZE, YELLOW);
 
-                const char* returnMsg = TextFormat("Returning to menu in %.1fs...", 4 - gameState.gameOverTimer);
+                float timeRemaining = (gameState.gameWon ? 3 : 4) - gameState.gameOverTimer;
+                const char* returnMsg = TextFormat("Returning to menu in %.1fs...", timeRemaining);
                 int returnWidth = MeasureText(returnMsg, UI_SMALL_FONT_SIZE);
                 DrawText(returnMsg,
                     (virtualScreenWidth - returnWidth) / 2,
@@ -1016,10 +1147,10 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             // Controls help text (bottom center, with safe margin from shader border)
             const char* controlsText;
             if (debug) {
-                controlsText = "ESC: Return to Menu | T: Switch Camera | F3: Debug | L: Speed | G: Noclip | M: Magnet";
+                controlsText = "ESC: Return to Menu | T: Switch Camera | F3: Debug | F5: Reload Shader | L: Speed | G: Noclip | M: Magnet";
             }
             else {
-                controlsText = "ESC: Return to Menu | T: Switch Camera | F3: Debug";
+                controlsText = "ESC: Return to Menu | T: Switch Camera | F3: Debug | F5: Reload Shader";
             }
             int controlsWidth = MeasureText(controlsText, 12);
             // Position with safe margins from both sides to avoid shader border
@@ -1060,7 +1191,6 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
     // Cleanup
     if (resources.backgroundMusicLoaded && IsMusicStreamPlaying(resources.backgroundMusic))
         StopMusicStream(resources.backgroundMusic);
-    
 
     EnableCursor();
     UnloadRenderTexture(target);

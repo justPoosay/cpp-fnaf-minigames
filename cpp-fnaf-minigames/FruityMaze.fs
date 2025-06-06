@@ -1,114 +1,113 @@
-#version 330 core
+#version 330
 
+// Input vertex attributes (from vertex shader)
 in vec2 fragTexCoord;
 in vec4 fragColor;
 
+// Input uniform values
 uniform sampler2D texture0;
-uniform vec2 resolution;
+uniform vec4 colDiffuse;
 uniform float time;
 
+// Output fragment color
 out vec4 finalColor;
 
-// --- CRT Effect Parameters ---
-// Scanlines
-const float scanline_thickness_ratio = 0.4;
-const float scanline_frequency_scale = 1.0;
-const float scanline_brightness_multiplier = 1.05;
-const float scanline_darkness_multiplier = 0.75;
+// NOTE: Render size values must be passed from code
+const float renderWidth = 800;
+const float renderHeight = 450;
+float offset = 0.0;
 
-// Screen overlay parameters
-const float screen_border_width = 0.02;  // How thick the screen border is (reduced from 0.08)
-const float screen_corner_radius = 0.01; // Rounded corners (reduced from 0.03)
-const vec3 screen_border_color = vec3(0.2, 0.2, 0.2); // Dark gray border
-const vec3 screen_inner_color = vec3(0.05, 0.05, 0.05); // Very dark inner border
-const float screen_reflection_intensity = 0.15; // Subtle screen reflection
+// Screen parameters - big black margin and rounded corners
+const float screen_margin = 0.04;  // Large black border
+const float corner_radius = 0.03;  // Rounded screen corners
 
 // --- Helper Functions ---
-float ScanlineEffect(vec2 uv, vec2 screen_resolution) {
-    float line_cycle_height = 4.0 / scanline_frequency_scale;
-    float v_pos_in_cycle = mod(uv.y * screen_resolution.y, line_cycle_height);
 
-    if (v_pos_in_cycle < line_cycle_height * scanline_thickness_ratio) {
-        return scanline_brightness_multiplier;
-    } else {
-        return scanline_darkness_multiplier;
-    }
+// Puffy/bulge effect - pushes edges outward but keeps rectangular shape
+vec2 puffyDistortion(vec2 coord) {
+    vec2 centered = coord - 0.5;
+    
+    // Create a subtle outward push at the edges
+    float edgeDistance = max(abs(centered.x), abs(centered.y));
+    float puffFactor = 1.0 + (edgeDistance * edgeDistance * 0.15);
+    
+    return 0.5 + centered * puffFactor;
 }
 
-// Rounded rectangle distance function
-float roundedRectDistance(vec2 uv, vec2 size, float radius) {
-    vec2 d = abs(uv) - size + radius;
-    return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0) - radius;
+// Check if coordinate is within the rounded screen area
+float isInScreen(vec2 coord) {
+    vec2 centered = coord - 0.5;
+    vec2 screenSize = vec2(0.5 - screen_margin);
+    
+    // Distance to rounded rectangle
+    vec2 d = abs(centered) - screenSize + corner_radius;
+    float dist = length(max(d, 0.0)) + min(max(d.x, d.y), 0.0) - corner_radius;
+    
+    return smoothstep(0.01, -0.01, dist);
 }
 
-// Screen bezel/border effect
-float screenBorder(vec2 uv) {
-    // Convert to centered coordinates (-0.5 to 0.5)
-    vec2 centered = uv - 0.5;
+// White ray glare at corners (like the reference image)
+vec3 cornerGlare(vec2 uv) {
+    vec3 glare = vec3(0.0);
     
-    // Define the screen area (slightly inset from edges)
-    vec2 screenSize = vec2(0.5 - screen_border_width);
+    // Bottom-left corner glare
+    vec2 blCorner = uv - vec2(0.0, 1.0);
+    float blGlare = 1.0 - length(blCorner * vec2(1.5, 0.8));
+    blGlare = pow(max(blGlare, 0.0), 3.0) * 0.3;
     
-    // Calculate distance to rounded rectangle
-    float dist = roundedRectDistance(centered, screenSize, screen_corner_radius);
+    // Top-right corner glare  
+    vec2 trCorner = uv - vec2(1.0, 0.0);
+    float trGlare = 1.0 - length(trCorner * vec2(0.8, 1.5));
+    trGlare = pow(max(trGlare, 0.0), 3.0) * 0.3;
     
-    // Create smooth border transition
-    float border = smoothstep(-0.01, 0.01, dist);
+    // Subtle edge highlights
+    float leftEdge = smoothstep(0.05, 0.0, uv.x) * 0.1;
+    float rightEdge = smoothstep(0.95, 1.0, uv.x) * 0.1;
+    float topEdge = smoothstep(0.05, 0.0, uv.y) * 0.1;
+    float bottomEdge = smoothstep(0.95, 1.0, uv.y) * 0.1;
     
-    return 1.0 - border;
-}
-
-// Subtle screen reflection effect
-vec3 screenReflection(vec2 uv) {
-    // Create a subtle diagonal reflection pattern
-    float reflection = sin((uv.x + uv.y) * 20.0 + time * 2.0) * 0.5 + 0.5;
-    reflection = pow(reflection, 4.0) * screen_reflection_intensity;
+    glare = vec3(blGlare + trGlare + leftEdge + rightEdge + topEdge + bottomEdge);
     
-    // Fade reflection towards screen edges
-    float edgeFade = smoothstep(0.0, 0.2, min(min(uv.x, 1.0 - uv.x), min(uv.y, 1.0 - uv.y)));
-    reflection *= edgeFade;
-    
-    return vec3(reflection);
+    return glare;
 }
 
 void main()
 {
-    vec2 currentTexCoord = fragTexCoord;
-    vec3 sampledColor = vec3(0.0);
+    vec2 currentCoord = fragTexCoord;
     
-    // Calculate screen border mask
-    float screenMask = screenBorder(currentTexCoord);
+    // Check if we're in the screen area
+    float screenMask = isInScreen(currentCoord);
     
-    // Only process pixels inside the screen area
-    if (screenMask > 0.0 && currentTexCoord.x >= 0.0 && currentTexCoord.x <= 1.0 && 
-        currentTexCoord.y >= 0.0 && currentTexCoord.y <= 1.0) {
+    if (screenMask > 0.0) {
+        // Apply puffy distortion to texture coordinates
+        vec2 puffyCoord = puffyDistortion(currentCoord);
         
-        // Sample the game texture
-        sampledColor = texture(texture0, currentTexCoord).rgb * fragColor.rgb;
+        // Check if puffy coordinates are still valid
+        bool validCoord = puffyCoord.x >= 0.0 && puffyCoord.x <= 1.0 && 
+                          puffyCoord.y >= 0.0 && puffyCoord.y <= 1.0;
         
-        // Apply scanline effect
-        float scanlineFactor = ScanlineEffect(currentTexCoord, resolution);
-        sampledColor *= scanlineFactor;
-        
-        // Add subtle screen reflection
-        sampledColor += screenReflection(currentTexCoord);
-        
-        // Apply screen mask (fades to black at screen edges)
-        sampledColor *= screenMask;
-        
+        if (validCoord) {
+            float frequency = renderHeight/3.0;
+            
+            // Scanlines using puffy coordinates
+            float globalPos = (puffyCoord.y + offset) * frequency;
+            float wavePos = cos((fract(globalPos) - 0.5)*3.14);
+            
+            // Sample texture with puffy distortion
+            vec4 texelColor = texture(texture0, puffyCoord);
+            vec4 scanlineColor = mix(vec4(0.0, 0.3, 0.0, 0.0), texelColor, wavePos);
+            
+            // Add corner glare using original coordinates
+            vec3 glare = cornerGlare(currentCoord);
+            scanlineColor.rgb += glare;
+            
+            // Apply screen mask for smooth edges
+            finalColor = scanlineColor * screenMask;
+        } else {
+            finalColor = vec4(0.0, 0.0, 0.0, 1.0);
+        }
     } else {
-        // Outside screen area - draw the bezel/border
-        float borderGradient = smoothstep(0.0, screen_border_width * 2.0, 
-            min(min(currentTexCoord.x, 1.0 - currentTexCoord.x), 
-                min(currentTexCoord.y, 1.0 - currentTexCoord.y)));
-        
-        // Mix between border color and inner color
-        sampledColor = mix(screen_border_color, screen_inner_color, borderGradient);
-        
-        // Add subtle highlight to the border for depth
-        float highlight = pow(1.0 - borderGradient, 2.0) * 0.1;
-        sampledColor += vec3(highlight);
+        // Big black margin area
+        finalColor = vec4(0.0, 0.0, 0.0, 1.0);
     }
-    
-    finalColor = vec4(clamp(sampledColor, 0.0, 1.0), fragColor.a);
 }

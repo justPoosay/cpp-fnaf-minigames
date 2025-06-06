@@ -41,8 +41,8 @@ const float playerHitboxDepth = 2.4;
 const float UI_LARGE_FONT_SIZE = 48;
 const float UI_MEDIUM_FONT_SIZE = 32;
 const float UI_SMALL_FONT_SIZE = 24;
-//const float UI_MARGIN = 30;
-//const float UI_LINE_SPACING = 8;
+const float UI_MARGIN = 30;
+const float UI_LINE_SPACING = 8;
 const float rightMargin = virtualScreenWidth - 300;
 
 // --- POWER-UP CONSTANTS ---
@@ -51,14 +51,14 @@ const float lightningDuration = 30;
 const float gummybearDuration = 14;
 const float magnetDuration = 23;
 const float magnetRange = 12;
-const float magnetPropSpeed = playerMoveSpeed * 0.85;
+const float magnetPropSpeed = playerMoveSpeed * 1.2;
 
 // --- PROP CONSTANTS ---
-const float propScale = 1.25;
-const float propRotationSpeed = 90;
-const float propBobSpeed = 3;
-const float propBobHeight = 0.5;
-const float propCollectionRadius = 2;
+const float propScale = 1.2;
+const float propRotationSpeed = 45;
+const float propBobSpeed = 2;
+const float propBobHeight = 0.25;
+const float propCollectionRadius = 3;
 
 // Manual fruit spawn coordinates extracted from your image (179x168)
 const Vector2 FRUIT_POSITIONS[] = {
