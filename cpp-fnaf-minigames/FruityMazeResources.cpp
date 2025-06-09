@@ -1,319 +1,309 @@
 #include "FruityMazeResources.h"
 
+// **NEW: Animation helper functions implementation**
+void InitializeAnimation(AnimationData& anim, const char* spritesheetPath,
+    int frameCount, int frameWidth, int frameHeight,
+    float frameTime, bool loop) {
+    anim.spriteSheet = LoadTexture(spritesheetPath);
+    anim.frameCount = frameCount;
+    anim.frameWidth = frameWidth;
+    anim.frameHeight = frameHeight;
+    anim.frameTime = frameTime;
+    anim.currentTime = 0.0f;
+    anim.currentFrame = 0;
+    anim.loop = loop;
+    anim.isPlaying = false;
+
+    TraceLog(LOG_DEBUG, TextFormat("Animation loaded: %s (%dx%d, %d frames)", spritesheetPath, frameWidth, frameHeight, frameCount));
+}
+
+void UpdateAnimation(AnimationData& anim, float deltaTime) {
+    if (!anim.isPlaying || anim.frameCount <= 1) return;
+
+    anim.currentTime += deltaTime;
+
+    if (anim.currentTime >= anim.frameTime) {
+        anim.currentTime -= anim.frameTime;
+        anim.currentFrame++;
+
+        if (anim.currentFrame >= anim.frameCount) {
+            if (anim.loop) {
+                anim.currentFrame = 0;
+            }
+            else {
+                anim.currentFrame = anim.frameCount - 1;
+                anim.isPlaying = false; // Stop at last frame if not looping
+            }
+        }
+    }
+}
+
+void StartAnimation(AnimationData& anim) {
+    anim.isPlaying = true;
+    anim.currentTime = 0.0f;
+    anim.currentFrame = 0;
+}
+
+void StopAnimation(AnimationData& anim) {
+    anim.isPlaying = false;
+    anim.currentTime = 0.0f;
+    anim.currentFrame = 0;
+}
+
+Rectangle GetCurrentAnimationFrame(const AnimationData& anim) {
+    return {
+        (float)(anim.currentFrame * anim.frameWidth),
+        0.0f,
+        (float)anim.frameWidth,
+        (float)anim.frameHeight
+    };
+}
+
+void UnloadAnimationData(AnimationData& anim) {
+    if (anim.spriteSheet.id > 0) {
+        UnloadTexture(anim.spriteSheet);
+        anim.spriteSheet.id = 0;
+    }
+}
+
 FruityMazeGameResources LoadFruityMazeResources(GraphicsQuality quality) {
-    cout << "Loading Fruity Maze resources..." << endl;
+    TraceLog(LOG_DEBUG, "Loading Fruity Maze resources...");
     FruityMazeGameResources resources = {};
 
     // Initialize default values
-    resources.lightingShaderLoaded = false;
-    resources.mapLoaded = false;
-    resources.playerModelLoaded = false;
-    resources.wallTextureLoaded = false;
-    resources.backgroundMusicLoaded = false;
-    resources.fruit1SoundLoaded = false;
-    resources.fruit2SoundLoaded = false;
-    resources.fruit3SoundLoaded = false;
-    resources.powerUpSoundLoaded = false;
-    resources.timerPingSoundLoaded = false;
-    resources.boundsSoundLoaded = false;
-    resources.cherryLoaded = false;
-    resources.orangeLoaded = false;
-    resources.grapesLoaded = false;
-    resources.lightningLoaded = false;
-    resources.gummybearLoaded = false;
-    resources.magnetLoaded = false;
+    Vector3 cubicMapSize = { 1, 4, 1 };
     resources.mapPixels = nullptr;
-    resources.wallPixelCount = 0;
-    resources.pathPixelCount = 0;
-    resources.cubicMapSize = { 1, 4, 1 };
+    resources.mapWidth = 0;
+    resources.mapHeight = 0;
+    int wallPixelCount = 0;
+    int pathPixelCount = 0;
 
     // Load map image
-    if (FileExists("resources/fm/map.png")) {
-        Image originalMap = LoadImage("resources/fm/map.png");
-        if (originalMap.data) {
-            ImageFormat(&originalMap, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
-            resources.mapImage = ImageCopy(originalMap);
-            resources.mapWidth = originalMap.width;
-            resources.mapHeight = originalMap.height;
+    Image mapImage = LoadImage("resources/fm/map.png");
+    if (mapImage.data) {
+        resources.mapWidth = mapImage.width;
+        resources.mapHeight = mapImage.height;
 
-            // Process map for walls and paths
-            for (int y = 0; y < resources.mapImage.height; y++) {
-                for (int x = 0; x < resources.mapImage.width; x++) {
-                    Color pixelColor = GetImageColor(originalMap, x, y);
-                    bool isWall = (pixelColor.r <= 50 &&
-                        pixelColor.g >= 200 &&
-                        pixelColor.b <= 50 &&
-                        pixelColor.a >= 200);
-                    if (isWall) {
-                        ImageDrawPixel(&resources.mapImage, x, y, WHITE);
-                        resources.wallPixelCount++;
-                    }
-                    else {
-                        ImageDrawPixel(&resources.mapImage, x, y, BLACK);
-                        resources.pathPixelCount++;
-                    }
+        ImageFormat(&mapImage, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+
+        // Process map for walls and paths
+        for (int x = 0; x < mapImage.width; x++) {
+            for (int y = 0; y < mapImage.height; y++) {
+                Color pixelColor = GetImageColor(mapImage, x, y);
+                bool isWall = (pixelColor.r <= 50 && pixelColor.g >= 200 && pixelColor.b <= 50 && pixelColor.a >= 200);
+
+                if (isWall) {
+                    ImageDrawPixel(&mapImage, x, y, WHITE);
+                    wallPixelCount++;
+                }
+                else {
+                    ImageDrawPixel(&mapImage, x, y, BLACK);
+                    pathPixelCount++;
                 }
             }
-
-            // Generate 3D mesh from map
-            if (resources.wallPixelCount > 0) {
-                Mesh mesh = GenMeshCubicmap(resources.mapImage, resources.cubicMapSize);
-                resources.mazeModel = LoadModelFromMesh(mesh);
-            }
-
-            // Load pixel data for collision detection
-            resources.mapPixels = LoadImageColors(resources.mapImage);
-
-            // Create minimap texture
-            resources.minimapTexture = LoadTextureFromImage(resources.mapImage);
-
-            // Set map position
-            resources.mapModelPosition = {
-                -resources.mapImage.width / 2.0f,
-                0,
-                -resources.mapImage.height / 2.0f
-            };
-
-            resources.mapLoaded = true;
-            UnloadImage(originalMap);
         }
+
+        // Generate 3D mesh from map
+        if (wallPixelCount > 0) {
+            Mesh mesh = GenMeshCubicmap(mapImage, cubicMapSize);
+            resources.mazeModel = LoadModelFromMesh(mesh);
+        }
+
+        resources.mapPixels = LoadImageColors(mapImage);
+        resources.mapModelPosition = { -mapImage.width / 2.0f, 0, -mapImage.height / 2.0f };
+
+        UnloadImage(mapImage);
+        TraceLog(LOG_DEBUG, TextFormat("Map loaded: %dx%d, %d walls, %d paths", resources.mapWidth, resources.mapHeight, wallPixelCount, pathPixelCount));
+    }
+    else return resources;
+
+    // Load shader
+    resources.lightingShader = LoadShader("lighting.vs", "lighting.fs");
+    if (resources.lightingShader.id) {
+        resources.lightingShader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocation(resources.lightingShader, "matModel");
+        resources.lightingShader.locs[SHADER_LOC_MATRIX_NORMAL] = GetShaderLocation(resources.lightingShader, "matNormal");
     }
 
-    // Load wall texture
-    if (FileExists("resources/fm/cube.png")) {
-        Image cubeImage = LoadImage("resources/fm/cube.png");
-        resources.cubeWallTexture = LoadTextureFromImage(cubeImage);
-        if (resources.cubeWallTexture.id > 0) {
-            resources.wallTextureLoaded = true;
-            SetMaterialTexture(&resources.mazeModel.materials[0], MATERIAL_MAP_DIFFUSE, resources.cubeWallTexture);
+    // Load minimap & wall texture
+    resources.minimapTexture = LoadTexture("resources/fm/map.png");
+    resources.cubeWallTexture = LoadTexture("resources/fm/cube.png");
 
-            // Add metallic properties
-            //mazeMaterial->maps[MATERIAL_MAP_METALNESS].color = { 180, 255, 180, 255 }; // Green tint
-            //mazeMaterial->maps[MATERIAL_MAP_ROUGHNESS].color = { 100, 100, 100, 255 }; // Semi-rough (metallic glint)
-            //mazeMaterial->maps[MATERIAL_MAP_NORMAL].color = { 128, 128, 255, 255 };    // Slight normal variation
-            
-            UnloadImage(cubeImage);
-        }
-    }
+    // Apply wall texture to maze
+    if (resources.cubeWallTexture.id && resources.mazeModel.materials)
+        SetMaterialTexture(&resources.mazeModel.materials[0], MATERIAL_MAP_DIFFUSE, resources.cubeWallTexture);
 
-    if (FileExists("lighting.vs") && FileExists("lighting.fs")) {
-        resources.lightingShader = LoadShader("lighting.vs", "lighting.fs");
-        if (resources.lightingShader.id > 0) {
-            resources.lightingShaderLoaded = true;
+    InitializeAnimation(resources.amazingAnim, "resources/fm/amazing.png",
+        4, 1000, 300, 0.05, true);
 
-            // Get uniform locations
-            resources.lightingShader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocation(resources.lightingShader, "matModel");
-            resources.lightingShader.locs[SHADER_LOC_MATRIX_NORMAL] = GetShaderLocation(resources.lightingShader, "matNormal");
-        }
-    }
+    InitializeAnimation(resources.timeIsUpAnim, "resources/fm/timeIsUp.png",
+        4, 1000, 300, 0.05, true);
 
-    // Load player model
-    if (FileExists("resources/fm/freddy.glb")) {
-        resources.playerModel = LoadModel("resources/fm/freddy.glb");
-        if (resources.playerModel.meshCount > 0) {
-            resources.playerModelLoaded = true;
-        }
-    }
+    InitializeAnimation(resources.timeExtendedAnim, "resources/fm/timeExtended.png",
+        3, 1000, 300, 0.05, true);
 
-    // Load background music
-    if (FileExists("resources/fm/fbttl.mp3")) {
-        resources.backgroundMusic = LoadMusicStream("resources/fm/fbttl.mp3");
-        if (resources.backgroundMusic.stream.buffer) {
-            resources.backgroundMusicLoaded = true;
-        }
-    }
-    //else if (FileExists("resources/fm/maze_music.ogg")) {
-    //    resources.backgroundMusic = LoadMusicStream("resources/fm/maze_music.ogg");
-    //    if (resources.backgroundMusic.stream.buffer) {
-    //        resources.backgroundMusicLoaded = true;
-    //    }
-    //}
-    //else if (FileExists("resources/fm/maze_music.wav")) {
-    //    resources.backgroundMusic = LoadMusicStream("resources/fm/maze_music.wav");
-    //    if (resources.backgroundMusic.stream.buffer) {
-    //        resources.backgroundMusicLoaded = true;
-    //    }
-    //}
+    // Keep static texture for out of bounds
+    resources.outOfBounds = LoadTexture("resources/fm/outOfBounds.png");
 
-    // Load prop models
-    if (FileExists("resources/fm/cherry.glb")) {
-        resources.cherryModel = LoadModel("resources/fm/cherry.glb");
-        if (resources.cherryModel.meshCount > 0) {
-            resources.cherryLoaded = true;
-        }
-    }
+    // Load 3D models
+    resources.playerModel = LoadModel("resources/fm/freddy.glb");
 
-    if (FileExists("resources/fm/orange.glb")) {
-        resources.orangeModel = LoadModel("resources/fm/orange.glb");
-        if (resources.orangeModel.meshCount > 0) {
-            resources.orangeLoaded = true;
-        }
-    }
+    resources.cherryModel = LoadModel("resources/fm/cherry.glb");
+    resources.orangeModel = LoadModel("resources/fm/orange.glb");
+    resources.grapesModel = LoadModel("resources/fm/grapes.glb");
 
-    if (FileExists("resources/fm/grapes.glb")) {
-        resources.grapesModel = LoadModel("resources/fm/grapes.glb");
-        if (resources.grapesModel.meshCount > 0) {
-            resources.grapesLoaded = true;
-        }
-    }
+    resources.lightningModel = LoadModel("resources/fm/lightning.glb");
+    resources.gummybearModel = LoadModel("resources/fm/gummybear.glb");
+    resources.magnetModel = LoadModel("resources/fm/magnet.glb");
 
-    if (FileExists("resources/fm/lightning.glb")) {
-        resources.lightningModel = LoadModel("resources/fm/lightning.glb");
-        if (resources.lightningModel.meshCount > 0) {
-            resources.lightningLoaded = true;
-        }
-    }
+    // Load sounds
+    resources.backgroundMusic = LoadMusicStream("resources/fm/fbttl.mp3");
 
-    if (FileExists("resources/fm/gummybear.glb")) {
-        resources.gummybearModel = LoadModel("resources/fm/gummybear.glb");
-        if (resources.gummybearModel.meshCount > 0) {
-            resources.gummybearLoaded = true;
-        }
-    }
+    resources.fruit1Sound = LoadSound("resources/fm/fruit1.wav");
+    resources.fruit2Sound = LoadSound("resources/fm/fruit2.wav");
+    resources.fruit3Sound = LoadSound("resources/fm/fruit3.wav");
 
-    if (FileExists("resources/fm/magnet.glb")) {
-        resources.magnetModel = LoadModel("resources/fm/magnet.glb");
-        if (resources.magnetModel.meshCount > 0) {
-            resources.magnetLoaded = true;
-        }
-    }
+    resources.boundsSound = LoadSound("resources/fm/bounds.wav");
+    resources.powerUpSound = LoadSound("resources/fm/powerUp.wav");
+    resources.timerPingSound = LoadSound("resources/fm/timerPing.wav");
+    resources.timeExtendedSound = LoadSound("resources/fm/timeExt.wav");
 
-    // Load fruit collection sounds
-    if (FileExists("resources/fm/fruit1.wav")) {
-        resources.fruit1Sound = LoadSound("resources/fm/fruit1.wav");
-        if (resources.fruit1Sound.frameCount > 0) {
-            resources.fruit1SoundLoaded = true;
-        }
-    }
-
-    if (FileExists("resources/fm/fruit2.wav")) {
-        resources.fruit2Sound = LoadSound("resources/fm/fruit2.wav");
-        if (resources.fruit2Sound.frameCount > 0) {
-            resources.fruit2SoundLoaded = true;
-        }
-    }
-
-    if (FileExists("resources/fm/fruit3.wav")) {
-        resources.fruit3Sound = LoadSound("resources/fm/fruit3.wav");
-        if (resources.fruit3Sound.frameCount > 0) {
-            resources.fruit3SoundLoaded = true;
-        }
-    }
-
-    // Load power-up collection sound
-    if (FileExists("resources/fm/powerUp.wav")) {
-        resources.powerUpSound = LoadSound("resources/fm/powerUp.wav");
-        if (resources.powerUpSound.frameCount > 0) {
-            resources.powerUpSoundLoaded = true;
-        }
-    }
-
-    // Load timer ping sound
-    if (FileExists("resources/fm/timerPing.wav")) {
-        resources.timerPingSound = LoadSound("resources/fm/timerPing.wav");
-        if (resources.timerPingSound.frameCount > 0) {
-            resources.timerPingSoundLoaded = true;
-        }
-    }
-
-    // Load out of bounds sound
-    if (FileExists("resources/fm/bounds.wav")) {
-        resources.boundsSound = LoadSound("resources/fm/bounds.wav");
-        if (resources.boundsSound.frameCount > 0) {
-            resources.boundsSoundLoaded = true;
-        }
-    }
-
-    // Load extended time sound
-    if (FileExists("resources/fm/timeExt.wav")) {
-        resources.timeExtendedSound = LoadSound("resources/fm/timeExt.wav");
-        if (resources.timeExtendedSound.frameCount > 0) {
-            resources.timeExtendedSoundLoaded = true;
-        }
-    }
-
-    cout << "Fruity Maze resources loaded successfully." << endl;
+    TraceLog(LOG_DEBUG, "Fruity Maze resources loaded successfully.");
     return resources;
 }
 
 void UnloadFruityMazeResources(FruityMazeGameResources& resources) {
-    cout << "Unloading Fruity Maze resources..." << endl;
+    TraceLog(LOG_DEBUG, "Unloading Fruity Maze resources...");
 
-    if (resources.mapLoaded) {
-        UnloadImage(resources.mapImage);
-        if (resources.minimapTexture.id > 0) {
-            UnloadTexture(resources.minimapTexture);
-        }
-        if (resources.mapPixels) {
-            UnloadImageColors(resources.mapPixels);
-        }
-        if (resources.mazeModel.meshCount > 0) {
-            UnloadModel(resources.mazeModel);
-        }
-    }
-
-    if (resources.wallTextureLoaded && resources.cubeWallTexture.id > 0) {
+    // Unload textures
+    if (resources.cubeWallTexture.id > 0) {
         UnloadTexture(resources.cubeWallTexture);
     }
 
-    if (resources.playerModelLoaded && resources.playerModel.meshCount > 0) {
+    if (resources.minimapTexture.id > 0) {
+        UnloadTexture(resources.minimapTexture);
+    }
+
+    UnloadAnimationData(resources.amazingAnim);
+    UnloadAnimationData(resources.timeIsUpAnim);
+    UnloadAnimationData(resources.timeExtendedAnim);
+
+    if (resources.outOfBounds.id > 0) {
+        UnloadTexture(resources.outOfBounds);
+    }
+
+    // Unload map collision data
+    if (resources.mapPixels) {
+        UnloadImageColors(resources.mapPixels);
+    }
+
+    // Unload maze model
+    if (resources.mazeModel.meshCount > 0) {
+        UnloadModel(resources.mazeModel);
+    }
+
+    // Unload models
+    if (resources.playerModel.meshCount > 0) {
         UnloadModel(resources.playerModel);
     }
 
-    if (resources.backgroundMusicLoaded && resources.backgroundMusic.stream.buffer) {
-        if (IsMusicStreamPlaying(resources.backgroundMusic)) {
-            StopMusicStream(resources.backgroundMusic);
-        }
+    if (resources.cherryModel.meshCount > 0) {
+        UnloadModel(resources.cherryModel);
+    }
+
+    if (resources.orangeModel.meshCount > 0) {
+        UnloadModel(resources.orangeModel);
+        resources.orangeModel.meshCount = 0;
+    }
+
+    if (resources.grapesModel.meshCount > 0) {
+        UnloadModel(resources.grapesModel);
+    }
+
+    if (resources.lightningModel.meshCount > 0) {
+        UnloadModel(resources.lightningModel);
+    }
+
+    if (resources.gummybearModel.meshCount > 0) {
+        UnloadModel(resources.gummybearModel);
+    }
+
+    if (resources.magnetModel.meshCount > 0) {
+        UnloadModel(resources.magnetModel);
+    }
+
+    // Unload sounds with safety checks
+    if (resources.backgroundMusic.stream.buffer) {
         UnloadMusicStream(resources.backgroundMusic);
     }
 
-    // Unload prop models
-    if (resources.cherryLoaded) UnloadModel(resources.cherryModel);
-    if (resources.orangeLoaded) UnloadModel(resources.orangeModel);
-    if (resources.grapesLoaded) UnloadModel(resources.grapesModel);
-    if (resources.lightningLoaded) UnloadModel(resources.lightningModel);
-    if (resources.gummybearLoaded) UnloadModel(resources.gummybearModel);
-    if (resources.magnetLoaded) UnloadModel(resources.magnetModel);
+    if (resources.fruit1Sound.frameCount > 0) {
+        UnloadSound(resources.fruit1Sound);
+    }
+    if (resources.fruit2Sound.frameCount > 0) {
+        UnloadSound(resources.fruit2Sound);
+    }
+    if (resources.fruit3Sound.frameCount > 0) {
+        UnloadSound(resources.fruit3Sound);
+    }
+    if (resources.boundsSound.frameCount > 0) {
+        UnloadSound(resources.boundsSound);
+    }
+    if (resources.powerUpSound.frameCount > 0) {
+        UnloadSound(resources.powerUpSound);
+    }
+    if (resources.timerPingSound.frameCount > 0) {
+        UnloadSound(resources.timerPingSound);
+    }
+    if (resources.timeExtendedSound.frameCount > 0) {
+        UnloadSound(resources.timeExtendedSound);
+    }
 
-    // Unload sounds
-    if (resources.fruit1SoundLoaded) UnloadSound(resources.fruit1Sound);
-    if (resources.fruit2SoundLoaded) UnloadSound(resources.fruit2Sound);
-    if (resources.fruit3SoundLoaded) UnloadSound(resources.fruit3Sound);
-    if (resources.powerUpSoundLoaded) UnloadSound(resources.powerUpSound);
-    if (resources.timerPingSoundLoaded) UnloadSound(resources.timerPingSound);
-    if (resources.boundsSoundLoaded) UnloadSound(resources.boundsSound);
-    if (resources.timeExtendedSoundLoaded) UnloadSound(resources.timeExtendedSound);
+    // Unload shader
+    if (resources.lightingShader.id > 0) {
+        UnloadShader(resources.lightingShader);
+    }
 
-    // Reset all values
-    resources = {};
+    TraceLog(LOG_DEBUG, "Fruity Maze resources unloaded successfully.");
 }
 
 bool CheckFruityMazeResourcesLoaded(FruityMazeGameResources& res) {
     vector<string> missingResources;
 
-    if (!res.mapLoaded) missingResources.push_back("map image");
-    if (!res.wallTextureLoaded) missingResources.push_back("wall texture");
-    // Player model is optional - game can run without it in camera mode
-    // Background music is optional - game can run without it
-    // Sounds are optional - game can run without them
+    if (!res.mapPixels) missingResources.push_back("mapPixels");
+    if (res.mapWidth == 0 || res.mapHeight == 0) missingResources.push_back("mapDimensions");
+    if (!res.cubeWallTexture.id) missingResources.push_back("cubeWallTexture");
+    if (!res.minimapTexture.id) missingResources.push_back("minimapTexture");
+
+    if (!res.amazingAnim.spriteSheet.id) missingResources.push_back("amazingAnim");
+    if (!res.timeIsUpAnim.spriteSheet.id) missingResources.push_back("timeIsUpAnim");
+    if (!res.timeExtendedAnim.spriteSheet.id) missingResources.push_back("timeExtendedAnim");
+    if (!res.outOfBounds.id) missingResources.push_back("outOfBounds");
+
+    if (!res.playerModel.meshes) missingResources.push_back("playerModel");
+    if (!res.cherryModel.meshes) missingResources.push_back("cherryModel");
+    if (!res.orangeModel.meshes) missingResources.push_back("orangeModel");
+    if (!res.grapesModel.meshes) missingResources.push_back("grapesModel");
+    if (!res.lightningModel.meshes) missingResources.push_back("lightningModel");
+    if (!res.gummybearModel.meshes) missingResources.push_back("gummybearModel");
+    if (!res.magnetModel.meshes) missingResources.push_back("magnetModel");
+
+    if (!res.backgroundMusic.stream.buffer) missingResources.push_back("backgroundMusic");
+    if (!res.fruit1Sound.frameCount) missingResources.push_back("fruit1Sound");
+    if (!res.fruit2Sound.frameCount) missingResources.push_back("fruit2Sound");
+    if (!res.fruit3Sound.frameCount) missingResources.push_back("fruit3Sound");
+    if (!res.boundsSound.frameCount) missingResources.push_back("boundsSound");
+    if (!res.powerUpSound.frameCount) missingResources.push_back("powerUpSound");
+    if (!res.timerPingSound.frameCount) missingResources.push_back("timerPingSound");
+    if (!res.timeExtendedSound.frameCount) missingResources.push_back("timeExtendedSound");
+
+    if (!res.lightingShader.id) missingResources.push_back("lightingShader");
 
     if (!missingResources.empty()) {
-        cout << "FRUITY MAZE: Critical error - failed to load resources:" << endl;
-        for (const string& resourceName : missingResources) {
-            cout << "- " << resourceName << endl;
-        }
-        return false;
-    }
+        TraceLog(LOG_DEBUG, "FRUITY MAZE: Critical error - failed to load resources:");
+        for (const string& resourceName : missingResources)
+            TraceLog(LOG_DEBUG, "- %s", resourceName);
 
-    // Print optional resource status
-    if (!res.backgroundMusicLoaded) {
-        cout << "FRUITY MAZE: Background music not found (optional)" << endl;
-    }
-    if (!res.timerPingSoundLoaded) {
-        cout << "FRUITY MAZE: Timer ping sound not found (optional)" << endl;
-    }
-    if (!res.boundsSoundLoaded) {
-        cout << "FRUITY MAZE: Bounds sound not found (optional)" << endl;
+        return false;
     }
 
     return true;

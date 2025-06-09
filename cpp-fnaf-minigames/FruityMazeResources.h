@@ -11,19 +11,38 @@
 
 using namespace std;
 
+struct AnimationData {
+    Texture2D spriteSheet;
+    int frameCount;
+    int frameWidth;
+    int frameHeight;
+    float frameTime;        // Time per frame (e.g., 0.1f for 10 FPS)
+    float currentTime;      // Current animation time
+    int currentFrame;       // Current frame index
+    bool loop;              // Whether animation should loop
+    bool isPlaying;         // Whether animation is currently playing
+};
+
 struct FruityMazeGameResources {
-
-    // Map and terrain
-    Image mapImage;
-    Color* mapPixels;
+    // Map data
+    int mapWidth;
+    int mapHeight;
     Texture2D minimapTexture;
-
-    // 3D Models and textures
-    Model mazeModel;
-    Model playerModel;
     Texture2D cubeWallTexture;
 
-    // Prop models
+    Vector3 cubicMapSize;
+    Model mazeModel;
+    Color* mapPixels;
+    Vector3 mapModelPosition;
+
+    // **MODIFIED: Changed from individual textures to animation data**
+    AnimationData amazingAnim;
+    AnimationData timeIsUpAnim;
+    AnimationData timeExtendedAnim;
+    Texture2D outOfBounds;  // Keep this as static image
+
+    // 3D Models
+    Model playerModel;
     Model cherryModel;
     Model orangeModel;
     Model grapesModel;
@@ -33,48 +52,24 @@ struct FruityMazeGameResources {
 
     // Audio
     Music backgroundMusic;
-    Sound fruit1Sound;  // orange collection sound
-    Sound fruit2Sound;  // cherry collection sound
-    Sound fruit3Sound;  // grapes collection sound
-    Sound powerUpSound; // power-up collection sound
-    Sound timerPingSound; // timer tick sound
-    Sound boundsSound;  // out of bounds sound
-    Sound timeExtendedSound;  // extended time sound
-
-    bool backgroundMusicLoaded;
-    bool fruit1SoundLoaded;
-    bool fruit2SoundLoaded;
-    bool fruit3SoundLoaded;
-    bool powerUpSoundLoaded;
-    bool timerPingSoundLoaded;
-    bool boundsSoundLoaded;
-    bool timeExtendedSoundLoaded;
-
-    // Model loading flags
-    bool cherryLoaded;
-    bool orangeLoaded;
-    bool grapesLoaded;
-    bool lightningLoaded;
-    bool gummybearLoaded;
-    bool magnetLoaded;
-
-    // Map processing data
-    Vector3 mapModelPosition;
-    Vector3 cubicMapSize;
-    bool mapLoaded;
-    bool playerModelLoaded;
-    bool wallTextureLoaded;
-
-    // Map dimensions
-    int mapWidth;
-    int mapHeight;
-    int wallPixelCount;
-    int pathPixelCount;
+    Sound fruit1Sound;
+    Sound fruit2Sound;
+    Sound fruit3Sound;
+    Sound boundsSound;
+    Sound powerUpSound;
+    Sound timerPingSound;
+    Sound timeExtendedSound;
 
     // Shaders
     Shader lightingShader;
-    bool lightingShaderLoaded;
 };
+
+void InitializeAnimation(AnimationData& anim, const char* spritesheetPath, int frameCount, int frameWidth, int frameHeight, float frameTime = 0.1, bool loop = true);
+void UpdateAnimation(AnimationData& anim, float deltaTime);
+void StartAnimation(AnimationData& anim);
+void StopAnimation(AnimationData& anim);
+Rectangle GetCurrentAnimationFrame(const AnimationData& anim);
+void UnloadAnimationData(AnimationData& anim);
 
 FruityMazeGameResources LoadFruityMazeResources(GraphicsQuality quality);
 void UnloadFruityMazeResources(FruityMazeGameResources& resources);

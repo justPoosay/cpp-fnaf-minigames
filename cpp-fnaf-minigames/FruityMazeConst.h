@@ -44,6 +44,7 @@ const float UI_SMALL_FONT_SIZE = 24;
 const float UI_MARGIN = 30;
 const float UI_LINE_SPACING = 8;
 const float rightMargin = virtualScreenWidth - 300;
+const int textPadding = 45;
 
 // --- POWER-UP CONSTANTS ---
 const float lightningSpeedMultiplier = 2;
