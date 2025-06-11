@@ -50,7 +50,7 @@ static bool IsColliding(Vector3 entityPos, Vector3 mapModelOrigin, int mapWidth,
 }
 
 static void SpawnPropsInMaze(const FruityMazeGameResources& resources) {
-    TraceLog(LOG_DEBUG, "Spawning props in maze...");
+    TraceLog(LOG_INFO, "Spawning props in maze...");
     gameProps.clear();
 
     // Spawn power-ups
@@ -119,7 +119,7 @@ static void SpawnPropsInMaze(const FruityMazeGameResources& resources) {
         }
     }
 
-    TraceLog(LOG_DEBUG, TextFormat("Successfully spawned %d props.", gameProps.size()));
+    TraceLog(LOG_INFO, TextFormat("Successfully spawned %d props.", gameProps.size()));
 }
 
 static bool IsPlayerOutOfBounds(Vector3 playerPos, const FruityMazeGameResources& resources) {
@@ -143,7 +143,7 @@ static void AddScore(int points, const FruityMazeGameResources& resources) {
         textGif.timeExtendedTimer = 1;
         StartAnimation((AnimationData&)resources.timeExtendedAnim);
 
-        TraceLog(LOG_DEBUG, TextFormat("Time bonus with %d points.", (newBonuses * 75)));
+        TraceLog(LOG_INFO, TextFormat("Time bonus with %d points.", (newBonuses * 75)));
     }
 }
 
@@ -176,7 +176,7 @@ static void UpdateGameTimer(float deltaTime, const FruityMazeGameResources& reso
         textGif.timeIsUpTimer = 3;
         StartAnimation((AnimationData&)resources.timeIsUpAnim);
 
-        TraceLog(LOG_DEBUG, TextFormat("Game Over - Out of Time | Final score: %d", gameState.score));
+        TraceLog(LOG_INFO, TextFormat("Game Over - Out of Time | Final score: %d", gameState.score));
     }
 }
 
@@ -224,11 +224,11 @@ static void UpdatePowerUps(float deltaTime, const FruityMazeGameResources& resou
             if (IsColliding(playerPosition, resources.mapModelPosition, resources.mapWidth,
                 resources.mapHeight, resources.mapPixels, playerRotationAngle)) {
                 gameState.temporaryNoclip = true;
-                TraceLog(LOG_DEBUG, "Emergency noclip enabled.");
+                TraceLog(LOG_INFO, "Emergency noclip enabled.");
             }
             else {
                 gameState.temporaryNoclip = false;
-                TraceLog(LOG_DEBUG, "Emergency noclip disabled.");
+                TraceLog(LOG_INFO, "Emergency noclip disabled.");
             }
         }
     }
@@ -356,7 +356,7 @@ static void CheckPropCollection(Vector3 playerPos, const FruityMazeGameResources
             }
         }
 
-        TraceLog(LOG_DEBUG, TextFormat("Prop: %.0f, %.0f | Score: %d", prop.position.x, prop.position.z, gameState.score));
+        TraceLog(LOG_INFO, TextFormat("Prop: %.0f, %.0f | Score: %d", prop.position.x, prop.position.z, gameState.score));
     }
 }
 
@@ -506,9 +506,9 @@ static void HandleKeyboardInput(ViewCameraMode& currentCameraMode, bool& debug, 
                             SetShaderValue(postProcessingShader, shaderResolutionLoc, gameResolution, SHADER_UNIFORM_VEC2);
                         }
                     }
-                    TraceLog(LOG_DEBUG, "Shader reloaded successfully.");
+                    TraceLog(LOG_INFO, "Shader reloaded successfully.");
                 }
-                else TraceLog(LOG_DEBUG, "Failed to reload shader.");
+                else TraceLog(LOG_INFO, "Failed to reload shader.");
                 break;
 
             case KEY_T: 
@@ -661,12 +661,12 @@ static void CheckOutOfBounds(const FruityMazeGameResources& resources) {
         PauseMusicStream(resources.backgroundMusic);
         PlaySound(resources.boundsSound);
 
-        TraceLog(LOG_DEBUG, TextFormat("Game Over - Out of bounds | Final Score: %d", gameState.score));
+        TraceLog(LOG_INFO, TextFormat("Game Over - Out of bounds | Final Score: %d", gameState.score));
     }
 }
 
 int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool applyShader, DifficultyLevel difficulty) {
-    TraceLog(LOG_DEBUG, TextFormat("Starting Fruity 3D Maze | Quality: %d | Shader: %d | Difficulty: %d",
+    TraceLog(LOG_INFO, TextFormat("Starting Fruity 3D Maze | Quality: %d | Shader: %d | Difficulty: %d",
         quality, applyShader, difficulty));
 
     // Initialize game state
@@ -733,7 +733,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             int randomIndex = GetRandomValue(0, potentialSpawnPoints.size() - 1);
             initialSpawnPoint = potentialSpawnPoints[randomIndex];
             startFound = true;
-            TraceLog(LOG_DEBUG, TextFormat("Found %d potential safe spawn points.", potentialSpawnPoints.size()));
+            TraceLog(LOG_INFO, TextFormat("Found %d potential safe spawn points.", potentialSpawnPoints.size()));
         }
     }
 
@@ -752,65 +752,50 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
     PlayMusicStream(resources.backgroundMusic);
     SetMusicVolume(resources.backgroundMusic, 1);
 
-// **MAIN GAME LOOP**
+    // **MAIN GAME LOOP**
     while (!WindowShouldClose()) {
         float deltaTime = GetFrameTime();
 
-        // **EXIT CHECK - Moved to top for clarity**
+        // EXIT CHECK
         if (IsKeyPressed(KEY_ESCAPE)) break;
 
-        // **HANDLE INPUT**
-        HandleKeyboardInput(currentCameraMode, debug, startFound, postProcessingShader, applyShader, shaderTimeLoc, shaderResolutionLoc, resources);
-
-        // **UPDATE AUDIO**
+        // UPDATE AUDIO
         UpdateMusicStream(resources.backgroundMusic);
         if (GetMusicTimePlayed(resources.backgroundMusic) >= GetMusicTimeLength(resources.backgroundMusic))
             SeekMusicStream(resources.backgroundMusic, 0);
 
-        // **UPDATE GAME STATE**
-        UpdateGameTimer(deltaTime, resources);
-        UpdateGifText(deltaTime);
-        UpdateAnimations(deltaTime, resources);
-        CheckOutOfBounds(resources);
-
-        // **CHECK GAME OVER CONDITION**
-        if (gameState.gameOver && gameState.gameOverTimer >= (gameState.gameWon ? 3 : 4))
-            break;
-
-        // **UPDATE GAME OBJECTS**
-        UpdatePowerUps(deltaTime, resources);
-        UpdateProps(deltaTime);
-
-        if (startFound && !gameState.gameOver)
+        if (startFound) {
+            HandleKeyboardInput(currentCameraMode, debug, startFound, postProcessingShader, applyShader, shaderTimeLoc, shaderResolutionLoc, resources);
+            UpdateGifText(deltaTime);
+            UpdateAnimations(deltaTime, resources);
+            UpdatePowerUps(deltaTime, resources);
+            UpdateProps(deltaTime);
+            UpdateGameTimer(deltaTime, resources);
+            CheckOutOfBounds(resources);
             CheckPropCollection(playerPosition, resources);
 
-        // **HANDLE MOUSE LOOK (First Person)**
-        if (startFound && currentCameraMode == VIEW_CAMERA_FIRST_PERSON) {
-            float mouseDeltaX = GetMouseDelta().x;
-            playerRotationAngle -= mouseDeltaX * mouseSensitivity;
+            if (gameState.gameOver && 
+                gameState.gameOverTimer >= (gameState.gameWon ? 3 : 4))
+                break;
 
-            // Normalize angle
-            while (playerRotationAngle < 0) playerRotationAngle += 360;
-            while (playerRotationAngle >= 360) playerRotationAngle -= 360;
-        }
+            if (currentCameraMode == VIEW_CAMERA_FIRST_PERSON) {
+                float mouseDeltaX = GetMouseDelta().x;
+                playerRotationAngle -= mouseDeltaX * mouseSensitivity;
 
-        // **HANDLE MOVEMENT**
-        HandlePlayerMovement(deltaTime, currentCameraMode, startFound, resources);
+                // Normalize angle
+                while (playerRotationAngle < 0) playerRotationAngle += 360;
+                while (playerRotationAngle >= 360) playerRotationAngle -= 360;
+            }
+            HandlePlayerMovement(deltaTime, currentCameraMode, startFound, resources);
+            UpdateCamera(camera, currentCameraMode, startFound);
 
-        // **UPDATE CAMERA**
-        UpdateCamera(camera, currentCameraMode, startFound);
+            // **RENDERING**
+            BeginTextureMode(target);
+            ClearBackground(BLACK);
+            BeginMode3D(camera);
 
-        // **RENDERING**
-        BeginTextureMode(target);
-        ClearBackground(BLACK);
-        BeginMode3D(camera);
-
-        // Draw environment
-        DrawPlane(
-            {resources.mapModelPosition.x + (resources.mapWidth / 2), 0.01, resources.mapModelPosition.z + (resources.mapHeight / 2)},
-            {resources.mapWidth + 20.0f, resources.mapHeight + 20.0f}, 
-            BLACK);
-
+            // Draw environment
+            DrawPlane({ resources.mapModelPosition.x + (resources.mapWidth / 2), 0.01, resources.mapModelPosition.z + (resources.mapHeight / 2) }, { resources.mapWidth + 20.0f, resources.mapHeight + 20.0f }, BLACK);
             DrawModel(resources.mazeModel, resources.mapModelPosition, 1.0f, WHITE);
 
             // Setup lighting
@@ -827,17 +812,17 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             resources.playerModel.materials[0].shader = resources.lightingShader;
 
             // Draw player
-            if (startFound && (currentCameraMode != VIEW_CAMERA_FIRST_PERSON || debug))
-                DrawModelEx(resources.playerModel, playerPosition, { 0, 1, 0 }, playerRotationAngle, { playerScale, playerScale, playerScale }, WHITE);
-            
+            if (currentCameraMode != VIEW_CAMERA_FIRST_PERSON || 
+                debug) DrawModelEx(resources.playerModel, playerPosition, { 0, 1, 0 }, playerRotationAngle, { playerScale, playerScale, playerScale }, WHITE);
+
             // Draw props
             DrawProps(resources, GetTime(), camera, debug);
 
             // **DEBUG RENDERING**
-            if (debug && startFound) {
+            if (debug) {
                 if (currentCameraMode == VIEW_CAMERA_FIRST_PERSON) {
                     Vector3 rayStart = camera.position;
-                    Vector3 rayEnd = Vector3Add(rayStart, Vector3Scale({-sinf(playerRotationAngle * DEG2RAD), 0, -cosf(playerRotationAngle * DEG2RAD)}, 5));
+                    Vector3 rayEnd = Vector3Add(rayStart, Vector3Scale({ -sinf(playerRotationAngle * DEG2RAD), 0, -cosf(playerRotationAngle * DEG2RAD) }, 5));
                     DrawLine3D(rayStart, rayEnd, RED);
                 }
 
@@ -853,7 +838,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
                             if (wallCheckMapX >= 0 && wallCheckMapX < resources.mapWidth &&
                                 wallCheckMapZ >= 0 && wallCheckMapZ < resources.mapHeight) {
 
-                                Vector3 cubePos = {resources.mapModelPosition.x + wallCheckMapX, (x == 0 && z == 0) ? -0.4f : -0.45f, resources.mapModelPosition.z + wallCheckMapZ};
+                                Vector3 cubePos = { resources.mapModelPosition.x + wallCheckMapX, (x == 0 && z == 0) ? -0.4f : -0.45f, resources.mapModelPosition.z + wallCheckMapZ };
                                 Color cubeColor = (x == 0 && z == 0) ? BLUE : RED;
 
                                 DrawCubeWires(cubePos, 2, 0.2f, 2, cubeColor);
@@ -881,105 +866,100 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
                 DrawTextureEx(resources.minimapTexture, minimapTextureDrawPos, 180, minimapScale, WHITE);
                 DrawRectangleLines(minimapVisualTopLeft.x, minimapVisualTopLeft.y, scaledMapWidth, scaledMapHeight, LIME);
 
-                if (startFound) {
-                    float playerMapX = (playerPosition.x - resources.mapModelPosition.x + 0.5f);
-                    float playerMapZ = (playerPosition.z - resources.mapModelPosition.z + 0.5f);
-                    float playerRelXOnMinimap = (resources.mapWidth - playerMapX) * minimapScale;
-                    float playerRelZOnMinimap = (resources.mapHeight - playerMapZ) * minimapScale;
+                float playerMapX = (playerPosition.x - resources.mapModelPosition.x + 0.5f);
+                float playerMapZ = (playerPosition.z - resources.mapModelPosition.z + 0.5f);
+                float playerRelXOnMinimap = (resources.mapWidth - playerMapX) * minimapScale;
+                float playerRelZOnMinimap = (resources.mapHeight - playerMapZ) * minimapScale;
 
-                    DrawCircle(minimapVisualTopLeft.x + playerRelXOnMinimap, minimapVisualTopLeft.y + playerRelZOnMinimap, collisionRadius * minimapScale, RED);
+                DrawCircle(minimapVisualTopLeft.x + playerRelXOnMinimap, minimapVisualTopLeft.y + playerRelZOnMinimap, collisionRadius * minimapScale, RED);
 
-                    if (powerUps.magnetActive) DrawCircleLines(minimapVisualTopLeft.x + playerRelXOnMinimap, minimapVisualTopLeft.y + playerRelZOnMinimap, magnetRange * minimapScale, BLUE);
-                   
-                    // Draw props on minimap
-                    for (const auto& prop : gameProps) {
-                        if (!prop.collected) {
-                            float propMapX = (prop.position.x - resources.mapModelPosition.x + 0.5f);
-                            float propMapZ = (prop.position.z - resources.mapModelPosition.z + 0.5f);
-                            float propRelXOnMinimap = (resources.mapWidth - propMapX) * minimapScale;
-                            float propRelZOnMinimap = (resources.mapHeight - propMapZ) * minimapScale;
+                if (powerUps.magnetActive) DrawCircleLines(minimapVisualTopLeft.x + playerRelXOnMinimap, minimapVisualTopLeft.y + playerRelZOnMinimap, magnetRange * minimapScale, BLUE);
 
-                            DrawRectangle(minimapVisualTopLeft.x + propRelXOnMinimap - minimapScale, minimapVisualTopLeft.y + propRelZOnMinimap - minimapScale, minimapScale * 2, minimapScale * 2, YELLOW);
-                        }
+                // Draw props on minimap
+                for (const auto& prop : gameProps) {
+                    if (!prop.collected) {
+                        float propMapX = (prop.position.x - resources.mapModelPosition.x + 0.5f);
+                        float propMapZ = (prop.position.z - resources.mapModelPosition.z + 0.5f);
+                        float propRelXOnMinimap = (resources.mapWidth - propMapX) * minimapScale;
+                        float propRelZOnMinimap = (resources.mapHeight - propMapZ) * minimapScale;
+
+                        DrawRectangle(minimapVisualTopLeft.x + propRelXOnMinimap - minimapScale, minimapVisualTopLeft.y + propRelZOnMinimap - minimapScale, minimapScale * 2, minimapScale * 2, YELLOW);
                     }
                 }
             }
 
             // **UI RENDERING**
-            if (startFound) {
-                const char* camModeStr;
-                switch (currentCameraMode) {
-                    case VIEW_CAMERA_FIRST_PERSON: camModeStr = "FPP (Mouse Look)"; break;
-                    case VIEW_CAMERA_SECOND_PERSON: camModeStr = "SPP"; break;
-                    case VIEW_CAMERA_THIRD_PERSON: camModeStr = "TPP"; break;
-                    default: camModeStr = "UNKNOWN"; break;
-                }
-
-                // Timer
-                DrawText(TextFormat("%.0f", gameState.gameTimer), textPadding, textPadding, UI_LARGE_FONT_SIZE, WHITE);
-
-                // Score
-                const char* scoreLabel = "SCORE";
-                const char* scoreValue = TextFormat("%d", gameState.score);
-                int scoreLabelWidth = MeasureText(scoreLabel, UI_LARGE_FONT_SIZE);
-                int scoreValueWidth = MeasureText(scoreValue, UI_LARGE_FONT_SIZE);
-                int maxScoreWidth = max(scoreLabelWidth, scoreValueWidth);
-                int scoreX = virtualScreenWidth - maxScoreWidth - textPadding;
-
-                DrawText(scoreLabel, scoreX, virtualScreenHeight - (UI_LARGE_FONT_SIZE * 2) - textPadding, UI_LARGE_FONT_SIZE, WHITE);
-                DrawText(scoreValue, scoreX, virtualScreenHeight - UI_LARGE_FONT_SIZE - textPadding, UI_LARGE_FONT_SIZE, WHITE);
-
-                // Power-up timers
-                float powerUpYOffset = textPadding;
-
-                if (powerUps.lightningActive) {
-                    const char* lightningText = TextFormat("%.0f", powerUps.lightningTimeLeft);
-                    int lightningWidth = MeasureText(lightningText, UI_LARGE_FONT_SIZE);
-                    DrawText(lightningText, virtualScreenWidth - lightningWidth - textPadding, powerUpYOffset, UI_LARGE_FONT_SIZE, YELLOW);
-                    powerUpYOffset += UI_LARGE_FONT_SIZE + 10;
-                }
-
-                if (powerUps.gummybearActive) {
-                    const char* gummybearText = TextFormat("%.0f", powerUps.gummybearTimeLeft);
-                    int gummybearWidth = MeasureText(gummybearText, UI_LARGE_FONT_SIZE);
-                    DrawText(gummybearText, virtualScreenWidth - gummybearWidth - textPadding, powerUpYOffset, UI_LARGE_FONT_SIZE, LIME);
-                    powerUpYOffset += UI_LARGE_FONT_SIZE + 10;
-                }
-
-                if (powerUps.magnetActive) {
-                    const char* magnetText = TextFormat("%.0f", powerUps.magnetTimeLeft);
-                    int magnetWidth = MeasureText(magnetText, UI_LARGE_FONT_SIZE);
-                    DrawText(magnetText, virtualScreenWidth - magnetWidth - textPadding, powerUpYOffset, UI_LARGE_FONT_SIZE, BLUE);
-                    powerUpYOffset += UI_LARGE_FONT_SIZE + 10;
-                }
-
-                // Debug info
-                if (debug) {
-                    float debugYOffset = textPadding + UI_LARGE_FONT_SIZE + 20;
-                    DrawText(TextFormat("Pos: X:%.1f Z:%.1f (%s)", playerPosition.x, playerPosition.z, camModeStr), textPadding, debugYOffset, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
-                    DrawText(TextFormat("Angle: %.1f | Speed: %.1f", playerRotationAngle, GetCurrentPlayerSpeed()), textPadding, debugYOffset + UI_SMALL_FONT_SIZE + 2, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
-                }
-
-                // Game over screen
-                if (gameState.gameOver) {
-                    const char* finalScoreMsg = TextFormat("Final Score: %d", gameState.score);
-                    int scoreWidth = MeasureText(finalScoreMsg, UI_MEDIUM_FONT_SIZE);
-                    DrawText(finalScoreMsg, (virtualScreenWidth - scoreWidth) / 2, virtualScreenHeight - 100, UI_MEDIUM_FONT_SIZE, YELLOW);
-
-                    float timeRemaining = (gameState.gameWon ? 3 : 4) - gameState.gameOverTimer;
-                    const char* returnMsg = TextFormat("Returning to menu in %.1fs...", timeRemaining > 0 ? timeRemaining : 0);
-                    int returnWidth = MeasureText(returnMsg, UI_SMALL_FONT_SIZE);
-                    DrawText(returnMsg, (virtualScreenWidth - returnWidth) / 2, virtualScreenHeight - 60, UI_SMALL_FONT_SIZE, LIGHTGRAY);
-                }
-
-                // Controls help
-                const char* controlsText = debug ?
-                    "ESC: Exit | T: Camera | F3: Debug | F5: Reload Shader | L,G,M: Cheats" :
-                    "ESC: Exit | T: Camera | F3: Debug | F5: Reload Shader";
-                int controlsWidth = MeasureText(controlsText, 12);
-                DrawText(controlsText, (virtualScreenWidth - controlsWidth) / 2, virtualScreenHeight - 40, 12, LIGHTGRAY);
+            const char* camModeStr;
+            switch (currentCameraMode) {
+                case VIEW_CAMERA_FIRST_PERSON: camModeStr = "FPP (Mouse Look)"; break;
+                case VIEW_CAMERA_SECOND_PERSON: camModeStr = "SPP"; break;
+                case VIEW_CAMERA_THIRD_PERSON: camModeStr = "TPP"; break;
+                default: camModeStr = "UNKNOWN"; break;
             }
-            else DrawText("CANNOT START GAME. Check console/map. Orbiting...", 10, 40, 20, RED);
+
+            // Timer
+            DrawText(TextFormat("%.0f", gameState.gameTimer), textPadding, textPadding, UI_LARGE_FONT_SIZE, WHITE);
+
+            // Score
+            const char* scoreLabel = "SCORE";
+            const char* scoreValue = TextFormat("%d", gameState.score);
+            int scoreLabelWidth = MeasureText(scoreLabel, UI_LARGE_FONT_SIZE);
+            int scoreValueWidth = MeasureText(scoreValue, UI_LARGE_FONT_SIZE);
+            int maxScoreWidth = max(scoreLabelWidth, scoreValueWidth);
+            int scoreX = virtualScreenWidth - maxScoreWidth - textPadding;
+
+            DrawText(scoreLabel, scoreX, virtualScreenHeight - (UI_LARGE_FONT_SIZE * 2) - textPadding, UI_LARGE_FONT_SIZE, WHITE);
+            DrawText(scoreValue, scoreX, virtualScreenHeight - UI_LARGE_FONT_SIZE - textPadding, UI_LARGE_FONT_SIZE, WHITE);
+
+            // Power-up timers
+            float powerUpYOffset = textPadding;
+
+            if (powerUps.lightningActive) {
+                const char* lightningText = TextFormat("%.0f", powerUps.lightningTimeLeft);
+                int lightningWidth = MeasureText(lightningText, UI_LARGE_FONT_SIZE);
+                DrawText(lightningText, virtualScreenWidth - lightningWidth - textPadding, powerUpYOffset, UI_LARGE_FONT_SIZE, YELLOW);
+                powerUpYOffset += UI_LARGE_FONT_SIZE + 10;
+            }
+
+            if (powerUps.gummybearActive) {
+                const char* gummybearText = TextFormat("%.0f", powerUps.gummybearTimeLeft);
+                int gummybearWidth = MeasureText(gummybearText, UI_LARGE_FONT_SIZE);
+                DrawText(gummybearText, virtualScreenWidth - gummybearWidth - textPadding, powerUpYOffset, UI_LARGE_FONT_SIZE, LIME);
+                powerUpYOffset += UI_LARGE_FONT_SIZE + 10;
+            }
+
+            if (powerUps.magnetActive) {
+                const char* magnetText = TextFormat("%.0f", powerUps.magnetTimeLeft);
+                int magnetWidth = MeasureText(magnetText, UI_LARGE_FONT_SIZE);
+                DrawText(magnetText, virtualScreenWidth - magnetWidth - textPadding, powerUpYOffset, UI_LARGE_FONT_SIZE, BLUE);
+                powerUpYOffset += UI_LARGE_FONT_SIZE + 10;
+            }
+
+            // Debug info
+            if (debug) {
+                float debugYOffset = textPadding + UI_LARGE_FONT_SIZE + 20;
+                DrawText(TextFormat("Pos: X:%.1f Z:%.1f (%s)", playerPosition.x, playerPosition.z, camModeStr), textPadding, debugYOffset, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
+                DrawText(TextFormat("Angle: %.1f | Speed: %.1f", playerRotationAngle, GetCurrentPlayerSpeed()), textPadding, debugYOffset + UI_SMALL_FONT_SIZE + 2, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
+            }
+
+            // Game over screen
+            if (gameState.gameOver) {
+                const char* finalScoreMsg = TextFormat("Final Score: %d", gameState.score);
+                int scoreWidth = MeasureText(finalScoreMsg, UI_MEDIUM_FONT_SIZE);
+                DrawText(finalScoreMsg, (virtualScreenWidth - scoreWidth) / 2, virtualScreenHeight - 100, UI_MEDIUM_FONT_SIZE, YELLOW);
+
+                float timeRemaining = (gameState.gameWon ? 3 : 4) - gameState.gameOverTimer;
+                const char* returnMsg = TextFormat("Returning to menu in %.1fs...", timeRemaining > 0 ? timeRemaining : 0);
+                int returnWidth = MeasureText(returnMsg, UI_SMALL_FONT_SIZE);
+                DrawText(returnMsg, (virtualScreenWidth - returnWidth) / 2, virtualScreenHeight - 60, UI_SMALL_FONT_SIZE, LIGHTGRAY);
+            }
+
+            // Controls help
+            const char* controlsText = debug ?
+                "F3: Debug | F5: Reload Shader | L: Speed | G : Noclip | M: Attract Fruit" :
+                "ESC: Exit | T: Toggle Perspective ";
+            int controlsWidth = MeasureText(controlsText, 15);
+            DrawText(controlsText, (virtualScreenWidth - controlsWidth) / 2, virtualScreenHeight - 40, 15, LIGHTGRAY);
 
             // Draw animated GIFs
             DrawTextGif(resources);
@@ -999,24 +979,22 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
 
                 DrawTextureEx(resources.minimapTexture, expandedTexturePos, 180, expandedScale, Fade(WHITE, 0.75f));
 
-                if (startFound) {
-                    float playerMapX = (playerPosition.x - resources.mapModelPosition.x + 0.5f);
-                    float playerMapZ = (playerPosition.z - resources.mapModelPosition.z + 0.5f);
-                    float playerRelX = (resources.mapWidth - playerMapX) * expandedScale;
-                    float playerRelZ = (resources.mapHeight - playerMapZ) * expandedScale;
+                float playerMapX = (playerPosition.x - resources.mapModelPosition.x + 0.5f);
+                float playerMapZ = (playerPosition.z - resources.mapModelPosition.z + 0.5f);
+                float playerRelX = (resources.mapWidth - playerMapX) * expandedScale;
+                float playerRelZ = (resources.mapHeight - playerMapZ) * expandedScale;
 
-                    DrawCircle(expandedTopLeft.x + playerRelX, expandedTopLeft.y + playerRelZ, 3.0f * expandedScale, RED);
+                DrawCircle(expandedTopLeft.x + playerRelX, expandedTopLeft.y + playerRelZ, 3.0f * expandedScale, RED);
 
-                    // Draw props on expanded minimap
-                    for (const auto& prop : gameProps) {
-                        if (!prop.collected) {
-                            float propMapX = (prop.position.x - resources.mapModelPosition.x + 0.5f);
-                            float propMapZ = (prop.position.z - resources.mapModelPosition.z + 0.5f);
-                            float propRelXOnMinimap = (resources.mapWidth - propMapX) * expandedScale;
-                            float propRelZOnMinimap = (resources.mapHeight - propMapZ) * expandedScale;
+                // Draw props on expanded minimap
+                for (const auto& prop : gameProps) {
+                    if (!prop.collected) {
+                        float propMapX = (prop.position.x - resources.mapModelPosition.x + 0.5f);
+                        float propMapZ = (prop.position.z - resources.mapModelPosition.z + 0.5f);
+                        float propRelXOnMinimap = (resources.mapWidth - propMapX) * expandedScale;
+                        float propRelZOnMinimap = (resources.mapHeight - propMapZ) * expandedScale;
 
-                            DrawRectangle(expandedTopLeft.x + propRelXOnMinimap - expandedScale, expandedTopLeft.y + propRelZOnMinimap - expandedScale, expandedScale * 2, expandedScale * 2, YELLOW);
-                        }
+                        DrawRectangle(expandedTopLeft.x + propRelXOnMinimap - expandedScale, expandedTopLeft.y + propRelZOnMinimap - expandedScale, expandedScale * 2, expandedScale * 2, YELLOW);
                     }
                 }
             }
@@ -1046,6 +1024,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             if (debug) DrawFPS(15, 15);
 
             EndDrawing();
+        }
     }
 
     if (IsMusicStreamPlaying(resources.backgroundMusic)) 

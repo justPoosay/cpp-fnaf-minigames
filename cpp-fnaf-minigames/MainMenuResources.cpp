@@ -6,7 +6,7 @@
 using namespace std;
 
 bool LoadInitialLoadingScreenResources(MainMenuResources& res) {
-    res.helpyLoadingScreenTexture = LoadTexture("resources/helpy/helpyLoadingScreen.png");
+    res.helpyLoadingScreenTexture = LoadTexture("resources/helpyLoadingScreen.png");
     if (res.helpyLoadingScreenTexture.id > 0) {
         res.helpyLoadingTextureLoaded = true;
         SetTextureFilter(res.helpyLoadingScreenTexture, TEXTURE_FILTER_BILINEAR);
@@ -73,8 +73,8 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
     }
 
     // --- Load Shader ---
-    if (FileExists("crt.fs")) {
-        res.crtShader = LoadShader(0, "crt.fs");
+    if (FileExists("resources/Shaders/MidnightMotorist.fs")) {
+        res.crtShader = LoadShader(0, "resources/Shaders/MidnightMotorist.fs");
         if (res.crtShader.id > 0) {
             res.shaderLoadedSuccessfully = true;
             res.crtResolutionLoc = GetShaderLocation(res.crtShader, "resolution");
@@ -82,8 +82,8 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
         }
     }
 
-    if (FileExists("FruityMaze.fs")) {
-        res.fruityMazeShader = LoadShader(0, "FruityMaze.fs");
+    if (FileExists("resources/Shaders/FruityMaze.fs")) {
+        res.fruityMazeShader = LoadShader(0, "resources/Shaders/FruityMaze.fs");
         if (res.fruityMazeShader.id > 0)
             res.fruityMazeShaderLoaded = true;
     }
@@ -109,8 +109,8 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
     }
 
     // --- Load Helpy ---
-    if (FileExists("resources/helpy/helpyGrooves.gif")) {
-        res.helpyGifImage = LoadImageAnim("resources/helpy/helpyGrooves.gif", &res.helpyAnimFrames);
+    if (FileExists("resources/helpyGrooves.gif")) {
+        res.helpyGifImage = LoadImageAnim("resources/helpyGrooves.gif", &res.helpyAnimFrames);
         if (res.helpyGifImage.data != NULL && res.helpyAnimFrames > 0) {
             res.helpyTexture = LoadTextureFromImage(res.helpyGifImage);
             if (res.helpyTexture.id > 0) {
@@ -123,11 +123,11 @@ bool LoadMainMenuResources(MainMenuResources& res, int logicalWidth, int logical
     }
 
     // Murdered Helpy
-    if (FileExists("resources/helpy/helpyDead.gif")) {
-        if (FileExists("resources/helpy/crack.mp3")) 
-            res.helpyCrackSound = LoadSound("resources/helpy/crack.mp3");
+    if (FileExists("resources/helpyDead.gif")) {
+        if (FileExists("resources/crack.mp3")) 
+            res.helpyCrackSound = LoadSound("resources/crack.mp3");
 
-        res.helpyCrackedGifImage = LoadImageAnim("resources/helpy/helpyDead.gif", &res.helpyCrackedAnimFrames);
+        res.helpyCrackedGifImage = LoadImageAnim("resources/helpyDead.gif", &res.helpyCrackedAnimFrames);
         if (res.helpyCrackedGifImage.data != NULL && res.helpyCrackedAnimFrames > 0) {
             res.helpyCrackedTexture = LoadTextureFromImage(res.helpyCrackedGifImage);
             if (res.helpyCrackedTexture.id > 0) {

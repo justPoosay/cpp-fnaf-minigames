@@ -13,6 +13,39 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Pliki zasobów\FruityMaze">
+      <UniqueIdentifier>{eb3ecc72-88c1-4eda-92b7-a27c561a0868}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\MidnightMotorist">
+      <UniqueIdentifier>{c99aa059-b72f-4f54-b6a4-8dfd66ac2714}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\ChicasMagicRainbowLand">
+      <UniqueIdentifier>{ebfeb042-4abf-471b-940e-febd5bb16cd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\FruityMaze\Audio">
+      <UniqueIdentifier>{1260945a-880a-4a24-a697-d1b3b8b99370}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\FruityMaze\Textures">
+      <UniqueIdentifier>{079e07f7-6444-471d-958c-a722a1d57ca2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\FruityMaze\Models">
+      <UniqueIdentifier>{2af666bd-ab95-4867-a158-d2b199173f47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\Shaders">
+      <UniqueIdentifier>{6d39d8ee-40db-4a77-8a8b-62650b7723c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\MidnightMotorist\Audio">
+      <UniqueIdentifier>{914d57f2-0ab7-4711-9195-4cf986824dfd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\MidnightMotorist\Textures">
+      <UniqueIdentifier>{08d01fd4-7764-4aec-9341-268f5577d1ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\ChicasMagicRainbowLand\Textures">
+      <UniqueIdentifier>{f19d8674-fd3f-4a5d-af27-132773bcc6d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki zasobów\ChicasMagicRainbowLand\Audio">
+      <UniqueIdentifier>{f7bb8f9e-c21c-4519-8f76-02c259487cbc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RainbowLandResources.h">
@@ -68,5 +101,646 @@
     <ClCompile Include="FruityMazeResources.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="resources\TwoFiftySixBytes.otf">
+      <Filter>Pliki zasobów</Filter>
+    </Font>
+    <Font Include="resources\ARCADECLASSIC.TTF">
+      <Filter>Pliki zasobów</Filter>
+    </Font>
+    <Font Include="resources\consolas.ttf">
+      <Filter>Pliki zasobów</Filter>
+    </Font>
+    <Font Include="resources\forwad.ttf">
+      <Filter>Pliki zasobów</Filter>
+    </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="resources\click.mp3">
+      <Filter>Pliki zasobów</Filter>
+    </Media>
+    <Media Include="resources\mainMenu.mp3">
+      <Filter>Pliki zasobów</Filter>
+    </Media>
+    <Media Include="resources\poof.mp3">
+      <Filter>Pliki zasobów</Filter>
+    </Media>
+    <Media Include="resources\select.mp3">
+      <Filter>Pliki zasobów</Filter>
+    </Media>
+    <Media Include="resources\settings.mp3">
+      <Filter>Pliki zasobów</Filter>
+    </Media>
+    <Media Include="resources\crack.mp3">
+      <Filter>Pliki zasobów</Filter>
+    </Media>
+    <Media Include="resources\fm\Audio\bounds.wav">
+      <Filter>Pliki zasobów\FruityMaze\Audio</Filter>
+    </Media>
+    <Media Include="resources\fm\Audio\fbttl.mp3">
+      <Filter>Pliki zasobów\FruityMaze\Audio</Filter>
+    </Media>
+    <Media Include="resources\fm\Audio\fruit1.wav">
+      <Filter>Pliki zasobów\FruityMaze\Audio</Filter>
+    </Media>
+    <Media Include="resources\fm\Audio\fruit2.wav">
+      <Filter>Pliki zasobów\FruityMaze\Audio</Filter>
+    </Media>
+    <Media Include="resources\fm\Audio\fruit3.wav">
+      <Filter>Pliki zasobów\FruityMaze\Audio</Filter>
+    </Media>
+    <Media Include="resources\fm\Audio\powerUp.wav">
+      <Filter>Pliki zasobów\FruityMaze\Audio</Filter>
+    </Media>
+    <Media Include="resources\fm\Audio\timeExt.wav">
+      <Filter>Pliki zasobów\FruityMaze\Audio</Filter>
+    </Media>
+    <Media Include="resources\fm\Audio\timerPing.wav">
+      <Filter>Pliki zasobów\FruityMaze\Audio</Filter>
+    </Media>
+    <Media Include="resources\MidnightMotorist\Audio\motorist.mp3">
+      <Filter>Pliki zasobów\MidnightMotorist\Audio</Filter>
+    </Media>
+    <Media Include="resources\MidnightMotorist\Audio\bgNoise.wav">
+      <Filter>Pliki zasobów\MidnightMotorist\Audio</Filter>
+    </Media>
+    <Media Include="resources\MidnightMotorist\Audio\countdown.wav">
+      <Filter>Pliki zasobów\MidnightMotorist\Audio</Filter>
+    </Media>
+    <Media Include="resources\MidnightMotorist\Audio\crash.wav">
+      <Filter>Pliki zasobów\MidnightMotorist\Audio</Filter>
+    </Media>
+    <Media Include="resources\MidnightMotorist\Audio\failed2.wav">
+      <Filter>Pliki zasobów\MidnightMotorist\Audio</Filter>
+    </Media>
+    <Media Include="resources\MidnightMotorist\Audio\go.wav">
+      <Filter>Pliki zasobów\MidnightMotorist\Audio</Filter>
+    </Media>
+    <Media Include="resources\MidnightMotorist\Audio\goal.wav">
+      <Filter>Pliki zasobów\MidnightMotorist\Audio</Filter>
+    </Media>
+    <Media Include="resources\MidnightMotorist\Audio\lap.wav">
+      <Filter>Pliki zasobów\MidnightMotorist\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\blaser.wav">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\checkpoint.wav">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\death.wav">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\eye.wav">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\eyePoof.wav">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\imgonnakillyou.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\jump.wav">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\logs.wav">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\petal.wav">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\rainbow.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\respawn.wav">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\rlaser.wav">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\spikes.wav">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice01.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice02.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice03.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice04.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice05.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice06.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice07.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice08.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice09.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice10.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice11.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice12.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice13.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice14.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice15.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice16.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice17.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice18.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice19.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice20.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice21.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice22.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice23.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice24.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice25.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice26.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice27.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice28.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice29.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice30.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice31.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice32.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voice33.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\voiceOff.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+    <Media Include="resources\ChicasMagicRainbowLand\Audio\youStillSuck.mp3">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Audio</Filter>
+    </Media>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\cursor.png">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="resources\favicon.png">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="resources\loadingScreen.gif">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="resources\menuBg.gif">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="resources\settingsBg.png">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="resources\helpyLoadingScreen.png">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="resources\helpyDead.gif">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="resources\helpyGrooves.gif">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="resources\helpyLoadingScreen.gif">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="resources\fm\Textures\amazing.png">
+      <Filter>Pliki zasobów\FruityMaze\Textures</Filter>
+    </Image>
+    <Image Include="resources\fm\Textures\cube.png">
+      <Filter>Pliki zasobów\FruityMaze\Textures</Filter>
+    </Image>
+    <Image Include="resources\fm\Textures\map.png">
+      <Filter>Pliki zasobów\FruityMaze\Textures</Filter>
+    </Image>
+    <Image Include="resources\fm\Textures\minimap.png">
+      <Filter>Pliki zasobów\FruityMaze\Textures</Filter>
+    </Image>
+    <Image Include="resources\fm\Textures\outOfBounds.png">
+      <Filter>Pliki zasobów\FruityMaze\Textures</Filter>
+    </Image>
+    <Image Include="resources\fm\Textures\timeExtended.png">
+      <Filter>Pliki zasobów\FruityMaze\Textures</Filter>
+    </Image>
+    <Image Include="resources\fm\Textures\timeIsUp.png">
+      <Filter>Pliki zasobów\FruityMaze\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\bg.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\car.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\car_old.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_01.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_02.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_03.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_04.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_05.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_06.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_07.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_08.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_09.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_10.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_11.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_12.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_13.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_14.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_15.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_16.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_17.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_18.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\carSpin_19.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\go.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\goal.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\lap.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\lapMark.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\leftCarNPC.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\mph.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\npCars_old.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\rightCarNPC.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\wasd.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\1.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\2.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\MidnightMotorist\Textures\3.png">
+      <Filter>Pliki zasobów\MidnightMotorist\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\background.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\bflyBeam.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\blood_particle.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\butterfly.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\checkpoint.gif">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\checkpoint.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\checkpoint_flag.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\chica_idle_left.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\chica_idle_right.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\chica_jump_left.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\chica_jump_right.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\chica_rainbow.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\chica_rainbow_pissed.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\chica_walk_left.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\chica_walk_left_old.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\chica_walk_right.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\control_keys_tutorial.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\deadly_flower.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\decoration_flower_big.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\decoration_flower_small.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\dirt_tile.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye01.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye02.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye03.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye04.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye05.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye06.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye07.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye08.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye09.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye10.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye11.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye12.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye13.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye14.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye15.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye16.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye17.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye18.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye19.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye20.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye21.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye22.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye23.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye24.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye25.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye26.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye27.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye28.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye29.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye30.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye31.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\eye32.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\fence.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\great_job.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\log.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\pettleE.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\pettleN.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\pettleNE.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\pettleNW.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\pettleS.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\pettleSE.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\pettleSW.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\pettleW.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\platform_tile.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\player_sprites_16frames.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\spikes_down.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\spikes_up.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\voices_mark.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\voices_off.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\voices_on.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+    <Image Include="resources\ChicasMagicRainbowLand\Textures\you_suck.png">
+      <Filter>Pliki zasobów\ChicasMagicRainbowLand\Textures</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\fm\Models\orange.glb">
+      <Filter>Pliki zasobów\FruityMaze\Models</Filter>
+    </None>
+    <None Include="resources\fm\Models\cherry.glb">
+      <Filter>Pliki zasobów\FruityMaze\Models</Filter>
+    </None>
+    <None Include="resources\fm\Models\freddy.glb">
+      <Filter>Pliki zasobów\FruityMaze\Models</Filter>
+    </None>
+    <None Include="resources\fm\Models\fruitGirl.glb">
+      <Filter>Pliki zasobów\FruityMaze\Models</Filter>
+    </None>
+    <None Include="resources\fm\Models\fruityGirl.glb">
+      <Filter>Pliki zasobów\FruityMaze\Models</Filter>
+    </None>
+    <None Include="resources\fm\Models\fruityGirlAnim.glb">
+      <Filter>Pliki zasobów\FruityMaze\Models</Filter>
+    </None>
+    <None Include="resources\fm\Models\grapes.glb">
+      <Filter>Pliki zasobów\FruityMaze\Models</Filter>
+    </None>
+    <None Include="resources\fm\Models\gummybear.glb">
+      <Filter>Pliki zasobów\FruityMaze\Models</Filter>
+    </None>
+    <None Include="resources\fm\Models\lightning.glb">
+      <Filter>Pliki zasobów\FruityMaze\Models</Filter>
+    </None>
+    <None Include="resources\fm\Models\magnet.glb">
+      <Filter>Pliki zasobów\FruityMaze\Models</Filter>
+    </None>
+    <None Include="resources\fm\Models\mazeModel.glb">
+      <Filter>Pliki zasobów\FruityMaze\Models</Filter>
+    </None>
+    <None Include="MidnightMotorist.fs">
+      <Filter>Pliki zasobów\Shaders</Filter>
+    </None>
+    <None Include="FruityMaze.fs">
+      <Filter>Pliki zasobów\Shaders</Filter>
+    </None>
+    <None Include="lighting.fs">
+      <Filter>Pliki zasobów\Shaders</Filter>
+    </None>
+    <None Include="lighting.vs">
+      <Filter>Pliki zasobów\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

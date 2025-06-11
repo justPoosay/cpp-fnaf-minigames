@@ -78,7 +78,7 @@ FruityMazeGameResources LoadFruityMazeResources(GraphicsQuality quality) {
     int pathPixelCount = 0;
 
     // Load map image
-    Image mapImage = LoadImage("resources/fm/map.png");
+    Image mapImage = LoadImage("resources/FruityMaze/Textures/map.png");
     if (mapImage.data) {
         resources.mapWidth = mapImage.width;
         resources.mapHeight = mapImage.height;
@@ -117,48 +117,48 @@ FruityMazeGameResources LoadFruityMazeResources(GraphicsQuality quality) {
     else return resources;
 
     // Load shader
-    resources.lightingShader = LoadShader("lighting.vs", "lighting.fs");
+    resources.lightingShader = LoadShader("resources/Shaders/lighting.vs", "resources/Shaders/lighting.fs");
     if (resources.lightingShader.id) {
         resources.lightingShader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocation(resources.lightingShader, "matModel");
         resources.lightingShader.locs[SHADER_LOC_MATRIX_NORMAL] = GetShaderLocation(resources.lightingShader, "matNormal");
     }
 
     // Load minimap & wall texture
-    resources.minimapTexture = LoadTexture("resources/fm/minimap.png");
-    resources.cubeWallTexture = LoadTexture("resources/fm/cube.png");
+    resources.minimapTexture = LoadTexture("resources/FruityMaze/Textures/minimap.png");
+    resources.cubeWallTexture = LoadTexture("resources/FruityMaze/Textures/cube.png");
 
     // Apply wall texture to maze
     if (resources.cubeWallTexture.id && resources.mazeModel.materials)
         SetMaterialTexture(&resources.mazeModel.materials[0], MATERIAL_MAP_DIFFUSE, resources.cubeWallTexture);
 
-    InitializeAnimation(resources.amazingAnim, "resources/fm/amazing.png", 4, 1000, 300, 0.05, true, 9);
-    InitializeAnimation(resources.timeIsUpAnim, "resources/fm/timeIsUp.png", 4, 1000, 300, 0.05, true, 9);
-    InitializeAnimation(resources.timeExtendedAnim, "resources/fm/timeExtended.png", 3, 1000, 300, 0.05, true, 7);
+    InitializeAnimation(resources.amazingAnim, "resources/FruityMaze/Textures/amazing.png", 4, 1000, 300, 0.05, true, 9);
+    InitializeAnimation(resources.timeIsUpAnim, "resources/FruityMaze/Textures/timeIsUp.png", 4, 1000, 300, 0.05, true, 9);
+    InitializeAnimation(resources.timeExtendedAnim, "resources/FruityMaze/Textures/timeExtended.png", 3, 1000, 300, 0.05, true, 7);
 
-    resources.outOfBounds = LoadTexture("resources/fm/outOfBounds.png");
+    resources.outOfBounds = LoadTexture("resources/FruityMaze/Textures/outOfBounds.png");
 
     // Load 3D models
-    resources.playerModel = LoadModel("resources/fm/freddy.glb");
+    resources.playerModel = LoadModel("resources/FruityMaze/Models/freddy.glb");
 
-    resources.cherryModel = LoadModel("resources/fm/cherry.glb");
-    resources.orangeModel = LoadModel("resources/fm/orange.glb");
-    resources.grapesModel = LoadModel("resources/fm/grapes.glb");
+    resources.cherryModel = LoadModel("resources/FruityMaze/Models/cherry.glb");
+    resources.orangeModel = LoadModel("resources/FruityMaze/Models/orange.glb");
+    resources.grapesModel = LoadModel("resources/FruityMaze/Models/grapes.glb");
 
-    resources.lightningModel = LoadModel("resources/fm/lightning.glb");
-    resources.gummybearModel = LoadModel("resources/fm/gummybear.glb");
-    resources.magnetModel = LoadModel("resources/fm/magnet.glb");
+    resources.lightningModel = LoadModel("resources/FruityMaze/Models/lightning.glb");
+    resources.gummybearModel = LoadModel("resources/FruityMaze/Models/gummybear.glb");
+    resources.magnetModel = LoadModel("resources/FruityMaze/Models/magnet.glb");
 
     // Load sounds
-    resources.backgroundMusic = LoadMusicStream("resources/fm/fbttl.mp3");
+    resources.backgroundMusic = LoadMusicStream("resources/FruityMaze/Audio/fbttl.mp3");
 
-    resources.fruit1Sound = LoadSound("resources/fm/fruit1.wav");
-    resources.fruit2Sound = LoadSound("resources/fm/fruit2.wav");
-    resources.fruit3Sound = LoadSound("resources/fm/fruit3.wav");
+    resources.fruit1Sound = LoadSound("resources/FruityMaze/Audio/fruit1.wav");
+    resources.fruit2Sound = LoadSound("resources/FruityMaze/Audio/fruit2.wav");
+    resources.fruit3Sound = LoadSound("resources/FruityMaze/Audio/fruit3.wav");
 
-    resources.boundsSound = LoadSound("resources/fm/bounds.wav");
-    resources.powerUpSound = LoadSound("resources/fm/powerUp.wav");
-    resources.timerPingSound = LoadSound("resources/fm/timerPing.wav");
-    resources.timeExtendedSound = LoadSound("resources/fm/timeExt.wav");
+    resources.boundsSound = LoadSound("resources/FruityMaze/Audio/bounds.wav");
+    resources.powerUpSound = LoadSound("resources/FruityMaze/Audio/powerUp.wav");
+    resources.timerPingSound = LoadSound("resources/FruityMaze/Audio/timerPing.wav");
+    resources.timeExtendedSound = LoadSound("resources/FruityMaze/Audio/timeExt.wav");
 
     TraceLog(LOG_DEBUG, "Fruity Maze resources loaded successfully.");
     return resources;
