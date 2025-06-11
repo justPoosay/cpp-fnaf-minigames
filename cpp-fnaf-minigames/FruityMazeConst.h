@@ -6,14 +6,18 @@ using namespace std;
 const int virtualScreenWidth = 1280;
 const int virtualScreenHeight = 720;
 
-// --- CAMERA MODES ---
+// --- ADVANCED ENUMS ---
+typedef enum {
+    DIFFICULTY_EASY,
+    DIFFICULTY_NORMAL
+} DifficultyLevel;
+
 typedef enum {
     VIEW_CAMERA_FIRST_PERSON,
     VIEW_CAMERA_SECOND_PERSON,
     VIEW_CAMERA_THIRD_PERSON
 } ViewCameraMode;
 
-// --- PROP TYPES ---
 typedef enum {
     PROP_CHERRY,
     PROP_ORANGE,
@@ -23,19 +27,57 @@ typedef enum {
     PROP_MAGNET
 } PropType;
 
-// --- GAME SCREENS ---
-//typedef enum {
-//    GAME_SCREEN_DIFFICULTY_SELECT,
-//    GAME_SCREEN_GAMEPLAY
-//} GameScreen;
+typedef enum {
+    KEY_ACTION_NONE,
+    KEY_ACTION_EXIT,
+    KEY_ACTION_CAMERA_SWITCH,
+    KEY_ACTION_DEBUG_TOGGLE,
+    KEY_ACTION_SHADER_RELOAD,
+    KEY_ACTION_DEBUG_LIGHTNING,
+    KEY_ACTION_DEBUG_GUMMYBEAR,
+    KEY_ACTION_DEBUG_MAGNET,
+    KEY_ACTION_MINIMAP_EXPAND
+} KeyAction;
 
-// --- DIFFICULTY LEVELS ---
-//typedef enum {
-//    DIFFICULTY_EASY,
-//    DIFFICULTY_NORMAL
-//} DifficultyLevel;
+typedef enum {
+    GAME_PHASE_INITIALIZING,
+    GAME_PHASE_SPAWNING,
+    GAME_PHASE_PLAYING,
+    GAME_PHASE_PAUSED,
+    GAME_PHASE_GAME_OVER,
+    GAME_PHASE_CLEANUP
+} GamePhase;
 
+typedef enum {
+    PROP_CATEGORY_FRUIT,
+    PROP_CATEGORY_POWERUP,
+    PROP_CATEGORY_UNKNOWN
+} PropCategory;
 
+typedef enum {
+    POWERUP_TYPE_LIGHTNING,
+    POWERUP_TYPE_GUMMYBEAR,
+    POWERUP_TYPE_MAGNET
+} PowerUpType;
+
+typedef enum {
+    MOVE_DIRECTION_NONE = 0,
+    MOVE_DIRECTION_FORWARD = 1 << 0,  // 1
+    MOVE_DIRECTION_BACKWARD = 1 << 1,  // 2
+    MOVE_DIRECTION_LEFT = 1 << 2,  // 4
+    MOVE_DIRECTION_RIGHT = 1 << 3   // 8
+} MovementDirection;
+
+typedef enum {
+    UI_ELEMENT_TIMER,
+    UI_ELEMENT_SCORE,
+    UI_ELEMENT_POWERUP_TIMERS,
+    UI_ELEMENT_DEBUG_INFO,
+    UI_ELEMENT_GAME_OVER,
+    UI_ELEMENT_CONTROLS_HELP
+} UIElement;
+
+// --- GAME STRUCTS ---
 struct PowerUpState {
     bool lightningActive;
     float lightningTimeLeft;
@@ -75,12 +117,123 @@ struct Prop {
     bool beingAttracted;
 };
 
-// --- CAMERA OFFSETS ---
+// --- ADVANCED STRUCTURES ---
+struct PlayerMovement {
+    Vector3 position;
+    float rotationAngle;
+    float currentSpeed;
+    int movementFlags;
+    bool isNoclipping;
+    bool canMove;
+};
+
+struct CameraConfig {
+    ViewCameraMode currentMode;
+    float fovy;
+    Vector3 position;
+    Vector3 target;
+    Vector3 up;
+    bool mouseLookEnabled;
+};
+
+struct InputState {
+    int pressedKey;
+    KeyAction currentAction;
+    Vector2 mouseDelta;
+    bool exitRequested;
+    bool debugKeysEnabled;
+};
+
+struct MinimapConfig {
+    bool isVisible;
+    bool isExpanded;
+    float scale;
+    float expandedScale;
+    Vector2 position;
+    Vector2 size;
+    Color borderColor;
+    Color playerColor;
+    Color propColor;
+};
+
+struct RenderingConfig {
+    bool shaderEnabled;
+    bool debugMode;
+    bool drawPlayer;
+    bool drawFPS;
+    float lightIntensity;
+    Vector3 lightColor;
+    float ambientStrength;
+};
+
+struct SoundConfig {
+    float musicVolume;
+    float sfxVolume;
+    bool musicEnabled;
+    bool sfxEnabled;
+    bool musicLooping;
+};
+
+struct DebugConfig {
+    bool enabled;
+    bool showCollisionBoxes;
+    bool showPlayerRay;
+    bool showMagnetRange;
+    bool showPositionInfo;
+    bool allowCheats;
+};
+
+struct PropRenderInfo {
+    PropType type;
+    PropCategory category;
+    Model* model;
+    Color fallbackColor;
+    float scale;
+    bool shouldBob;
+};
+
+struct TimerConfig {
+    float initialTime;
+    float warningThreshold;
+    float bonusInterval;
+    float bonusAmount;
+};
+
+struct CollisionConfig {
+    float playerHitboxWidth;
+    float playerHitboxDepth;
+    float propCollisionRadius;
+    int wallCheckRange;         // How many cells to check around player
+};
+
+struct GameBalance {
+    TimerConfig timer;
+    CollisionConfig collision;
+    float playerBaseSpeed;
+    float lightningSpeedMultiplier;
+    float magnetRange;
+    float magnetSpeed;
+    int scorePerFruit;
+};
+
+struct UILayout {
+    float textPadding;
+    float largeFontSize;
+    float mediumFontSize;
+    float smallFontSize;
+    Vector2 timerPosition;
+    Vector2 scorePosition;
+    Vector2 powerupPosition;
+};
+
+// --- CONSTANTS GROUPED BY CATEGORY ---
+// 
+// **Cam Offsets**
 const Vector3 FirstPersonOffset = { 0, 2.25, 0.1 };
 const Vector3 SecondPersonOffset = { 0, 20, 0 };
 const Vector3 ThirdPersonOffset = { 0, 14, -10 };
 
-// --- PLAYER CONSTANTS ---
+// **Player**
 const float playerMoveSpeed = 17.5;
 const float playerScale = 2;
 const float collisionRadius = 2;
@@ -89,17 +242,15 @@ const float mouseSensitivity = 0.2;
 const float playerHitboxWidth = 3.6;
 const float playerHitboxDepth = 2.4;
 
-// --- UI CONSTANTS ---
+// **UI**
 const float UI_LARGE_FONT_SIZE = 48;
 const float UI_MEDIUM_FONT_SIZE = 32;
 const float UI_SMALL_FONT_SIZE = 24;
 const float textPadding = 45;
-
 const float minimapScale = 2;
 const float gifScale = 1;
 
-
-// --- POWER-UP CONSTANTS ---
+// **Power-ups**
 const float lightningSpeedMultiplier = 2;
 const float lightningDuration = 30;
 const float gummybearDuration = 14;
@@ -107,14 +258,162 @@ const float magnetDuration = 23;
 const float magnetRange = 12;
 const float magnetPropSpeed = playerMoveSpeed * 1.2;
 
-// --- PROP CONSTANTS ---
 const float propScale = 1.2;
 const float propRotationSpeed = 45;
 const float propBobSpeed = 2;
 const float propBobHeight = 0.25;
 const float propCollectionRadius = 3;
 
-// Manual fruit spawn coordinates extracted from your image (179x168)
+// --- CONFIGURATION HELPERS ---
+static inline GameBalance GetDefaultGameBalance() {
+    GameBalance config;
+    config.timer.initialTime = 60;
+    config.timer.warningThreshold = 10;
+    config.timer.bonusInterval = 75;
+    config.timer.bonusAmount = 5;
+
+    config.collision.playerHitboxWidth = playerHitboxWidth;
+    config.collision.playerHitboxDepth = playerHitboxDepth;
+    config.collision.propCollisionRadius = collisionRadius;
+    config.collision.wallCheckRange = 2;
+
+    config.playerBaseSpeed = playerMoveSpeed;
+    config.lightningSpeedMultiplier = lightningSpeedMultiplier;
+    config.magnetRange = magnetRange;
+    config.magnetSpeed = magnetPropSpeed;
+    config.scorePerFruit = 5;
+
+    return config;
+}
+
+static inline MinimapConfig GetDefaultMinimapConfig() {
+    MinimapConfig config;
+    config.isVisible = true;
+    config.isExpanded = false;
+    config.scale = minimapScale;
+    config.expandedScale = 4;
+    config.position = { virtualScreenWidth - 200, 10 };
+    config.size = { 180, 180 };
+    config.borderColor = LIME;
+    config.playerColor = RED;
+    config.propColor = YELLOW;
+    return config;
+}
+
+static inline RenderingConfig GetDefaultRenderingConfig() {
+    RenderingConfig config;
+    config.shaderEnabled = true;
+    config.debugMode = false;
+    config.drawPlayer = true;
+    config.drawFPS = false;
+    config.lightIntensity = 1;
+    config.lightColor = { 1, 0.9, 0.8 };
+    config.ambientStrength = 0.3;
+    return config;
+}
+
+static inline SoundConfig GetDefaultSoundConfig() {
+    SoundConfig config;
+    config.musicVolume = 1;
+    config.sfxVolume = 1;
+    config.musicEnabled = true;
+    config.sfxEnabled = true;
+    config.musicLooping = true;
+    return config;
+}
+
+static inline DebugConfig GetDefaultDebugConfig() {
+    DebugConfig config;
+    config.enabled = false;
+    config.showCollisionBoxes = true;
+    config.showPlayerRay = true;
+    config.showMagnetRange = true;
+    config.showPositionInfo = true;
+    config.allowCheats = true;
+    return config;
+}
+
+static inline UILayout GetDefaultUILayout() {
+    UILayout config;
+    config.textPadding = textPadding;
+    config.largeFontSize = UI_LARGE_FONT_SIZE;
+    config.mediumFontSize = UI_MEDIUM_FONT_SIZE;
+    config.smallFontSize = UI_SMALL_FONT_SIZE;
+    config.timerPosition = { textPadding, textPadding };
+    config.scorePosition = { virtualScreenWidth - 200, virtualScreenHeight - 120 };
+    config.powerupPosition = { virtualScreenWidth - 100, textPadding };
+    return config;
+}
+
+// --- UTILITY FUNCTIONS ---
+
+static inline PropCategory GetPropCategory(PropType type) {
+    switch (type) {
+        case PROP_CHERRY:
+        case PROP_ORANGE:
+        case PROP_GRAPES:
+            return PROP_CATEGORY_FRUIT;
+
+        case PROP_LIGHTNING:
+        case PROP_GUMMYBEAR:
+        case PROP_MAGNET:
+            return PROP_CATEGORY_POWERUP;
+
+        default:
+            return PROP_CATEGORY_UNKNOWN;
+    }
+}
+
+static inline PowerUpType PropTypeToPowerUpType(PropType propType) {
+    switch (propType) {
+        case PROP_LIGHTNING: return POWERUP_TYPE_LIGHTNING;
+        case PROP_GUMMYBEAR: return POWERUP_TYPE_GUMMYBEAR;
+        case PROP_MAGNET: return POWERUP_TYPE_MAGNET;
+        default: return POWERUP_TYPE_LIGHTNING;
+    }
+}
+
+static inline bool HasMovementFlag(int flags, MovementDirection direction) {
+    return (flags & direction) != 0;
+}
+
+static inline int AddMovementFlag(int flags, MovementDirection direction) {
+    return flags | direction;
+}
+
+static inline int RemoveMovementFlag(int flags, MovementDirection direction) {
+    return flags & ~direction;
+}
+
+static inline KeyAction GetKeyAction(int key, bool debugEnabled) {
+    switch (key) {
+        case KEY_ESCAPE: return KEY_ACTION_EXIT;
+        case KEY_T: return KEY_ACTION_CAMERA_SWITCH;
+        case KEY_F3: return KEY_ACTION_DEBUG_TOGGLE;
+        case KEY_F5: return KEY_ACTION_SHADER_RELOAD;
+        case KEY_TAB: return KEY_ACTION_MINIMAP_EXPAND;
+
+        case KEY_L: return debugEnabled ? KEY_ACTION_DEBUG_LIGHTNING : KEY_ACTION_NONE;
+        case KEY_G: return debugEnabled ? KEY_ACTION_DEBUG_GUMMYBEAR : KEY_ACTION_NONE;
+        case KEY_M: return debugEnabled ? KEY_ACTION_DEBUG_MAGNET : KEY_ACTION_NONE;
+
+        default: return KEY_ACTION_NONE;
+    }
+}
+
+static inline Color GetPropFallbackColor(PropType type) {
+    switch (type) {
+        case PROP_CHERRY: return RED;
+        case PROP_ORANGE: return ORANGE;
+        case PROP_GRAPES: return PURPLE;
+        case PROP_LIGHTNING: return YELLOW;
+        case PROP_GUMMYBEAR: return GREEN;
+        case PROP_MAGNET: return GRAY;
+        default: return WHITE;
+    }
+}
+
+// Fruit spawn cords (179x168)
 const Vector2 FRUIT_POSITIONS[] = {
     // Row 1
     /*{4, 5}, */{13, 5}, {22, 5}, {32, 5}, {41, 5}, {49, 5}, {58, 5}, {67, 5}, {76, 5}, {85, 5}, {94, 5}, {103, 5}, {112, 5}, {121, 5}, {130, 5}, {139, 5}, {148, 5}, {156, 5}, {165, 5}, {174, 5},
@@ -175,12 +474,10 @@ const Vector2 FRUIT_POSITIONS[] = {
 
     // Row 20
     /*{4, 163}, */{13, 163}, {22, 163}, {32, 163}, {41, 163}, {49, 163}, {58, 163}, {67, 163}, {76, 163}, {85, 163}, {94, 163}, {103, 163}, {112, 163}, {121, 163}, {130, 163}, {139, 163}, {148, 163}, {156, 163}, {165, 163}, {174, 163},
-
 };
 
-// Fixed power-up spawn coordinates (fewer, more strategic)
 const Vector2 POWERUP_POSITIONS[] = {
-    {4, 5}, 
+    {4, 5},
     {112, 38},
     {32, 46}, {156, 46},
     {130, 79},

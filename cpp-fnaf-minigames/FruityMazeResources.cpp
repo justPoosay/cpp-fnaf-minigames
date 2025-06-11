@@ -1,6 +1,5 @@
 #include "FruityMazeResources.h"
 
-// Zmieñ sygnaturê funkcji, dodaj¹c maxLoops
 void InitializeAnimation(AnimationData& anim, const char* spritesheetPath,
     int frameCount, int frameWidth, int frameHeight,
     float frameTime, bool loop, int maxLoops = 0) {
@@ -30,6 +29,7 @@ void UpdateAnimation(AnimationData& anim, float deltaTime) {
 
         if (anim.currentFrame >= anim.frameCount) {
             bool shouldLoop = anim.loop;
+
             if (anim.maxLoops > 0) {
                 anim.loopCount++;
 
