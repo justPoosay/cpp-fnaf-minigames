@@ -13,35 +13,39 @@ using namespace std;
 
 struct AnimationData {
     Texture2D spriteSheet;
+
     int frameCount;
-    int frameWidth;
-    int frameHeight;
-    float frameTime;        // Time per frame (e.g., 0.1f for 10 FPS)
-    float currentTime;      // Current animation time
-    int currentFrame;       // Current frame index
-    bool loop;              // Whether animation should loop
-    bool isPlaying;         // Whether animation is currently playing
+    int loopCount;
+    int maxLoops;
+    int currentFrame;
+
+    float frameWidth;
+    float frameHeight;
+    float frameTime;
+    float currentTime;
+
+    bool isPlaying;
+    bool loop;
 };
 
 struct FruityMazeGameResources {
     // Map data
     int mapWidth;
     int mapHeight;
+    Vector3 cubicMapSize;
+    Vector3 mapModelPosition;
+    Color* mapPixels;
+
+	// Textures
     Texture2D minimapTexture;
     Texture2D cubeWallTexture;
-
-    Vector3 cubicMapSize;
-    Model mazeModel;
-    Color* mapPixels;
-    Vector3 mapModelPosition;
-
-    // **MODIFIED: Changed from individual textures to animation data**
+    Texture2D outOfBounds;
     AnimationData amazingAnim;
     AnimationData timeIsUpAnim;
     AnimationData timeExtendedAnim;
-    Texture2D outOfBounds;  // Keep this as static image
 
     // 3D Models
+    Model mazeModel;
     Model playerModel;
     Model cherryModel;
     Model orangeModel;
@@ -69,7 +73,6 @@ void UpdateAnimation(AnimationData& anim, float deltaTime);
 void StartAnimation(AnimationData& anim);
 void StopAnimation(AnimationData& anim);
 Rectangle GetCurrentAnimationFrame(const AnimationData& anim);
-void UnloadAnimationData(AnimationData& anim);
 
 FruityMazeGameResources LoadFruityMazeResources(GraphicsQuality quality);
 void UnloadFruityMazeResources(FruityMazeGameResources& resources);

@@ -1,18 +1,20 @@
 #include "FruityMazeResources.h"
 
-// **NEW: Animation helper functions implementation**
+// Zmieñ sygnaturê funkcji, dodaj¹c maxLoops
 void InitializeAnimation(AnimationData& anim, const char* spritesheetPath,
     int frameCount, int frameWidth, int frameHeight,
-    float frameTime, bool loop) {
+    float frameTime, bool loop, int maxLoops = 0) {
     anim.spriteSheet = LoadTexture(spritesheetPath);
     anim.frameCount = frameCount;
     anim.frameWidth = frameWidth;
     anim.frameHeight = frameHeight;
     anim.frameTime = frameTime;
-    anim.currentTime = 0.0f;
+    anim.currentTime = 0;
     anim.currentFrame = 0;
     anim.loop = loop;
     anim.isPlaying = false;
+    anim.loopCount = 0;
+    anim.maxLoops = maxLoops;
 
     TraceLog(LOG_DEBUG, TextFormat("Animation loaded: %s (%dx%d, %d frames)", spritesheetPath, frameWidth, frameHeight, frameCount));
 }
@@ -27,12 +29,17 @@ void UpdateAnimation(AnimationData& anim, float deltaTime) {
         anim.currentFrame++;
 
         if (anim.currentFrame >= anim.frameCount) {
-            if (anim.loop) {
-                anim.currentFrame = 0;
+            bool shouldLoop = anim.loop;
+            if (anim.maxLoops > 0) {
+                anim.loopCount++;
+
+                if (anim.loopCount >= anim.maxLoops) shouldLoop = false;
             }
+
+            if (shouldLoop) anim.currentFrame = 0;
             else {
                 anim.currentFrame = anim.frameCount - 1;
-                anim.isPlaying = false; // Stop at last frame if not looping
+                anim.isPlaying = false;
             }
         }
     }
@@ -40,30 +47,22 @@ void UpdateAnimation(AnimationData& anim, float deltaTime) {
 
 void StartAnimation(AnimationData& anim) {
     anim.isPlaying = true;
-    anim.currentTime = 0.0f;
+    anim.currentTime = 0;
     anim.currentFrame = 0;
+    anim.loopCount = 0;
 }
 
 void StopAnimation(AnimationData& anim) {
     anim.isPlaying = false;
-    anim.currentTime = 0.0f;
+    anim.currentTime = 0;
     anim.currentFrame = 0;
 }
 
 Rectangle GetCurrentAnimationFrame(const AnimationData& anim) {
-    return {
-        (float)(anim.currentFrame * anim.frameWidth),
-        0.0f,
-        (float)anim.frameWidth,
-        (float)anim.frameHeight
+    return { 
+        anim.currentFrame * anim.frameWidth, 0,
+        anim.frameWidth, anim.frameHeight 
     };
-}
-
-void UnloadAnimationData(AnimationData& anim) {
-    if (anim.spriteSheet.id > 0) {
-        UnloadTexture(anim.spriteSheet);
-        anim.spriteSheet.id = 0;
-    }
 }
 
 FruityMazeGameResources LoadFruityMazeResources(GraphicsQuality quality) {
@@ -125,23 +124,17 @@ FruityMazeGameResources LoadFruityMazeResources(GraphicsQuality quality) {
     }
 
     // Load minimap & wall texture
-    resources.minimapTexture = LoadTexture("resources/fm/map.png");
+    resources.minimapTexture = LoadTexture("resources/fm/minimap.png");
     resources.cubeWallTexture = LoadTexture("resources/fm/cube.png");
 
     // Apply wall texture to maze
     if (resources.cubeWallTexture.id && resources.mazeModel.materials)
         SetMaterialTexture(&resources.mazeModel.materials[0], MATERIAL_MAP_DIFFUSE, resources.cubeWallTexture);
 
-    InitializeAnimation(resources.amazingAnim, "resources/fm/amazing.png",
-        4, 1000, 300, 0.05, true);
+    InitializeAnimation(resources.amazingAnim, "resources/fm/amazing.png", 4, 1000, 300, 0.05, true, 9);
+    InitializeAnimation(resources.timeIsUpAnim, "resources/fm/timeIsUp.png", 4, 1000, 300, 0.05, true, 9);
+    InitializeAnimation(resources.timeExtendedAnim, "resources/fm/timeExtended.png", 3, 1000, 300, 0.05, true, 7);
 
-    InitializeAnimation(resources.timeIsUpAnim, "resources/fm/timeIsUp.png",
-        4, 1000, 300, 0.05, true);
-
-    InitializeAnimation(resources.timeExtendedAnim, "resources/fm/timeExtended.png",
-        3, 1000, 300, 0.05, true);
-
-    // Keep static texture for out of bounds
     resources.outOfBounds = LoadTexture("resources/fm/outOfBounds.png");
 
     // Load 3D models
@@ -175,93 +168,36 @@ void UnloadFruityMazeResources(FruityMazeGameResources& resources) {
     TraceLog(LOG_DEBUG, "Unloading Fruity Maze resources...");
 
     // Unload textures
-    if (resources.cubeWallTexture.id > 0) {
-        UnloadTexture(resources.cubeWallTexture);
-    }
-
-    if (resources.minimapTexture.id > 0) {
-        UnloadTexture(resources.minimapTexture);
-    }
-
-    UnloadAnimationData(resources.amazingAnim);
-    UnloadAnimationData(resources.timeIsUpAnim);
-    UnloadAnimationData(resources.timeExtendedAnim);
-
-    if (resources.outOfBounds.id > 0) {
-        UnloadTexture(resources.outOfBounds);
-    }
-
-    // Unload map collision data
-    if (resources.mapPixels) {
-        UnloadImageColors(resources.mapPixels);
-    }
-
-    // Unload maze model
-    if (resources.mazeModel.meshCount > 0) {
-        UnloadModel(resources.mazeModel);
-    }
+    if (resources.mapPixels) UnloadImageColors(resources.mapPixels);
+    if (resources.cubeWallTexture.id > 0) UnloadTexture(resources.cubeWallTexture);
+    if (resources.minimapTexture.id > 0) UnloadTexture(resources.minimapTexture);
+    if (resources.amazingAnim.spriteSheet.id > 0) UnloadTexture(resources.amazingAnim.spriteSheet);
+    if (resources.timeIsUpAnim.spriteSheet.id > 0) UnloadTexture(resources.timeIsUpAnim.spriteSheet);
+    if (resources.timeExtendedAnim.spriteSheet.id > 0) UnloadTexture(resources.timeExtendedAnim.spriteSheet);
+    if (resources.outOfBounds.id > 0) UnloadTexture(resources.outOfBounds);
 
     // Unload models
-    if (resources.playerModel.meshCount > 0) {
-        UnloadModel(resources.playerModel);
-    }
-
-    if (resources.cherryModel.meshCount > 0) {
-        UnloadModel(resources.cherryModel);
-    }
-
-    if (resources.orangeModel.meshCount > 0) {
-        UnloadModel(resources.orangeModel);
-        resources.orangeModel.meshCount = 0;
-    }
-
-    if (resources.grapesModel.meshCount > 0) {
-        UnloadModel(resources.grapesModel);
-    }
-
-    if (resources.lightningModel.meshCount > 0) {
-        UnloadModel(resources.lightningModel);
-    }
-
-    if (resources.gummybearModel.meshCount > 0) {
-        UnloadModel(resources.gummybearModel);
-    }
-
-    if (resources.magnetModel.meshCount > 0) {
-        UnloadModel(resources.magnetModel);
-    }
+    if (resources.mazeModel.meshCount > 0) UnloadModel(resources.mazeModel);
+    if (resources.playerModel.meshCount > 0) UnloadModel(resources.playerModel);
+    if (resources.cherryModel.meshCount > 0) UnloadModel(resources.cherryModel);
+    if (resources.orangeModel.meshCount > 0) UnloadModel(resources.orangeModel);
+    if (resources.grapesModel.meshCount > 0) UnloadModel(resources.grapesModel);
+    if (resources.lightningModel.meshCount > 0) UnloadModel(resources.lightningModel);
+    if (resources.gummybearModel.meshCount > 0) UnloadModel(resources.gummybearModel);
+    if (resources.magnetModel.meshCount > 0) UnloadModel(resources.magnetModel);
 
     // Unload sounds with safety checks
-    if (resources.backgroundMusic.stream.buffer) {
-        UnloadMusicStream(resources.backgroundMusic);
-    }
-
-    if (resources.fruit1Sound.frameCount > 0) {
-        UnloadSound(resources.fruit1Sound);
-    }
-    if (resources.fruit2Sound.frameCount > 0) {
-        UnloadSound(resources.fruit2Sound);
-    }
-    if (resources.fruit3Sound.frameCount > 0) {
-        UnloadSound(resources.fruit3Sound);
-    }
-    if (resources.boundsSound.frameCount > 0) {
-        UnloadSound(resources.boundsSound);
-    }
-    if (resources.powerUpSound.frameCount > 0) {
-        UnloadSound(resources.powerUpSound);
-    }
-    if (resources.timerPingSound.frameCount > 0) {
-        UnloadSound(resources.timerPingSound);
-    }
-    if (resources.timeExtendedSound.frameCount > 0) {
-        UnloadSound(resources.timeExtendedSound);
-    }
+    if (resources.backgroundMusic.stream.buffer) UnloadMusicStream(resources.backgroundMusic);
+    if (resources.fruit1Sound.frameCount > 0) UnloadSound(resources.fruit1Sound);
+    if (resources.fruit2Sound.frameCount > 0) UnloadSound(resources.fruit2Sound);
+    if (resources.fruit3Sound.frameCount > 0) UnloadSound(resources.fruit3Sound);
+    if (resources.boundsSound.frameCount > 0) UnloadSound(resources.boundsSound);
+    if (resources.powerUpSound.frameCount > 0) UnloadSound(resources.powerUpSound);
+    if (resources.timerPingSound.frameCount > 0) UnloadSound(resources.timerPingSound);
+    if (resources.timeExtendedSound.frameCount > 0) UnloadSound(resources.timeExtendedSound);
 
     // Unload shader
-    if (resources.lightingShader.id > 0) {
-        UnloadShader(resources.lightingShader);
-    }
+    if (resources.lightingShader.id > 0) UnloadShader(resources.lightingShader);
 
     TraceLog(LOG_DEBUG, "Fruity Maze resources unloaded successfully.");
 }

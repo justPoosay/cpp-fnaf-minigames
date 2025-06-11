@@ -23,6 +23,58 @@ typedef enum {
     PROP_MAGNET
 } PropType;
 
+// --- GAME SCREENS ---
+//typedef enum {
+//    GAME_SCREEN_DIFFICULTY_SELECT,
+//    GAME_SCREEN_GAMEPLAY
+//} GameScreen;
+
+// --- DIFFICULTY LEVELS ---
+//typedef enum {
+//    DIFFICULTY_EASY,
+//    DIFFICULTY_NORMAL
+//} DifficultyLevel;
+
+
+struct PowerUpState {
+    bool lightningActive;
+    float lightningTimeLeft;
+    bool gummybearActive;
+    float gummybearTimeLeft;
+    bool magnetActive;
+    float magnetTimeLeft;
+};
+
+struct GameState {
+    float gameTimer;
+    int score;
+    bool gameOver;
+    float gameOverTimer;
+    bool outOfBounds;
+    int lastTickSecond;
+    bool temporaryNoclip;
+    bool gameWon;
+};
+
+struct TextState {
+    bool showAmazing;
+    float amazingTimer;
+    bool showTimeIsUp;
+    float timeIsUpTimer;
+    bool showTimeExtended;
+    float timeExtendedTimer;
+    bool showOutOfBounds;
+};
+
+struct Prop {
+    Vector3 position;
+    PropType type;
+    float rotationY;
+    float bobOffset;
+    bool collected;
+    bool beingAttracted;
+};
+
 // --- CAMERA OFFSETS ---
 const Vector3 FirstPersonOffset = { 0, 2.25, 0.1 };
 const Vector3 SecondPersonOffset = { 0, 20, 0 };
@@ -41,10 +93,11 @@ const float playerHitboxDepth = 2.4;
 const float UI_LARGE_FONT_SIZE = 48;
 const float UI_MEDIUM_FONT_SIZE = 32;
 const float UI_SMALL_FONT_SIZE = 24;
-const float UI_MARGIN = 30;
-const float UI_LINE_SPACING = 8;
-const float rightMargin = virtualScreenWidth - 300;
-const int textPadding = 45;
+const float textPadding = 45;
+
+const float minimapScale = 2;
+const float gifScale = 1;
+
 
 // --- POWER-UP CONSTANTS ---
 const float lightningSpeedMultiplier = 2;

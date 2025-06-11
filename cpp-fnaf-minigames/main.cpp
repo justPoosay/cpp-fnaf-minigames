@@ -3,20 +3,17 @@
 #endif
 
 #include "raylib.h"
-
 #include <sstream>
 #include <algorithm>
 #include <map>
 
 #include "GameSettings.h"
-
 #include "MainMenuResources.h"
 #include "MotoristResources.h"
 #include "RainbowLandResources.h"
-#include "FruityMazeResources.h"  // ADD THIS LINE
+#include "FruityMazeResources.h"
 
 using namespace std;
-
 
 // --- Game states ---
 typedef enum GameScreen {
@@ -25,9 +22,16 @@ typedef enum GameScreen {
     SETTINGS,
     PLAYING_MOTORIST,
     PLAYING_RAINBOW,
-    PLAYING_FRUITY_MAZE,  // ADD THIS LINE
+    PLAYING_FRUITY_MAZE,
+    FRUITY_MAZE_DIFFICULTY, // Nowy stan ekranu
     EXITING
 } GameScreen;
+
+// --- Difficulty Levels --- (Globalnie dostêpne)
+typedef enum {
+    DIFFICULTY_EASY,
+    DIFFICULTY_NORMAL
+} DifficultyLevel;
 
 
 struct ArgumentDetail {
@@ -79,50 +83,43 @@ vector<CommandDefinition> definedCommands = {
     }
 };
 
-
 // --- Helpy Animation Variables ---
 bool helpyKilled = false;
-
 int helpyCurrentAnimFrame = 0;
 float helpyFrameDelay = 0.73;
 float helpyFrameTimer = 0;
-
 int helpyCrackedCurrentPlayingFrame = 0;
 float helpyCrackedAnimInternalTimer = 0;
 float helpyCrackedAnimFrameDelay = 0.25;
-
 float musicRestartKillTimer = 0;
-
 
 // --- UI Data  ---
 const char* resolutionOptions[] = { "1280x720", "1920x1080" };
 const ScreenResolution resolutionValues[] = { RES_1280x720, RES_1920x1080 };
 const int numResolutionOptions = sizeof(resolutionOptions) / sizeof(resolutionOptions[0]);
 int currentResolutionIndex = 0;
-
 const char* qualityOptions[] = { "Low", "Medium", "High" };
 const GraphicsQuality qualityValues[] = { QUALITY_LOW, QUALITY_MEDIUM, QUALITY_HIGH };
 const int numQualityOptions = sizeof(qualityOptions) / sizeof(qualityOptions[0]);
 int currentQualityIndex = 1;
 
-
 // --- Music and Fading ---
 float currentMenuMusicVolume = 1;
 float currentSettingsMusicVolume = 1;
 
+// --- Zmienna dla poziomu trudnoœci Fruity Maze ---
+DifficultyLevel fruityMazeDifficulty = DIFFICULTY_EASY;
 
 // --- Forward declarations ---
 int runMidnightMotorist(GraphicsQuality quality, Shader postProcessingShader, bool applyShader);
 int runMagicRainbowLand(GraphicsQuality quality);
-int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool applyShader);  // ADD THIS LINE
-
+int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool applyShader, DifficultyLevel difficulty); // Zmodyfikowana sygnatura
 
 // ------- Functions -------
 void StopAndUnloadMusic(Music& music, bool& loadedFlag) {
     if (loadedFlag && music.stream.buffer) {
         if (IsMusicStreamPlaying(music))
             StopMusicStream(music);
-
         UnloadMusicStream(music);
         music = { 0 };
         loadedFlag = false;
@@ -136,74 +133,48 @@ void StopAndUnloadMusic(Music& music, bool& loadedFlag) {
 bool GuiButton(Rectangle bounds, const char* text, Font font, Color bgColor, Color hoverColor, Color pressedColor, Vector2 mousePos) {
     bool clicked = false;
     Color currentBgColor = bgColor;
-
     Vector2 textSize = MeasureTextEx(font, text, settingsSelectorFontSize, 1);
-
     if (!consoleActive && CheckCollisionPointRec(mousePos, bounds)) {
         currentBgColor = hoverColor;
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             currentBgColor = pressedColor;
-
         if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
             clicked = true;
     }
-
     DrawRectangleRec(bounds, currentBgColor);
     DrawTextEx(font, text, { bounds.x + (bounds.width - textSize.x) / 2, bounds.y + (bounds.height - textSize.y) / 2 }, settingsSelectorFontSize, 1, BLACK);
-
     return clicked;
 }
 
 int GuiSelector(Rectangle bounds, const char* currentOptionText, Font font, Color textColor, Color boxColor, Color arrowColor, Vector2 mousePos) {
     int clicked_direction = 0;
-
     float arrowSize = 15;
     float arrowPaddingFromBox = 8;
-
     DrawRectangleRec(bounds, boxColor);
     DrawRectangleLinesEx(bounds, 1, Fade(BLACK, 0.3));
-
     Vector2 optionTextSize = MeasureTextEx(font, currentOptionText, settingsSelectorFontSize, 1);
     DrawTextEx(font, currentOptionText, { bounds.x + (bounds.width - optionTextSize.x) / 2, bounds.y + (bounds.height - optionTextSize.y) / 2 }, settingsSelectorFontSize, 1, textColor);
 
-    // Left arrow
     Vector2 leftArrowPoints[3];
     leftArrowPoints[1] = { bounds.x - arrowPaddingFromBox - arrowSize, bounds.y + bounds.height / 2 };
     leftArrowPoints[0] = { bounds.x - arrowPaddingFromBox, bounds.y + bounds.height / 2 - arrowSize };
     leftArrowPoints[2] = { bounds.x - arrowPaddingFromBox, bounds.y + bounds.height / 2 + arrowSize };
-
-    Rectangle leftArrowHotspot = {
-        leftArrowPoints[0].x,
-        bounds.y + bounds.height / 2 - arrowSize,
-        arrowSize + 2,
-        arrowSize * 2 + 2
-    };
-
+    Rectangle leftArrowHotspot = { leftArrowPoints[0].x, bounds.y + bounds.height / 2 - arrowSize, arrowSize + 2, arrowSize * 2 + 2 };
     if (!consoleActive && CheckCollisionPointRec(mousePos, leftArrowHotspot))
         if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
             clicked_direction = -1;
-
     DrawTriangle(leftArrowPoints[0], leftArrowPoints[1], leftArrowPoints[2], arrowColor);
 
-    // --- PRAWA STRZA£KA (TRÓJK¥T) ---
     Vector2 rightArrowPoints[3];
     rightArrowPoints[0] = { bounds.x + bounds.width + arrowPaddingFromBox + arrowSize, bounds.y + bounds.height / 2 };
     rightArrowPoints[1] = { bounds.x + bounds.width + arrowPaddingFromBox, bounds.y + bounds.height / 2 - arrowSize / 1.5f };
     rightArrowPoints[2] = { bounds.x + bounds.width + arrowPaddingFromBox, bounds.y + bounds.height / 2 + arrowSize / 1.5f };
-
-    Rectangle rightArrowHotspot = {
-        bounds.x + bounds.width + arrowPaddingFromBox,
-        bounds.y + bounds.height / 2 - arrowSize,
-        arrowSize + 2,
-        arrowSize * 2 + 2
-    };
-
+    Rectangle rightArrowHotspot = { bounds.x + bounds.width + arrowPaddingFromBox, bounds.y + bounds.height / 2 - arrowSize, arrowSize + 2, arrowSize * 2 + 2 };
     if (!consoleActive && CheckCollisionPointRec(mousePos, rightArrowHotspot)) {
         if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && clicked_direction == 0) clicked_direction = 1;
     }
     DrawTriangle(rightArrowPoints[0], rightArrowPoints[1], rightArrowPoints[2], arrowColor);
     DrawTriangleLines(rightArrowPoints[0], rightArrowPoints[1], rightArrowPoints[2], Fade(BLACK, 0.5f));
-
     return clicked_direction;
 }
 
@@ -218,7 +189,6 @@ void UpdateMainMenuScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& 
         if (GetMusicTimePlayed(res.menuMusic) >= GetMusicTimeLength(res.menuMusic))
             SeekMusicStream(res.menuMusic, 0);
     }
-
     if (res.gifLoaded && res.bgTexture.id > 0 && res.bgGifImage.data) {
         mainMenuBgFrameTimer += dt;
         bool bgFrameUpdated = false;
@@ -233,7 +203,6 @@ void UpdateMainMenuScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& 
             UpdateTexture(res.bgTexture, frameDataOffset);
         }
     }
-
     if (IsWindowResized() && !IsWindowFullscreen())
         SetWindowPosition((GetMonitorWidth(GetCurrentMonitor()) - GetScreenWidth()) / 2, (GetMonitorHeight(GetCurrentMonitor()) - GetScreenHeight()) / 2);
 }
@@ -244,7 +213,7 @@ void DrawMainMenuScreen(MainMenuResources& res, Vector2 mousePos, int mainMenuBg
     else ClearBackground(DARKBLUE);
 
     Vector2 titleSize = MeasureTextEx(res.bytesFont, "FNaF Minigames Port", 100, 1);
-    DrawRectangleRec({ (logicalWidth - 400) / 2, 160, 400, 380 }, Fade(BLACK, 0.7));  // CHANGED: Made background taller for 4 buttons
+    DrawRectangleRec({ (logicalWidth - 400) / 2, 160, 400, 380 }, Fade(BLACK, 0.7));
     DrawTextEx(res.bytesFont, "FNaF Minigames Port", { (logicalWidth - titleSize.x) / 2, 40 }, 100, 1, WHITE);
 
     float buttonWidth = 300;
@@ -253,10 +222,9 @@ void DrawMainMenuScreen(MainMenuResources& res, Vector2 mousePos, int mainMenuBg
     float buttonYStart = 180;
     float buttonSpacing = 72;
 
-    // CHANGED: Added Fruity Maze button and adjusted spacing
     if (GuiButton({ buttonX, buttonYStart, buttonWidth, buttonHeight }, "Fruity 3D Maze", res.arcadeClassicFont, WHITE, GREEN, DARKGREEN, mousePos)) {
         previousScreen = currentScreen;
-        fadeTargetScreen = PLAYING_FRUITY_MAZE;
+        fadeTargetScreen = FRUITY_MAZE_DIFFICULTY; // Zmiana na ekran wyboru trudnoœci
         PlaySound(res.buttonSelect);
         isFadingOut = true;
         fadeAlpha = 0;
@@ -288,13 +256,9 @@ void DrawMainMenuScreen(MainMenuResources& res, Vector2 mousePos, int mainMenuBg
     }
 }
 
-
 void UpdateSettingsScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& currentScreen, GameScreen& previousScreen, GameScreen& fadeTargetScreen, bool& isFadingOut, float& fadeAlpha, float dt, int& currentNormalHelpyFrame_param, float& normalHelpyTimer_param, float normalHelpyFrameDelay_param) {
-
-    // --- Settings Music Logic ---
     if (helpyKilled) {
         musicRestartKillTimer += dt;
-
         if (res.settingsMusicLoaded && !IsMusicStreamPlaying(res.settingsMusic)) {
             if (musicRestartKillTimer >= 3) {
                 SeekMusicStream(res.settingsMusic, 0);
@@ -305,13 +269,11 @@ void UpdateSettingsScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& 
         }
         else if (res.settingsMusicLoaded && IsMusicStreamPlaying(res.settingsMusic)) {
             UpdateMusicStream(res.settingsMusic);
-
             if (GetMusicTimePlayed(res.settingsMusic) >= GetMusicTimeLength(res.settingsMusic))
                 SeekMusicStream(res.settingsMusic, 0);
         }
     }
     else {
-        // Normal music behavior
         if (res.settingsMusicLoaded && !IsMusicStreamPlaying(res.settingsMusic) && currentSettingsMusicVolume > 0) {
             PlayMusicStream(res.settingsMusic);
             SetMusicVolume(res.settingsMusic, currentSettingsMusicVolume * g_settings.masterVolume);
@@ -320,22 +282,17 @@ void UpdateSettingsScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& 
         if (res.settingsMusicLoaded && IsMusicStreamPlaying(res.settingsMusic)) {
             UpdateMusicStream(res.settingsMusic);
             SetMusicPitch(res.settingsMusic, 1);
-
             if (GetMusicTimePlayed(res.settingsMusic) >= GetMusicTimeLength(res.settingsMusic)) {
                 SeekMusicStream(res.settingsMusic, 0);
             }
         }
     }
-
-    // --- Helpy Animation Logic ---
     if (helpyKilled) {
         if (res.helpyCrackedGifLoaded && res.helpyCrackedGifImage.data && (res.helpyCrackedAnimFrames == 0 || helpyCrackedCurrentPlayingFrame < res.helpyCrackedAnimFrames - 1)) {
             helpyCrackedAnimInternalTimer += dt;
             bool frameUpdated = false;
-
             while (helpyCrackedAnimInternalTimer >= helpyCrackedAnimFrameDelay) {
                 helpyCrackedAnimInternalTimer -= helpyCrackedAnimFrameDelay;
-
                 if (helpyCrackedCurrentPlayingFrame < res.helpyCrackedAnimFrames - 1) {
                     helpyCrackedCurrentPlayingFrame++;
                     frameUpdated = true;
@@ -345,21 +302,16 @@ void UpdateSettingsScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& 
                         helpyCrackedCurrentPlayingFrame = res.helpyCrackedAnimFrames - 1;
                     else
                         helpyCrackedCurrentPlayingFrame = 0;
-
                     frameUpdated = true;
                     break;
                 }
             }
-
             if (frameUpdated) {
                 int frameToUpdate = helpyCrackedCurrentPlayingFrame;
-
                 if (frameToUpdate >= res.helpyCrackedAnimFrames)
                     frameToUpdate = res.helpyCrackedAnimFrames - 1;
-
                 if (frameToUpdate < 0)
                     frameToUpdate = 0;
-
                 if (res.helpyCrackedAnimFrames > 0) {
                     int frameDataSize = GetPixelDataSize(res.helpyCrackedGifImage.width, res.helpyCrackedGifImage.height, res.helpyCrackedGifImage.format);
                     char* frameDataOffset = (char*)res.helpyCrackedGifImage.data + (frameToUpdate * frameDataSize);
@@ -384,11 +336,8 @@ void UpdateSettingsScreen(MainMenuResources& res, Vector2 mousePos, GameScreen& 
             }
         }
     }
-
-    // --- Console Toggle ---
     if (IsKeyPressed(KEY_GRAVE)) {
         consoleActive = !consoleActive;
-
         if (consoleActive) {
             memset(consoleInputBuffer, 0, 256);
             consoleInputCursorPos = 0;
@@ -403,24 +352,8 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurre
     Vector2 settingsTitleSize = MeasureTextEx(res.bytesFont, "SETTINGS", 65, 1);
     DrawTextEx(res.bytesFont, "SETTINGS", { (logicalWidth - settingsTitleSize.x) / 2, 80 }, 65, 1, WHITE);
 
-
     Font uiFont = res.arcadeClassicFont;
 
-    //DrawTextEx(uiFont, "Volume:", { 100, 180 }, settingsTextFontSize, 1, WHITE);
-    //Rectangle volumeSliderBaseRect = { 250, 175, 300, 30 };
-    //DrawRectangleRec(volumeSliderBaseRect, WHITE);
-    //if (!consoleActive && CheckCollisionPointRec(mousePos, volumeSliderBaseRect) && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-    //    g_settings.masterVolume = Clamp((mousePos.x - volumeSliderBaseRect.x) / volumeSliderBaseRect.width, 0, 1);
-    //    SetMasterVolume(g_settings.masterVolume);
-    //    if (res.settingsMusicLoaded && IsMusicStreamPlaying(res.settingsMusic)) {
-    //        SetMusicVolume(res.settingsMusic, currentSettingsMusicVolume * g_settings.masterVolume);
-    //    }
-    //}
-    //DrawRectangle(volumeSliderBaseRect.x, volumeSliderBaseRect.y, volumeSliderBaseRect.width * g_settings.masterVolume, volumeSliderBaseRect.height, VIOLET);
-    //DrawTextEx(uiFont, TextFormat("% %", g_settings.masterVolume * 100), { volumeSliderBaseRect.x + volumeSliderBaseRect.width + 15, 180 }, settingsTextFontSize, 1, WHITE);
-
-
-    // Resolution Selector
     DrawTextEx(uiFont, "Resolution:", { 100, 240 }, settingsTextFontSize, 1, WHITE);
     Rectangle resolutionSelectorBounds = { selectorX, 235, selectorWidth, selectorHeight };
     int resolutionChange = GuiSelector(resolutionSelectorBounds, resolutionOptions[currentResolutionIndex], uiFont, BLACK, WHITE, DARKGRAY, mousePos);
@@ -434,7 +367,6 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurre
             SetWindowPosition((GetMonitorWidth(GetCurrentMonitor()) - g_settings.screenWidth) / 2, (GetMonitorHeight(GetCurrentMonitor()) - g_settings.screenHeight) / 2);
     }
 
-    // Quality Selector
     DrawTextEx(uiFont, "Quality:", { 100, 300 }, settingsTextFontSize, 1, WHITE);
     Rectangle qualitySelectorBounds = { selectorX, 295, selectorWidth, selectorHeight };
     int qualityChange = GuiSelector(qualitySelectorBounds, qualityOptions[currentQualityIndex], uiFont, BLACK, WHITE, DARKGRAY, mousePos);
@@ -444,7 +376,6 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurre
         g_settings.quality = qualityValues[currentQualityIndex];
     }
 
-    // Shaders Toggle
     DrawTextEx(uiFont, "Shaders:", { 100, 360 }, settingsTextFontSize, 1, WHITE);
     Rectangle crtToggleButtonBounds = { selectorX, 355, 100, 30 };
     if (GuiButton(crtToggleButtonBounds, g_settings.useCRTShader ? "ON" : "OFF", uiFont, WHITE, LIGHTGRAY, GRAY, mousePos)) {
@@ -459,7 +390,6 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurre
         }
     }
 
-    // Back Button
     if (GuiButton({ logicalWidth / 2 - 100, logicalHeight - 100, 200, 50 }, "Back", uiFont, WHITE, LIGHTGRAY, GRAY, mousePos)) {
         PlaySound(res.buttonSelect);
         previousScreen = SETTINGS;
@@ -472,10 +402,8 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurre
         }
     }
 
-    // --- Helpy Drawing Logic ---
     Texture2D textureToDrawForHelpy = { 0 };
     Image imageForHelpyDimensions = { 0 };
-
     if (helpyKilled) {
         if (res.helpyCrackedGifLoaded && res.helpyCrackedTexture.id > 0) {
             textureToDrawForHelpy = res.helpyCrackedTexture;
@@ -489,14 +417,8 @@ void DrawSettingsScreen(MainMenuResources& res, Vector2 mousePos, int helpyCurre
         }
     }
 
-
     if (textureToDrawForHelpy.id > 0 && imageForHelpyDimensions.data) {
-        Rectangle helpyDestinationRect = {
-            logicalWidth - (imageForHelpyDimensions.width / 1.5) - 10,
-            logicalHeight - (imageForHelpyDimensions.height / 1.5) - 15,
-            imageForHelpyDimensions.width / 1.5,
-            imageForHelpyDimensions.height / 1.5
-        };
+        Rectangle helpyDestinationRect = { logicalWidth - (imageForHelpyDimensions.width / 1.5) - 10, logicalHeight - (imageForHelpyDimensions.height / 1.5) - 15, imageForHelpyDimensions.width / 1.5, imageForHelpyDimensions.height / 1.5 };
         Rectangle helpySourceRect = { 0, 0, textureToDrawForHelpy.width, textureToDrawForHelpy.height };
         DrawTexturePro(textureToDrawForHelpy, helpySourceRect, helpyDestinationRect, { 0,0 }, 0, WHITE);
     }
@@ -517,16 +439,13 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
 
         if ((actualChar >= 32) && (actualChar <= 126) && (strlen(consoleInputBuffer) < consoleMaxChars)) {
             int currentTextLength = strlen(consoleInputBuffer);
-
             for (int i = currentTextLength; i >= consoleInputCursorPos; i--)
                 if (i + 1 <= consoleMaxChars)
                     consoleInputBuffer[i + 1] = consoleInputBuffer[i];
-
             inputChangedByTyping = true;
             consoleInputBuffer[consoleInputCursorPos] = actualChar;
             consoleInputCursorPos++;
         }
-
         keyPressedUnicode = GetCharPressed();
     }
 
@@ -534,30 +453,19 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
         if ((IsKeyPressed(KEY_BACKSPACE)) || IsKeyPressed(KEY_LEFT))
             consoleInputCursorPos--;
 
-
     if (consoleInputCursorPos < strlen(consoleInputBuffer)) {
         if (IsKeyPressed(KEY_RIGHT))
             consoleInputCursorPos++;
-
         if (IsKeyPressed(KEY_BACKSPACE))
             for (int i = consoleInputCursorPos; i < strlen(consoleInputBuffer); i++)
                 consoleInputBuffer[i] = consoleInputBuffer[i + 1];
     }
 
-
-
     if (IsKeyPressed(KEY_ENTER)) {
-        Rectangle tempOutputArea = {
-            consoleRect.x + 10,
-            consoleRect.y + 10,
-            consoleRect.width - 20,
-            consoleRect.height - 58
-        };
-
+        Rectangle tempOutputArea = { consoleRect.x + 10, consoleRect.y + 10, consoleRect.width - 20, consoleRect.height - 58 };
         if (strlen(consoleInputBuffer) > 0) {
             string input = consoleInputBuffer;
             consoleOutputLines.push_back("> " + input);
-
             vector<string> tokens;
             string currentToken = "";
             for (char ch : input) {
@@ -577,7 +485,6 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
                 string commandNameInput = tokens[0];
                 string commandNameNormalized = commandNameInput;
                 transform(commandNameNormalized.begin(), commandNameNormalized.end(), commandNameNormalized.begin(), ::toupper);
-
                 const CommandDefinition* foundCmdDef = nullptr;
                 for (const auto& cmdDef : definedCommands) {
                     if (cmdDef.name == commandNameNormalized) {
@@ -585,7 +492,6 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
                         break;
                     }
                 }
-
                 if (foundCmdDef) {
                     bool helpRequestedForThisCommand = false;
                     for (int i = 1; i < tokens.size(); i++) {
@@ -594,7 +500,6 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
                             break;
                         }
                     }
-
                     if (helpRequestedForThisCommand) {
                         string line;
                         int start = 0;
@@ -638,7 +543,6 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
                             else {
                                 consoleOutputLines.push_back("For more information on a specific command, type HELP [command-name].");
                                 consoleOutputLines.push_back("");
-
                                 for (const auto& cmdDefList : definedCommands)
                                     consoleOutputLines.push_back(cmdDefList.name);
                             }
@@ -653,17 +557,14 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
                         else if (foundCmdDef->name == "TASKLIST") {
                             consoleOutputLines.push_back("Image Name");
                             consoleOutputLines.push_back("=========================");
-
                             for (const auto& proc : runningProcesses)
                                 consoleOutputLines.push_back(proc);
-
                             commandExecutedSuccessfully = true;
                         }
                         else if (foundCmdDef->name == "TASKKILL") {
                             string targetProcess = "";
                             bool argT = false;
                             bool argF = false;
-
                             for (int i = 1; i < tokens.size(); i++) {
                                 string currentArg = tokens[i];
                                 string normalizedArg = currentArg;
@@ -672,7 +573,6 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
                                 else if (normalizedArg == "/F") argF = true;
                                 else if (currentArg != "/?" && targetProcess.empty()) targetProcess = tokens[i];
                             }
-
                             if (targetProcess.empty()) {
                                 consoleOutputLines.push_back("ERROR: The syntax of the command is incorrect.");
                                 consoleOutputLines.push_back("Type TASKKILL /? for command syntax.");
@@ -692,11 +592,9 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
                                                 musicRestartKillTimer = 0;
                                                 if (res.helpyCrackedGifImage.data)
                                                     UpdateTexture(res.helpyCrackedTexture, (char*)res.helpyCrackedGifImage.data);
-
                                                 PlaySound(res.helpyCrackSound);
                                                 if (IsMusicStreamPlaying(res.settingsMusic))
                                                     StopMusicStream(res.settingsMusic);
-
                                                 runningProcesses.erase(it_helpy_check);
                                             }
                                         }
@@ -716,7 +614,6 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
                                             consoleOutputLines.push_back("...");
                                             consoleOutputLines.push_back("CRITICAL_PROCESS_DIED");
                                             runningProcesses.erase(it_fazbos);
-                                            // TODO: EASTER EGG
                                         }
                                         else if (argT) {
                                             consoleOutputLines.push_back("ERROR: The process \"" + targetProcess + "\" could not be terminated (graceful termination not supported).");
@@ -733,82 +630,53 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
                                         consoleOutputLines.push_back("ERROR: The process \"" + targetProcess + "\" not found.");
                                     else
                                         consoleOutputLines.push_back("INFO: The process \"" + targetProcess + "\" cannot be terminated by this utility (not a recognized user process for termination).");
-
                             }
                             commandExecutedSuccessfully = true;
-
                         }
                     }
                 }
                 else consoleOutputLines.push_back("'" + commandNameInput + "' is not recognized as an internal or external command,\noperable program or batch file. Type HELP for a list of commands.");
             }
-
             memset(consoleInputBuffer, 0, consoleMaxChars + 1);
             consoleInputCursorPos = 0;
-
             int actualConsoleLinesToDraw = 0;
             if (tempOutputArea.height > 0)
                 actualConsoleLinesToDraw = (tempOutputArea.height / 20);
-
             if (consoleOutputLines.size() > actualConsoleLinesToDraw)
                 consoleScrollOffset = consoleOutputLines.size() - actualConsoleLinesToDraw;
             else consoleScrollOffset = 0;
-
 
         }
         else {
             consoleOutputLines.push_back(">");
-
             int actualConsoleLinesToDraw = 0;
             if (tempOutputArea.height > 0)
                 actualConsoleLinesToDraw = (tempOutputArea.height / 20);
-
             if (consoleOutputLines.size() > actualConsoleLinesToDraw)
                 consoleScrollOffset = consoleOutputLines.size() - actualConsoleLinesToDraw;
             else consoleScrollOffset = 0;
         }
     }
-
     float mouseWheelMove = GetMouseWheelMove();
     if (mouseWheelMove != 0) {
         consoleScrollOffset -= mouseWheelMove * 2;
-
         if (consoleScrollOffset < 0) consoleScrollOffset = 0;
         int maxPossibleScroll = 0;
-
         if (consoleOutputLines.size() > consoleLinesToDraw)
             maxPossibleScroll = consoleOutputLines.size() - consoleLinesToDraw;
-
         if (consoleScrollOffset > maxPossibleScroll)
             consoleScrollOffset = maxPossibleScroll;
     }
-
-
-    // --- Console Drawing ---
     DrawRectangleRec(consoleRect, Fade(DARKGRAY, 0.92));
     DrawRectangleLinesEx(consoleRect, 1, LIGHTGRAY);
-
-    Rectangle inputBgArea = {
-        consoleRect.x + 10,
-        consoleRect.y + consoleRect.height - 40,
-        consoleRect.width - 20,
-        30
-    };
+    Rectangle inputBgArea = { consoleRect.x + 10, consoleRect.y + consoleRect.height - 40, consoleRect.width - 20, 30 };
     DrawRectangleRec(inputBgArea, Fade(BLACK, 0.75));
-
-    Rectangle outputArea = {
-        consoleRect.x + 10,
-        consoleRect.y + 10,
-        consoleRect.width - 20,
-        inputBgArea.y - consoleRect.y - 18
-    };
-
+    Rectangle outputArea = { consoleRect.x + 10, consoleRect.y + 10, consoleRect.width - 20, inputBgArea.y - consoleRect.y - 18 };
     float outputFontSize = 14;
     float lineHeight = 28;
     int calculatedConsoleLinesToDraw = 0;
     if (outputArea.height > 0)
         calculatedConsoleLinesToDraw = (outputArea.height / lineHeight);
-
     int startLineToDraw = consoleScrollOffset;
     if (consoleOutputLines.empty() || consoleOutputLines.size() <= calculatedConsoleLinesToDraw) {
         startLineToDraw = 0;
@@ -820,7 +688,6 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
         if (startLineToDraw > maxScroll) startLineToDraw = maxScroll;
         consoleScrollOffset = startLineToDraw;
     }
-
     BeginScissorMode(outputArea.x, outputArea.y, outputArea.width, outputArea.height);
     for (int i = 0; i < consoleLinesToDraw; i++) {
         int currentLineInHistory = consoleScrollOffset + i;
@@ -829,10 +696,8 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
         else break;
     }
     EndScissorMode();
-
     float textInputY = inputBgArea.y + (inputBgArea.height - outputFontSize) / 2;
     DrawTextEx(font, TextFormat("> %s", consoleInputBuffer), { inputBgArea.x + 5, textInputY }, outputFontSize, 1, LIME);
-
     if (((int)(GetTime() * 3)) % 2 == 0) {
         char tempCursorBuffer[consoleMaxChars + 3];
         snprintf(tempCursorBuffer, sizeof(tempCursorBuffer), "> %.*s", consoleInputCursorPos, consoleInputBuffer);
@@ -843,64 +708,49 @@ void UpdateDrawConsole(MainMenuResources& res, Font font, Vector2 mousePos, floa
 
 int main(void) {
     InitializeGameSettings();
-
     for (int i = 0; i < numResolutionOptions; i++)
         if (g_settings.currentResolution == resolutionValues[i]) {
             currentResolutionIndex = i;
-
             break;
         }
-
     for (int i = 0; i < numQualityOptions; i++)
         if (g_settings.quality == qualityValues[i]) {
             currentQualityIndex = i;
-
             break;
         }
-
-
     SetConfigFlags(FLAG_WINDOW_UNDECORATED);
     InitWindow(g_settings.screenWidth, g_settings.screenHeight, "FNaF Minigames - Loading...");
     InitAudioDevice();
-    HideCursor();
+    SetMasterVolume(g_settings.masterVolume);
 
     MainMenuResources mainMenuRes{};
     Font consoleFont = mainMenuRes.consolasFont;
-
     bool initialStaticLoadScreenReady = LoadInitialLoadingScreenResources(mainMenuRes);
     float loadingScreenMinVisibleTime = 2;
     float loadingScreenVisibleTimer = 0;
-
     SetWindowPosition((GetMonitorWidth(GetCurrentMonitor()) - g_settings.screenWidth) / 2, (GetMonitorHeight(GetCurrentMonitor()) - g_settings.screenHeight) / 2);
-    SetMasterVolume(g_settings.masterVolume);
     SetTargetFPS(60);
 
     GameScreen currentScreen = LOADING;
     GameScreen previousScreen = LOADING;
     bool shouldExit = false;
-
     int mainMenuBgCurrentFrame = 0;
     float mainMenuBgFrameDelay = 0.067;
     float mainMenuBgFrameTimer = 0;
-
     float fadeAlpha = 0;
     float fadeSpeed = 1.25;
     bool isFadingOut = false;
     bool isFadingIn = false;
     GameScreen fadeTargetScreen = MAIN_MENU;
-
     bool mainResourcesLoadAttempted = false;
     bool mainMenuResourcesLoaded = false;
 
-
     while (!shouldExit && !WindowShouldClose()) {
+        HideCursor();
         float dt = GetFrameTime();
         Vector2 mousePos = GetMousePosition();
+        if (IsKeyPressed(KEY_F11)) ToggleFullscreen();
 
-        if (IsKeyPressed(KEY_F11))
-            ToggleFullscreen();
-
-        // --- Fading Logic ---
         if (isFadingOut) {
             fadeAlpha += fadeSpeed * dt;
             if (previousScreen == MAIN_MENU && mainMenuRes.menuMusicLoaded && IsMusicStreamPlaying(mainMenuRes.menuMusic)) {
@@ -911,14 +761,11 @@ int main(void) {
                 currentSettingsMusicVolume = fmaxf(0, currentSettingsMusicVolume - musicFadeSpeed * dt);
                 SetMusicVolume(mainMenuRes.settingsMusic, currentSettingsMusicVolume * g_settings.masterVolume);
             }
-
             if (fadeAlpha >= 1) {
                 fadeAlpha = 1;
                 isFadingOut = false;
-
                 if (previousScreen == MAIN_MENU) StopAndUnloadMusic(mainMenuRes.menuMusic, mainMenuRes.menuMusicLoaded);
                 else if (previousScreen == SETTINGS) StopAndUnloadMusic(mainMenuRes.settingsMusic, mainMenuRes.settingsMusicLoaded);
-
                 currentMenuMusicVolume = 1;
                 currentSettingsMusicVolume = 1;
 
@@ -928,37 +775,34 @@ int main(void) {
                     MotoristGameResources motoristRes = LoadMotoristResources(g_settings.quality);
                     if (CheckMotoristResourcesLoaded(motoristRes)) {
                         runMidnightMotorist(g_settings.quality, mainMenuRes.crtShader, g_settings.useCRTShader && mainMenuRes.shaderLoadedSuccessfully);
-                        HideCursor();
                     }
                     else cout << "Failed to load Motorist resources. Returning to Main Menu." << endl;
-
                     UnloadMotoristResources(motoristRes);
                 }
                 else if (fadeTargetScreen == PLAYING_RAINBOW) {
                     RainbowLandGameResources rainbowRes = LoadRainbowLandResources(g_settings.quality);
                     if (CheckRainbowLandResourcesLoaded(rainbowRes)) {
                         runMagicRainbowLand(g_settings.quality);
-                        HideCursor();
                     }
                     else cout << "Failed to load Rainbow Land resources. Returning to Main Menu.";
-
                     UnloadRainbowLandResources(rainbowRes);
                 }
                 else if (fadeTargetScreen == PLAYING_FRUITY_MAZE) {
                     FruityMazeGameResources fruityMazeRes = LoadFruityMazeResources(g_settings.quality);
                     if (CheckFruityMazeResourcesLoaded(fruityMazeRes)) {
-                        runFruityMaze(g_settings.quality, mainMenuRes.fruityMazeShader, g_settings.useCRTShader && mainMenuRes.fruityMazeShaderLoaded);
-                        HideCursor();
+                        runFruityMaze(g_settings.quality, mainMenuRes.fruityMazeShader, g_settings.useCRTShader && mainMenuRes.fruityMazeShaderLoaded, fruityMazeDifficulty);
                     }
                     else cout << "Failed to load Fruity Maze resources. Returning to Main Menu." << endl;
-
                     UnloadFruityMazeResources(fruityMazeRes);
                 }
 
                 previousScreen = currentScreen;
-
-                if (fadeTargetScreen == PLAYING_MOTORIST || fadeTargetScreen == PLAYING_RAINBOW || fadeTargetScreen == PLAYING_FRUITY_MAZE) currentScreen = screenAfterGame;  // CHANGED: Added PLAYING_FRUITY_MAZE
-                else currentScreen = fadeTargetScreen;
+                if (fadeTargetScreen == PLAYING_MOTORIST || fadeTargetScreen == PLAYING_RAINBOW || fadeTargetScreen == PLAYING_FRUITY_MAZE) {
+                    currentScreen = screenAfterGame;
+                }
+                else {
+                    currentScreen = fadeTargetScreen;
+                }
 
                 if (IsWindowMinimized()) RestoreWindow();
                 SetTargetFPS(60);
@@ -966,12 +810,10 @@ int main(void) {
                 if (currentScreen == MAIN_MENU) {
                     if (!mainMenuRes.menuMusicLoaded && FileExists("resources/mainMenu.mp3")) {
                         mainMenuRes.menuMusic = LoadMusicStream("resources/mainMenu.mp3");
-                        if (mainMenuRes.menuMusic.stream.buffer)
-                            mainMenuRes.menuMusicLoaded = true;
+                        if (mainMenuRes.menuMusic.stream.buffer) mainMenuRes.menuMusicLoaded = true;
                     }
                     if (mainMenuRes.menuMusicLoaded) {
                         PlayMusicStream(mainMenuRes.menuMusic);
-
                         if (helpyKilled) SetMusicPitch(mainMenuRes.menuMusic, 0.6);
                         else SetMusicPitch(mainMenuRes.menuMusic, 1);
                     }
@@ -979,24 +821,18 @@ int main(void) {
                 else if (currentScreen == SETTINGS) {
                     if (!mainMenuRes.settingsMusicLoaded && FileExists("resources/SETTINGS.mp3")) {
                         mainMenuRes.settingsMusic = LoadMusicStream("resources/SETTINGS.mp3");
-                        if (mainMenuRes.settingsMusic.stream.buffer)
-                            mainMenuRes.settingsMusicLoaded = true;
+                        if (mainMenuRes.settingsMusic.stream.buffer) mainMenuRes.settingsMusicLoaded = true;
                     }
                     if (mainMenuRes.settingsMusicLoaded) {
                         PlayMusicStream(mainMenuRes.settingsMusic);
                         if (helpyKilled) SetMusicPitch(mainMenuRes.settingsMusic, 0.4);
                         else SetMusicPitch(mainMenuRes.settingsMusic, 1);
-
                         helpyCurrentAnimFrame = 0;
                         helpyFrameTimer = 0;
-
                         if (helpyKilled && mainMenuRes.helpyCrackedGifLoaded) {
-                            if (mainMenuRes.helpyCrackedAnimFrames > 0 &&
-                                helpyCrackedCurrentPlayingFrame >= mainMenuRes.helpyCrackedAnimFrames - 1) {
-
+                            if (mainMenuRes.helpyCrackedAnimFrames > 0 && helpyCrackedCurrentPlayingFrame >= mainMenuRes.helpyCrackedAnimFrames - 1) {
                                 int lastFrameIndex = mainMenuRes.helpyCrackedAnimFrames - 1;
                                 helpyCrackedCurrentPlayingFrame = lastFrameIndex;
-
                                 int frameDataSize = GetPixelDataSize(mainMenuRes.helpyCrackedGifImage.width, mainMenuRes.helpyCrackedGifImage.height, mainMenuRes.helpyCrackedGifImage.format);
                                 char* frameDataOffset = (char*)mainMenuRes.helpyCrackedGifImage.data + (lastFrameIndex * frameDataSize);
                                 UpdateTexture(mainMenuRes.helpyCrackedTexture, frameDataOffset);
@@ -1017,7 +853,6 @@ int main(void) {
                 currentSettingsMusicVolume = fminf(1, currentSettingsMusicVolume + musicFadeSpeed * dt);
                 SetMusicVolume(mainMenuRes.settingsMusic, currentSettingsMusicVolume * g_settings.masterVolume);
             }
-
             if (fadeAlpha <= 0) {
                 fadeAlpha = 0;
                 isFadingIn = false;
@@ -1028,7 +863,6 @@ int main(void) {
             }
         }
 
-        // --- Screen Logic (when not fading) ---
         if (!isFadingOut && !isFadingIn) {
             switch (currentScreen) {
             case LOADING: {
@@ -1036,23 +870,19 @@ int main(void) {
                 if (!mainResourcesLoadAttempted && loadingScreenVisibleTimer > 0.1) {
                     mainResourcesLoadAttempted = true;
                     mainMenuResourcesLoaded = LoadMainMenuResources(mainMenuRes, logicalWidth, logicalHeight);
-
                     if (!mainMenuRes.shaderLoadedSuccessfully) g_settings.useCRTShader = false;
                     SetWindowTitle("FNaF Minigames Port");
                 }
-
                 if (mainMenuResourcesLoaded && loadingScreenVisibleTimer >= loadingScreenMinVisibleTime) {
                     previousScreen = LOADING;
                     currentScreen = MAIN_MENU;
                     fadeTargetScreen = MAIN_MENU;
                     isFadingIn = true;
                     fadeAlpha = 1;
-
                     if (!mainMenuRes.menuMusicLoaded && FileExists("resources/mainMenu.mp3")) {
                         mainMenuRes.menuMusic = LoadMusicStream("resources/mainMenu.mp3");
                         if (mainMenuRes.menuMusic.stream.buffer) mainMenuRes.menuMusicLoaded = true;
                     }
-
                     if (mainMenuRes.menuMusicLoaded) PlayMusicStream(mainMenuRes.menuMusic);
                 }
             } break;
@@ -1062,6 +892,27 @@ int main(void) {
             case SETTINGS: {
                 UpdateSettingsScreen(mainMenuRes, mousePos, currentScreen, previousScreen, fadeTargetScreen, isFadingOut, fadeAlpha, dt, helpyCurrentAnimFrame, helpyFrameTimer, helpyFrameDelay);
             } break;
+            case FRUITY_MAZE_DIFFICULTY: {
+                if (IsKeyPressed(KEY_ESCAPE)) {
+                    previousScreen = FRUITY_MAZE_DIFFICULTY;
+                    fadeTargetScreen = MAIN_MENU;
+                    isFadingOut = true;
+                    fadeAlpha = 0;
+                }
+                Rectangle difficultyButton = { (float)logicalWidth / 2 - 150, (float)logicalHeight / 2 - 40, 300, 80 };
+                if (GuiButton(difficultyButton, (fruityMazeDifficulty == DIFFICULTY_EASY) ? "EASY" : "NORMAL", mainMenuRes.arcadeClassicFont, WHITE, LIGHTGRAY, GRAY, mousePos)) {
+                    PlaySound(mainMenuRes.buttonClick);
+                    fruityMazeDifficulty = (fruityMazeDifficulty == DIFFICULTY_EASY) ? DIFFICULTY_NORMAL : DIFFICULTY_EASY;
+                }
+                Rectangle startButton = { (float)logicalWidth / 2 - 150, (float)logicalHeight / 2 + 60, 300, 80 };
+                if (GuiButton(startButton, "START GAME", mainMenuRes.arcadeClassicFont, LIME, GREEN, DARKGREEN, mousePos)) {
+                    PlaySound(mainMenuRes.buttonSelect);
+                    previousScreen = FRUITY_MAZE_DIFFICULTY;
+                    fadeTargetScreen = PLAYING_FRUITY_MAZE;
+                    isFadingOut = true;
+                    fadeAlpha = 0;
+                }
+            } break;
             case EXITING: {
                 shouldExit = true;
             } break;
@@ -1069,7 +920,6 @@ int main(void) {
             }
         }
 
-        // ------ DRAWING SECTION ------
         BeginDrawing();
         ClearBackground(BLACK);
 
@@ -1084,7 +934,6 @@ int main(void) {
         else if (mainMenuRes.targetRenderTexture.id > 0) {
             BeginTextureMode(mainMenuRes.targetRenderTexture);
             ClearBackground(BLANK);
-
             GameScreen screenToDrawForContent = currentScreen;
             if (isFadingOut) screenToDrawForContent = previousScreen;
             switch (screenToDrawForContent) {
@@ -1095,9 +944,30 @@ int main(void) {
                 DrawSettingsScreen(mainMenuRes, mousePos, helpyCurrentAnimFrame, currentScreen, previousScreen, fadeTargetScreen, isFadingOut, fadeAlpha);
                 if (consoleActive) UpdateDrawConsole(mainMenuRes, consoleFont, mousePos, dt);
             } break;
+            case FRUITY_MAZE_DIFFICULTY: {
+                ClearBackground(DARKGRAY);
+                const char* titleText = "Select Difficulty";
+                DrawTextEx(mainMenuRes.arcadeClassicFont, titleText, { (float)logicalWidth / 2 - MeasureTextEx(mainMenuRes.arcadeClassicFont, titleText, 40, 1).x / 2, 150 }, 40, 1, WHITE);
+
+                Rectangle difficultyButton = { (float)logicalWidth / 2 - 150, (float)logicalHeight / 2 - 40, 300, 80 };
+                GuiButton(difficultyButton, (fruityMazeDifficulty == DIFFICULTY_EASY) ? "EASY" : "NORMAL", mainMenuRes.arcadeClassicFont, WHITE, LIGHTGRAY, GRAY, mousePos);
+
+                Rectangle startButton = { (float)logicalWidth / 2 - 150, (float)logicalHeight / 2 + 60, 300, 80 };
+                GuiButton(startButton, "START GAME", mainMenuRes.arcadeClassicFont, LIME, GREEN, DARKGREEN, mousePos);
+
+                Rectangle backButton = { (float)logicalWidth / 2 - 100, (float)logicalHeight - 100, 200, 50 };
+                if (GuiButton(backButton, "Back", mainMenuRes.arcadeClassicFont, WHITE, LIGHTGRAY, GRAY, mousePos)) {
+                    PlaySound(mainMenuRes.buttonSelect);
+                    previousScreen = FRUITY_MAZE_DIFFICULTY;
+                    fadeTargetScreen = MAIN_MENU;
+                    isFadingOut = true;
+                    fadeAlpha = 0;
+                }
+
+            } break;
             case PLAYING_MOTORIST:
             case PLAYING_RAINBOW:
-            case PLAYING_FRUITY_MAZE:  // ADD THIS LINE
+            case PLAYING_FRUITY_MAZE:
                 ClearBackground(BLACK);
                 DrawText("IN GAME...", (logicalWidth - MeasureText("IN GAME...", 20)) / 2, (logicalHeight - 20) / 2, 20, WHITE);
                 break;
@@ -1105,10 +975,10 @@ int main(void) {
             }
             EndTextureMode();
 
-            float finalScale = fminf(GetScreenWidth() / logicalWidth, GetScreenHeight() / logicalHeight);
-            float finalOffsetX = (GetScreenWidth() - (logicalWidth * finalScale)) * 0.5;
-            float finalOffsetY = (GetScreenHeight() - (logicalHeight * finalScale)) * 0.5;
-            Rectangle srcRect = { 0, 0, mainMenuRes.targetRenderTexture.texture.width, -mainMenuRes.targetRenderTexture.texture.height };
+            float finalScale = fminf((float)GetScreenWidth() / logicalWidth, (float)GetScreenHeight() / logicalHeight);
+            float finalOffsetX = (GetScreenWidth() - (logicalWidth * finalScale)) * 0.5f;
+            float finalOffsetY = (GetScreenHeight() - (logicalHeight * finalScale)) * 0.5f;
+            Rectangle srcRect = { 0, 0, (float)mainMenuRes.targetRenderTexture.texture.width, -(float)mainMenuRes.targetRenderTexture.texture.height };
             Rectangle destRect = { finalOffsetX, finalOffsetY, logicalWidth * finalScale, logicalHeight * finalScale };
             DrawTexturePro(mainMenuRes.targetRenderTexture.texture, srcRect, destRect, { 0, 0 }, 0, WHITE);
 
@@ -1118,20 +988,17 @@ int main(void) {
         if ((isFadingOut || isFadingIn) && fadeAlpha > 0)
             DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, fadeAlpha));
 
-        if (mainMenuRes.cursor.id > 0 && !consoleActive && (currentScreen == MAIN_MENU || currentScreen == SETTINGS))
+        bool showCustomCursor = !consoleActive && (currentScreen == MAIN_MENU || currentScreen == SETTINGS || currentScreen == FRUITY_MAZE_DIFFICULTY);
+        if (mainMenuRes.cursor.id > 0 && showCustomCursor)
             DrawTexture(mainMenuRes.cursor, mousePos.x, mousePos.y, WHITE);
 
-        //DrawFPS(10, 10);
         EndDrawing();
     }
 
     cout << "CLEANUP: Starting main cleanup..." << endl;
-
     UnloadMainMenuResources(mainMenuRes);
     CloseAudioDevice();
     CloseWindow();
-
     cout << "CLEANUP: Finished. Exiting application." << endl;
-
     return 0;
 }
