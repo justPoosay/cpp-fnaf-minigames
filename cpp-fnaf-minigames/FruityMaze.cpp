@@ -10,7 +10,7 @@ vector<Prop> gameProps;
 PowerUpState powerUps = { false, 0, false, 0, false, 0 };
 GameState gameState = { 60, 0, false, 0, false, -1, false, false };
 TextState textGif = { false, 0, false, 0, false, 0, false };
-int playerAnimFrameCounter = 0;  // **FIXED: Use frame counter instead of time**
+int playerAnimFrameCounter = 0;  // **Animation frame counter**
 
 static Rectangle GetPlayerHitbox(Vector3 playerPos, float rotationAngle) {
     return {
@@ -203,31 +203,30 @@ static void UpdateAnimations(float deltaTime, const FruityMazeGameResources& res
     UpdateAnimation((AnimationData&)resources.timeExtendedAnim, deltaTime);
 }
 
-// **FIXED: Correct animation handling using frame counter like Raylib example**
+// **Animation handling with speed effects**
 static void UpdatePlayerAnimation(float deltaTime, const FruityMazeGameResources& resources, bool isMoving) {
     if (resources.playerAnimationCount <= 0 || !resources.playerAnimations) return;
 
     if (isMoving) {
-        // **FIXED: Increment frame counter each update (like Raylib example)**
-        playerAnimFrameCounter++;
+        // **Calculate animation speed multiplier based on power-ups**
+        float animationSpeedMultiplier = playerAnimationSpeed; // **NEW: Use constant for base speed**
+        if (powerUps.lightningActive) {
+            animationSpeedMultiplier *= lightningSpeedMultiplier; // **UPDATED: Multiply base speed by lightning multiplier**
+        }
 
-        // **FIXED: Loop animation when reaching end**
+        // **Increment frame counter with speed multiplier**
+        playerAnimFrameCounter += (int)(animationSpeedMultiplier);
+
+        // **Loop animation when reaching end**
         if (playerAnimFrameCounter >= resources.playerAnimations[0].frameCount) {
             playerAnimFrameCounter = 0;
         }
 
-        // **FIXED: Use frame counter, not time**
+        // **Update model animation**
         UpdateModelAnimation(resources.playerModel, resources.playerAnimations[0], playerAnimFrameCounter);
-
-        // **DEBUG: Log frame updates**
-        static int logCounter = 0;
-        if (logCounter++ % 60 == 0) {
-            TraceLog(LOG_INFO, "Animation frame: %d/%d",
-                playerAnimFrameCounter, resources.playerAnimations[0].frameCount);
-        }
     }
     else {
-        // **FIXED: Keep current frame when stopped (don't reset to 0)**
+        // **Keep current frame when stopped**
         UpdateModelAnimation(resources.playerModel, resources.playerAnimations[0], playerAnimFrameCounter);
     }
 }
@@ -315,7 +314,7 @@ static void ActivatePowerUp(PropType powerUpType, const FruityMazeGameResources&
         break;
     case PROP_MAGNET:
         powerUps.magnetActive = true;
-        powerUps.magnetTimeLeft = magnetDuration;
+        powerUps.magnetTimeLeft += magnetDuration;
         break;
     default: break;
     }
@@ -557,7 +556,7 @@ static void HandleKeyboardInput(ViewCameraMode& currentCameraMode, bool& debug, 
     }
 }
 
-// **NEW: Function to snap rotation to cardinal directions**
+// Function to snap rotation to cardinal directions
 static float SnapToCardinalDirection(Vector3 moveDirection) {
     if (Vector3LengthSqr(moveDirection) <= 0) return playerRotationAngle;
 
@@ -571,7 +570,7 @@ static float SnapToCardinalDirection(Vector3 moveDirection) {
     return snappedAngle;
 }
 
-// **UPDATED: Modified HandlePlayerMovement to include cardinal directions and movement detection**
+// Modified HandlePlayerMovement to include cardinal directions and movement detection
 static void HandlePlayerMovement(float deltaTime, ViewCameraMode currentCameraMode, bool startFound,
     const FruityMazeGameResources& resources, bool& isMoving) {
     if (!startFound || !resources.mapPixels || gameState.gameOver) {
@@ -599,7 +598,7 @@ static void HandlePlayerMovement(float deltaTime, ViewCameraMode currentCameraMo
     if (IsKeyDown(KEY_A)) moveDirectionInput = Vector3Add(moveDirectionInput, rightMovementDirection);
     if (IsKeyDown(KEY_D)) moveDirectionInput = Vector3Subtract(moveDirectionInput, rightMovementDirection);
 
-    // **NEW: Set movement state**
+    // Set movement state
     isMoving = (Vector3LengthSqr(moveDirectionInput) > 0);
 
     if (!isMoving) return;
@@ -638,7 +637,7 @@ static void HandlePlayerMovement(float deltaTime, ViewCameraMode currentCameraMo
         playerPosition = finalPosition;
     }
 
-    // **UPDATED: Handle player rotation with cardinal snapping for non-first-person modes**
+    // Handle player rotation with cardinal snapping for non-first-person modes
     if (currentCameraMode != VIEW_CAMERA_FIRST_PERSON) {
         playerRotationAngle = SnapToCardinalDirection(moveDirectionInput);
     }
@@ -711,7 +710,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
     powerUps = { false, 0, false, 0, false, 0 };
     gameState = { 60, 0, false, 0, false, -1, false, false };
     textGif = { false, 0, false, 0, false, 0, false };
-    playerAnimFrameCounter = 0;  // **FIXED: Initialize frame counter**
+    playerAnimFrameCounter = 0;  // Initialize frame counter
 
     // Load resources
     FruityMazeGameResources resources = LoadFruityMazeResources(quality);
@@ -750,7 +749,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
     bool startFound = false;
     Vector3 initialSpawnPoint = { 0 };
     bool debug = false;
-    bool playerIsMoving = false;  // **NEW: Local variable for movement state**
+    bool playerIsMoving = false;
 
     // Find spawn point
     if (resources.mapPixels) {
@@ -810,7 +809,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             UpdateAnimations(deltaTime, resources);
             UpdatePowerUps(deltaTime, resources);
             UpdateProps(deltaTime);
-            UpdatePlayerAnimation(deltaTime, resources, playerIsMoving);  // **FIXED: Update player animation**
+            UpdatePlayerAnimation(deltaTime, resources, playerIsMoving);  // Update player animation
             UpdateGameTimer(deltaTime, resources);
             CheckOutOfBounds(resources);
             CheckPropCollection(playerPosition, resources);
@@ -827,7 +826,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
                 while (playerRotationAngle < 0) playerRotationAngle += 360;
                 while (playerRotationAngle >= 360) playerRotationAngle -= 360;
             }
-            HandlePlayerMovement(deltaTime, currentCameraMode, startFound, resources, playerIsMoving);  // **UPDATED: Pass movement state**
+            HandlePlayerMovement(deltaTime, currentCameraMode, startFound, resources, playerIsMoving);
             UpdateCamera(camera, currentCameraMode, startFound);
 
             // **RENDERING**
@@ -980,7 +979,10 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             if (debug) {
                 float debugYOffset = textPadding + UI_LARGE_FONT_SIZE + 20;
                 DrawText(TextFormat("Pos: X:%.1f Z:%.1f (%s)", playerPosition.x, playerPosition.z, camModeStr), textPadding, debugYOffset, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
-                DrawText(TextFormat("Angle: %.1f | Speed: %.1f | Moving: %s | Frame: %d", playerRotationAngle, GetCurrentPlayerSpeed(), playerIsMoving ? "YES" : "NO", playerAnimFrameCounter), textPadding, debugYOffset + UI_SMALL_FONT_SIZE + 2, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
+                DrawText(TextFormat("Angle: %.1f | Speed: %.1f | Moving: %s", playerRotationAngle, GetCurrentPlayerSpeed(), playerIsMoving ? "YES" : "NO"), textPadding, debugYOffset + UI_SMALL_FONT_SIZE + 2, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
+
+                float animSpeedMult = powerUps.lightningActive ? (playerAnimationSpeed * lightningSpeedMultiplier) : playerAnimationSpeed;
+                DrawText(TextFormat("Frame: %d | Anim Speed: %.1fx", playerAnimFrameCounter, animSpeedMult), textPadding, debugYOffset + (UI_SMALL_FONT_SIZE + 2) * 2, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
             }
 
             // Game over screen

@@ -234,10 +234,10 @@ const Vector3 SecondPersonOffset = { 0, 20, 0 };
 const Vector3 ThirdPersonOffset = { 0, 14, -10 };
 
 // **Player**
-const float playerMoveSpeed = 17.5;
-const float playerScale = 0.15;
+const float playerMoveSpeed = 16;
+const float playerAnimationSpeed = 1.25;
+const float playerScale = 1.8;
 const float collisionRadius = 2;
-const float playerRotationSpeed = 180;
 const float mouseSensitivity = 0.2;
 const float playerHitboxWidth = 3.6;
 const float playerHitboxDepth = 2.4;
@@ -256,9 +256,9 @@ const float lightningDuration = 30;
 const float gummybearDuration = 14;
 const float magnetDuration = 23;
 const float magnetRange = 12;
-const float magnetPropSpeed = playerMoveSpeed * 1.2;
+const float magnetPropSpeed = playerMoveSpeed * 1.25;
 
-const float propScale = 1.2;
+const float propScale = 1.25;
 const float propRotationSpeed = 45;
 const float propBobSpeed = 2;
 const float propBobHeight = 0.25;
@@ -349,27 +349,27 @@ static inline UILayout GetDefaultUILayout() {
 
 static inline PropCategory GetPropCategory(PropType type) {
     switch (type) {
-        case PROP_CHERRY:
-        case PROP_ORANGE:
-        case PROP_GRAPES:
-            return PROP_CATEGORY_FRUIT;
+    case PROP_CHERRY:
+    case PROP_ORANGE:
+    case PROP_GRAPES:
+        return PROP_CATEGORY_FRUIT;
 
-        case PROP_LIGHTNING:
-        case PROP_GUMMYBEAR:
-        case PROP_MAGNET:
-            return PROP_CATEGORY_POWERUP;
+    case PROP_LIGHTNING:
+    case PROP_GUMMYBEAR:
+    case PROP_MAGNET:
+        return PROP_CATEGORY_POWERUP;
 
-        default:
-            return PROP_CATEGORY_UNKNOWN;
+    default:
+        return PROP_CATEGORY_UNKNOWN;
     }
 }
 
 static inline PowerUpType PropTypeToPowerUpType(PropType propType) {
     switch (propType) {
-        case PROP_LIGHTNING: return POWERUP_TYPE_LIGHTNING;
-        case PROP_GUMMYBEAR: return POWERUP_TYPE_GUMMYBEAR;
-        case PROP_MAGNET: return POWERUP_TYPE_MAGNET;
-        default: return POWERUP_TYPE_LIGHTNING;
+    case PROP_LIGHTNING: return POWERUP_TYPE_LIGHTNING;
+    case PROP_GUMMYBEAR: return POWERUP_TYPE_GUMMYBEAR;
+    case PROP_MAGNET: return POWERUP_TYPE_MAGNET;
+    default: return POWERUP_TYPE_LIGHTNING;
     }
 }
 
@@ -387,29 +387,29 @@ static inline int RemoveMovementFlag(int flags, MovementDirection direction) {
 
 static inline KeyAction GetKeyAction(int key, bool debugEnabled) {
     switch (key) {
-        case KEY_ESCAPE: return KEY_ACTION_EXIT;
-        case KEY_T: return KEY_ACTION_CAMERA_SWITCH;
-        case KEY_F3: return KEY_ACTION_DEBUG_TOGGLE;
-        case KEY_F5: return KEY_ACTION_SHADER_RELOAD;
-        case KEY_TAB: return KEY_ACTION_MINIMAP_EXPAND;
+    case KEY_ESCAPE: return KEY_ACTION_EXIT;
+    case KEY_T: return KEY_ACTION_CAMERA_SWITCH;
+    case KEY_F3: return KEY_ACTION_DEBUG_TOGGLE;
+    case KEY_F5: return KEY_ACTION_SHADER_RELOAD;
+    case KEY_TAB: return KEY_ACTION_MINIMAP_EXPAND;
 
-        case KEY_L: return debugEnabled ? KEY_ACTION_DEBUG_LIGHTNING : KEY_ACTION_NONE;
-        case KEY_G: return debugEnabled ? KEY_ACTION_DEBUG_GUMMYBEAR : KEY_ACTION_NONE;
-        case KEY_M: return debugEnabled ? KEY_ACTION_DEBUG_MAGNET : KEY_ACTION_NONE;
+    case KEY_L: return debugEnabled ? KEY_ACTION_DEBUG_LIGHTNING : KEY_ACTION_NONE;
+    case KEY_G: return debugEnabled ? KEY_ACTION_DEBUG_GUMMYBEAR : KEY_ACTION_NONE;
+    case KEY_M: return debugEnabled ? KEY_ACTION_DEBUG_MAGNET : KEY_ACTION_NONE;
 
-        default: return KEY_ACTION_NONE;
+    default: return KEY_ACTION_NONE;
     }
 }
 
 static inline Color GetPropFallbackColor(PropType type) {
     switch (type) {
-        case PROP_CHERRY: return RED;
-        case PROP_ORANGE: return ORANGE;
-        case PROP_GRAPES: return PURPLE;
-        case PROP_LIGHTNING: return YELLOW;
-        case PROP_GUMMYBEAR: return GREEN;
-        case PROP_MAGNET: return GRAY;
-        default: return WHITE;
+    case PROP_CHERRY: return RED;
+    case PROP_ORANGE: return ORANGE;
+    case PROP_GRAPES: return PURPLE;
+    case PROP_LIGHTNING: return YELLOW;
+    case PROP_GUMMYBEAR: return GREEN;
+    case PROP_MAGNET: return GRAY;
+    default: return WHITE;
     }
 }
 

@@ -140,11 +140,11 @@ FruityMazeGameResources LoadFruityMazeResources(GraphicsQuality quality) {
     resources.outOfBounds = LoadTexture("resources/FruityMaze/Textures/outOfBounds.png");
 
     // **UPDATED: Load player model and animations**
-    resources.playerModel = LoadModel("resources/FruityMaze/Models/girl.glb");
+    resources.playerModel = LoadModel("resources/FruityMaze/Models/girl_v2.glb");
 
     // **NEW: Load player animations using Raylib function**
     if (resources.playerModel.meshCount > 0) {
-        resources.playerAnimations = LoadModelAnimations("resources/FruityMaze/Models/girl.glb", &resources.playerAnimationCount);
+        resources.playerAnimations = LoadModelAnimations("resources/FruityMaze/Models/girl_v2.glb", &resources.playerAnimationCount);
         TraceLog(LOG_DEBUG, TextFormat("Player model loaded with %d animations", resources.playerAnimationCount));
 
         // Log animation details
