@@ -10,7 +10,7 @@ vector<Prop> gameProps;
 PowerUpState powerUps = { false, 0, false, 0, false, 0 };
 GameState gameState = { 60, 0, false, 0, false, -1, false, false };
 TextState textGif = { false, 0, false, 0, false, 0, false };
-static time_t lastShaderModTime = 0;
+int playerAnimFrameCounter = 0;  // **FIXED: Use frame counter instead of time**
 
 static Rectangle GetPlayerHitbox(Vector3 playerPos, float rotationAngle) {
     return {
@@ -41,7 +41,7 @@ static bool IsColliding(Vector3 entityPos, Vector3 mapModelOrigin, int mapWidth,
                         1, 1
                     };
 
-                    if (CheckCollisionRecs(playerHitbox, wallRec)) return true; 
+                    if (CheckCollisionRecs(playerHitbox, wallRec)) return true;
                 }
             }
         }
@@ -64,14 +64,14 @@ static void SpawnPropsInMaze(const FruityMazeGameResources& resources) {
             mapZ >= 0 && mapZ < resources.mapHeight &&
             resources.mapPixels[mapZ * resources.mapWidth + mapX].r == 0) {
 
-            Vector3 worldPos = {(resources.mapModelPosition.x + mapX) + 0.5f, 0.25f, (resources.mapModelPosition.z + mapZ) + 0.5f};
+            Vector3 worldPos = { (resources.mapModelPosition.x + mapX) + 0.5f, 0.25f, (resources.mapModelPosition.z + mapZ) + 0.5f };
 
             PropType powerupType;
             switch (GetRandomValue(0, 2)) {
-                case 0: powerupType = PROP_LIGHTNING; break;
-                case 1: powerupType = PROP_GUMMYBEAR; break;
-                case 2: powerupType = PROP_MAGNET; break;
-                default: powerupType = PROP_LIGHTNING; break;
+            case 0: powerupType = PROP_LIGHTNING; break;
+            case 1: powerupType = PROP_GUMMYBEAR; break;
+            case 2: powerupType = PROP_MAGNET; break;
+            default: powerupType = PROP_LIGHTNING; break;
             }
 
             Prop powerup;
@@ -97,14 +97,14 @@ static void SpawnPropsInMaze(const FruityMazeGameResources& resources) {
             mapZ >= 0 && mapZ < resources.mapHeight &&
             resources.mapPixels[mapZ * resources.mapWidth + mapX].r == 0) {
 
-            Vector3 worldPos = {resources.mapModelPosition.x + mapX + 0.5f, 0.15f, resources.mapModelPosition.z + mapZ + 0.5f};
+            Vector3 worldPos = { resources.mapModelPosition.x + mapX + 0.5f, 0.15f, resources.mapModelPosition.z + mapZ + 0.5f };
 
             PropType fruitType;
             switch (GetRandomValue(0, 2)) {
-                case 0: fruitType = PROP_CHERRY; break;
-                case 1: fruitType = PROP_ORANGE; break;
-                case 2: fruitType = PROP_GRAPES; break;
-                default: fruitType = PROP_CHERRY; break;
+            case 0: fruitType = PROP_CHERRY; break;
+            case 1: fruitType = PROP_ORANGE; break;
+            case 2: fruitType = PROP_GRAPES; break;
+            default: fruitType = PROP_CHERRY; break;
             }
 
             Prop fruit;
@@ -188,7 +188,7 @@ static void UpdateGifText(float deltaTime) {
 
     if (textGif.showAmazing) {
         textGif.amazingTimer -= deltaTime;
-        if (textGif.amazingTimer <= 0) textGif.showAmazing = false; 
+        if (textGif.amazingTimer <= 0) textGif.showAmazing = false;
     }
 
     if (textGif.showTimeIsUp) {
@@ -201,6 +201,35 @@ static void UpdateAnimations(float deltaTime, const FruityMazeGameResources& res
     UpdateAnimation((AnimationData&)resources.amazingAnim, deltaTime);
     UpdateAnimation((AnimationData&)resources.timeIsUpAnim, deltaTime);
     UpdateAnimation((AnimationData&)resources.timeExtendedAnim, deltaTime);
+}
+
+// **FIXED: Correct animation handling using frame counter like Raylib example**
+static void UpdatePlayerAnimation(float deltaTime, const FruityMazeGameResources& resources, bool isMoving) {
+    if (resources.playerAnimationCount <= 0 || !resources.playerAnimations) return;
+
+    if (isMoving) {
+        // **FIXED: Increment frame counter each update (like Raylib example)**
+        playerAnimFrameCounter++;
+
+        // **FIXED: Loop animation when reaching end**
+        if (playerAnimFrameCounter >= resources.playerAnimations[0].frameCount) {
+            playerAnimFrameCounter = 0;
+        }
+
+        // **FIXED: Use frame counter, not time**
+        UpdateModelAnimation(resources.playerModel, resources.playerAnimations[0], playerAnimFrameCounter);
+
+        // **DEBUG: Log frame updates**
+        static int logCounter = 0;
+        if (logCounter++ % 60 == 0) {
+            TraceLog(LOG_INFO, "Animation frame: %d/%d",
+                playerAnimFrameCounter, resources.playerAnimations[0].frameCount);
+        }
+    }
+    else {
+        // **FIXED: Keep current frame when stopped (don't reset to 0)**
+        UpdateModelAnimation(resources.playerModel, resources.playerAnimations[0], playerAnimFrameCounter);
+    }
 }
 
 static void UpdatePowerUps(float deltaTime, const FruityMazeGameResources& resources) {
@@ -276,19 +305,19 @@ static void UpdateProps(float deltaTime) {
 
 static void ActivatePowerUp(PropType powerUpType, const FruityMazeGameResources& resources) {
     switch (powerUpType) {
-        case PROP_LIGHTNING:
-            powerUps.lightningActive = true;
-            powerUps.lightningTimeLeft += lightningDuration;
-            break;
-        case PROP_GUMMYBEAR:
-            powerUps.gummybearActive = true;
-            powerUps.gummybearTimeLeft += gummybearDuration;
-            break;
-        case PROP_MAGNET:
-            powerUps.magnetActive = true;
-            powerUps.magnetTimeLeft = magnetDuration;
-            break;
-        default: break;
+    case PROP_LIGHTNING:
+        powerUps.lightningActive = true;
+        powerUps.lightningTimeLeft += lightningDuration;
+        break;
+    case PROP_GUMMYBEAR:
+        powerUps.gummybearActive = true;
+        powerUps.gummybearTimeLeft += gummybearDuration;
+        break;
+    case PROP_MAGNET:
+        powerUps.magnetActive = true;
+        powerUps.magnetTimeLeft = magnetDuration;
+        break;
+    default: break;
     }
 
     PlaySound(resources.powerUpSound);
@@ -338,10 +367,10 @@ static void CheckPropCollection(Vector3 playerPos, const FruityMazeGameResources
 
             // Play fruit sound
             switch (prop.type) {
-                case PROP_ORANGE: PlaySound(resources.fruit1Sound); break;
-                case PROP_CHERRY: PlaySound(resources.fruit2Sound); break;
-                case PROP_GRAPES: PlaySound(resources.fruit3Sound); break;
-                default: break;
+            case PROP_ORANGE: PlaySound(resources.fruit1Sound); break;
+            case PROP_CHERRY: PlaySound(resources.fruit2Sound); break;
+            case PROP_GRAPES: PlaySound(resources.fruit3Sound); break;
+            default: break;
             }
 
             // Check win condition
@@ -382,31 +411,31 @@ static void DrawProps(const FruityMazeGameResources& resources, float time, cons
         Color fallbackColor = BLANK;
 
         switch (prop.type) {
-            case PROP_CHERRY:
-                modelToDraw = (Model*)&resources.cherryModel;
-                fallbackColor = RED;
-                break;
-            case PROP_ORANGE:
-                modelToDraw = (Model*)&resources.orangeModel;
-                fallbackColor = ORANGE;
-                break;
-            case PROP_GRAPES:
-                modelToDraw = (Model*)&resources.grapesModel;
-                fallbackColor = PURPLE;
-                break;
-            case PROP_LIGHTNING:
-                modelToDraw = (Model*)&resources.lightningModel;
-                fallbackColor = YELLOW;
-                break;
-            case PROP_GUMMYBEAR:
-                modelToDraw = (Model*)&resources.gummybearModel;
-                fallbackColor = GREEN;
-                break;
-            case PROP_MAGNET:
-                modelToDraw = (Model*)&resources.magnetModel;
-                fallbackColor = GRAY;
-                break;
-            default: break;
+        case PROP_CHERRY:
+            modelToDraw = (Model*)&resources.cherryModel;
+            fallbackColor = RED;
+            break;
+        case PROP_ORANGE:
+            modelToDraw = (Model*)&resources.orangeModel;
+            fallbackColor = ORANGE;
+            break;
+        case PROP_GRAPES:
+            modelToDraw = (Model*)&resources.grapesModel;
+            fallbackColor = PURPLE;
+            break;
+        case PROP_LIGHTNING:
+            modelToDraw = (Model*)&resources.lightningModel;
+            fallbackColor = YELLOW;
+            break;
+        case PROP_GUMMYBEAR:
+            modelToDraw = (Model*)&resources.gummybearModel;
+            fallbackColor = GREEN;
+            break;
+        case PROP_MAGNET:
+            modelToDraw = (Model*)&resources.magnetModel;
+            fallbackColor = GRAY;
+            break;
+        default: break;
         }
 
         // Draw model or fallback cube
@@ -490,47 +519,65 @@ static void HandleKeyboardInput(ViewCameraMode& currentCameraMode, bool& debug, 
         if (!IsKeyPressed(key)) continue;
 
         switch (key) {
-            case KEY_F5: 
-                // Reload shader
-                Shader newShader = LoadShader(0, "FruityMaze.fs");
-                if (newShader.id > 0) {
-                    if (postProcessingShader.id > 0) UnloadShader(postProcessingShader);
-                    postProcessingShader = newShader;
+        case KEY_F5:
+            // Reload shader
+            Shader newShader = LoadShader(0, "FruityMaze.fs");
+            if (newShader.id > 0) {
+                if (postProcessingShader.id > 0) UnloadShader(postProcessingShader);
+                postProcessingShader = newShader;
 
-                    if (applyShader) {
-                        shaderTimeLoc = GetShaderLocation(postProcessingShader, "time");
-                        shaderResolutionLoc = GetShaderLocation(postProcessingShader, "resolution");
+                if (applyShader) {
+                    shaderTimeLoc = GetShaderLocation(postProcessingShader, "time");
+                    shaderResolutionLoc = GetShaderLocation(postProcessingShader, "resolution");
 
-                        if (shaderResolutionLoc != -1) {
-                            float gameResolution[2] = { (float)virtualScreenWidth, (float)virtualScreenHeight };
-                            SetShaderValue(postProcessingShader, shaderResolutionLoc, gameResolution, SHADER_UNIFORM_VEC2);
-                        }
+                    if (shaderResolutionLoc != -1) {
+                        float gameResolution[2] = { (float)virtualScreenWidth, (float)virtualScreenHeight };
+                        SetShaderValue(postProcessingShader, shaderResolutionLoc, gameResolution, SHADER_UNIFORM_VEC2);
                     }
-                    TraceLog(LOG_INFO, "Shader reloaded successfully.");
                 }
-                else TraceLog(LOG_INFO, "Failed to reload shader.");
-                break;
+                TraceLog(LOG_INFO, "Shader reloaded successfully.");
+            }
+            else TraceLog(LOG_INFO, "Failed to reload shader.");
+            break;
 
-            case KEY_T: 
-                currentCameraMode = (ViewCameraMode)((currentCameraMode + 1) % 3);
-                if (currentCameraMode == VIEW_CAMERA_FIRST_PERSON && startFound) DisableCursor();
-                else EnableCursor();
-                break;
+        case KEY_T:
+            currentCameraMode = (ViewCameraMode)((currentCameraMode + 1) % 3);
+            if (currentCameraMode == VIEW_CAMERA_FIRST_PERSON && startFound) DisableCursor();
+            else EnableCursor();
+            break;
 
-        // DEBUG POWER-UP KEYS
-            case KEY_F3: debug = !debug; break;
-            case KEY_L: if (debug) ActivatePowerUp(PROP_LIGHTNING, resources); break;
-            case KEY_G: if (debug) ActivatePowerUp(PROP_GUMMYBEAR, resources); break;
-            case KEY_M: if (debug) ActivatePowerUp(PROP_MAGNET, resources); break;
+            // DEBUG POWER-UP KEYS
+        case KEY_F3: debug = !debug; break;
+        case KEY_L: if (debug) ActivatePowerUp(PROP_LIGHTNING, resources); break;
+        case KEY_G: if (debug) ActivatePowerUp(PROP_GUMMYBEAR, resources); break;
+        case KEY_M: if (debug) ActivatePowerUp(PROP_MAGNET, resources); break;
 
-            default: break;
+        default: break;
         }
     }
 }
 
+// **NEW: Function to snap rotation to cardinal directions**
+static float SnapToCardinalDirection(Vector3 moveDirection) {
+    if (Vector3LengthSqr(moveDirection) <= 0) return playerRotationAngle;
+
+    float targetAngle = atan2f(-moveDirection.x, -moveDirection.z) * RAD2DEG;
+    if (targetAngle < 0) targetAngle += 360;
+
+    // Snap to nearest 90-degree increment (0, 90, 180, 270)
+    float snappedAngle = roundf(targetAngle / 90.0f) * 90.0f;
+    if (snappedAngle >= 360) snappedAngle = 0;
+
+    return snappedAngle;
+}
+
+// **UPDATED: Modified HandlePlayerMovement to include cardinal directions and movement detection**
 static void HandlePlayerMovement(float deltaTime, ViewCameraMode currentCameraMode, bool startFound,
-    const FruityMazeGameResources& resources) {
-    if (!startFound || !resources.mapPixels || gameState.gameOver) return;
+    const FruityMazeGameResources& resources, bool& isMoving) {
+    if (!startFound || !resources.mapPixels || gameState.gameOver) {
+        isMoving = false;
+        return;
+    }
 
     Vector3 moveDirectionInput = { 0 };
     Vector3 forwardMovementDirection;
@@ -538,8 +585,8 @@ static void HandlePlayerMovement(float deltaTime, ViewCameraMode currentCameraMo
 
     // Calculate movement directions based on camera mode
     if (currentCameraMode == VIEW_CAMERA_FIRST_PERSON) {
-        forwardMovementDirection = {-sinf(playerRotationAngle * DEG2RAD), 0, -cosf(playerRotationAngle * DEG2RAD)};
-        rightMovementDirection = {forwardMovementDirection.z, 0, -forwardMovementDirection.x};
+        forwardMovementDirection = { -sinf(playerRotationAngle * DEG2RAD), 0, -cosf(playerRotationAngle * DEG2RAD) };
+        rightMovementDirection = { forwardMovementDirection.z, 0, -forwardMovementDirection.x };
     }
     else {
         forwardMovementDirection = { 0, 0, 1 };
@@ -552,7 +599,10 @@ static void HandlePlayerMovement(float deltaTime, ViewCameraMode currentCameraMo
     if (IsKeyDown(KEY_A)) moveDirectionInput = Vector3Add(moveDirectionInput, rightMovementDirection);
     if (IsKeyDown(KEY_D)) moveDirectionInput = Vector3Subtract(moveDirectionInput, rightMovementDirection);
 
-    if (Vector3LengthSqr(moveDirectionInput) <= 0) return;
+    // **NEW: Set movement state**
+    isMoving = (Vector3LengthSqr(moveDirectionInput) > 0);
+
+    if (!isMoving) return;
 
     // Normalize and apply speed
     moveDirectionInput = Vector3Normalize(moveDirectionInput);
@@ -588,21 +638,9 @@ static void HandlePlayerMovement(float deltaTime, ViewCameraMode currentCameraMo
         playerPosition = finalPosition;
     }
 
-    // Handle player rotation for non-first-person modes
+    // **UPDATED: Handle player rotation with cardinal snapping for non-first-person modes**
     if (currentCameraMode != VIEW_CAMERA_FIRST_PERSON) {
-        float targetAngleDeg = atan2f(-moveDirectionInput.x, -moveDirectionInput.z) * RAD2DEG;
-        float finalTargetAngleDeg = roundf(targetAngleDeg / 45.0f) * 45.0f;
-        float angleDiff = finalTargetAngleDeg - playerRotationAngle;
-        float maxRotationStep = playerRotationSpeed * deltaTime;
-
-        // Normalize angle difference
-        if (angleDiff > 180) angleDiff -= 360;
-        else if (angleDiff < -180) angleDiff += 360;
-
-        if (fabsf(angleDiff) > 0) {
-            if (fabsf(angleDiff) < maxRotationStep) playerRotationAngle = finalTargetAngleDeg;
-            else playerRotationAngle += (angleDiff > 0 ? maxRotationStep : -maxRotationStep);
-        }
+        playerRotationAngle = SnapToCardinalDirection(moveDirectionInput);
     }
 }
 
@@ -616,33 +654,33 @@ static void UpdateCamera(Camera& camera, ViewCameraMode currentCameraMode, bool 
     camera.up = { 0, 1, 0 };
 
     switch (currentCameraMode) {
-        case VIEW_CAMERA_FIRST_PERSON: {
-            Matrix playerMat = MatrixRotateY(playerRotationAngle * DEG2RAD);
-            Vector3 fppOffsetTransformed = Vector3Transform(FirstPersonOffset, playerMat);
-            Vector3 playerCameraForward = {-sinf(playerRotationAngle * DEG2RAD), 0, -cosf(playerRotationAngle * DEG2RAD)};
-            camera.position = Vector3Add(playerPosition, fppOffsetTransformed);
-            camera.target = Vector3Add(camera.position, playerCameraForward);
-            camera.fovy = 75;
-            break;
-        }
+    case VIEW_CAMERA_FIRST_PERSON: {
+        Matrix playerMat = MatrixRotateY(playerRotationAngle * DEG2RAD);
+        Vector3 fppOffsetTransformed = Vector3Transform(FirstPersonOffset, playerMat);
+        Vector3 playerCameraForward = { -sinf(playerRotationAngle * DEG2RAD), 0, -cosf(playerRotationAngle * DEG2RAD) };
+        camera.position = Vector3Add(playerPosition, fppOffsetTransformed);
+        camera.target = Vector3Add(camera.position, playerCameraForward);
+        camera.fovy = 75;
+        break;
+    }
 
-        case VIEW_CAMERA_SECOND_PERSON: {
-            camera.position = {
-                playerPosition.x,
-                playerPosition.y + SecondPersonOffset.y,
-                playerPosition.z
-            };
-            camera.target = playerPosition;
-            camera.up = { 0, 0, 1 };
-            break;
-        }
+    case VIEW_CAMERA_SECOND_PERSON: {
+        camera.position = {
+            playerPosition.x,
+            playerPosition.y + SecondPersonOffset.y,
+            playerPosition.z
+        };
+        camera.target = playerPosition;
+        camera.up = { 0, 0, 1 };
+        break;
+    }
 
-        case VIEW_CAMERA_THIRD_PERSON:
-        default: {
-            camera.position = Vector3Add(playerPosition, ThirdPersonOffset);
-            camera.target = playerPosition;
-            break;
-        }
+    case VIEW_CAMERA_THIRD_PERSON:
+    default: {
+        camera.position = Vector3Add(playerPosition, ThirdPersonOffset);
+        camera.target = playerPosition;
+        break;
+    }
     }
 }
 
@@ -673,6 +711,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
     powerUps = { false, 0, false, 0, false, 0 };
     gameState = { 60, 0, false, 0, false, -1, false, false };
     textGif = { false, 0, false, 0, false, 0, false };
+    playerAnimFrameCounter = 0;  // **FIXED: Initialize frame counter**
 
     // Load resources
     FruityMazeGameResources resources = LoadFruityMazeResources(quality);
@@ -711,6 +750,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
     bool startFound = false;
     Vector3 initialSpawnPoint = { 0 };
     bool debug = false;
+    bool playerIsMoving = false;  // **NEW: Local variable for movement state**
 
     // Find spawn point
     if (resources.mapPixels) {
@@ -720,7 +760,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             int z = i / resources.mapWidth;
 
             if (resources.mapPixels[i].r == 0) {
-                Vector3 safePoint = {resources.mapModelPosition.x + x, 0, resources.mapModelPosition.z + z};
+                Vector3 safePoint = { resources.mapModelPosition.x + x, 0, resources.mapModelPosition.z + z };
 
                 if (!IsColliding(safePoint, resources.mapModelPosition, resources.mapWidth,
                     resources.mapHeight, resources.mapPixels, 0)) {
@@ -744,8 +784,8 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
         SpawnPropsInMaze(resources);
     }
     else {
-        camera.position = {resources.mapModelPosition.x + resources.mapWidth / 2, 15, resources.mapModelPosition.z + resources.mapHeight / 2 - 10};
-        camera.target = {resources.mapModelPosition.x + resources.mapWidth / 2, 0, resources.mapModelPosition.z + resources.mapHeight / 2};
+        camera.position = { resources.mapModelPosition.x + resources.mapWidth / 2, 15, resources.mapModelPosition.z + resources.mapHeight / 2 - 10 };
+        camera.target = { resources.mapModelPosition.x + resources.mapWidth / 2, 0, resources.mapModelPosition.z + resources.mapHeight / 2 };
     }
 
     // Start background music
@@ -770,11 +810,12 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             UpdateAnimations(deltaTime, resources);
             UpdatePowerUps(deltaTime, resources);
             UpdateProps(deltaTime);
+            UpdatePlayerAnimation(deltaTime, resources, playerIsMoving);  // **FIXED: Update player animation**
             UpdateGameTimer(deltaTime, resources);
             CheckOutOfBounds(resources);
             CheckPropCollection(playerPosition, resources);
 
-            if (gameState.gameOver && 
+            if (gameState.gameOver &&
                 gameState.gameOverTimer >= (gameState.gameWon ? 3 : 4))
                 break;
 
@@ -786,7 +827,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
                 while (playerRotationAngle < 0) playerRotationAngle += 360;
                 while (playerRotationAngle >= 360) playerRotationAngle -= 360;
             }
-            HandlePlayerMovement(deltaTime, currentCameraMode, startFound, resources);
+            HandlePlayerMovement(deltaTime, currentCameraMode, startFound, resources, playerIsMoving);  // **UPDATED: Pass movement state**
             UpdateCamera(camera, currentCameraMode, startFound);
 
             // **RENDERING**
@@ -812,7 +853,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             resources.playerModel.materials[0].shader = resources.lightingShader;
 
             // Draw player
-            if (currentCameraMode != VIEW_CAMERA_FIRST_PERSON || 
+            if (currentCameraMode != VIEW_CAMERA_FIRST_PERSON ||
                 debug) DrawModelEx(resources.playerModel, playerPosition, { 0, 1, 0 }, playerRotationAngle, { playerScale, playerScale, playerScale }, WHITE);
 
             // Draw props
@@ -891,10 +932,10 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             // **UI RENDERING**
             const char* camModeStr;
             switch (currentCameraMode) {
-                case VIEW_CAMERA_FIRST_PERSON: camModeStr = "FPP (Mouse Look)"; break;
-                case VIEW_CAMERA_SECOND_PERSON: camModeStr = "SPP"; break;
-                case VIEW_CAMERA_THIRD_PERSON: camModeStr = "TPP"; break;
-                default: camModeStr = "UNKNOWN"; break;
+            case VIEW_CAMERA_FIRST_PERSON: camModeStr = "FPP (Mouse Look)"; break;
+            case VIEW_CAMERA_SECOND_PERSON: camModeStr = "SPP"; break;
+            case VIEW_CAMERA_THIRD_PERSON: camModeStr = "TPP"; break;
+            default: camModeStr = "UNKNOWN"; break;
             }
 
             // Timer
@@ -939,7 +980,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             if (debug) {
                 float debugYOffset = textPadding + UI_LARGE_FONT_SIZE + 20;
                 DrawText(TextFormat("Pos: X:%.1f Z:%.1f (%s)", playerPosition.x, playerPosition.z, camModeStr), textPadding, debugYOffset, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
-                DrawText(TextFormat("Angle: %.1f | Speed: %.1f", playerRotationAngle, GetCurrentPlayerSpeed()), textPadding, debugYOffset + UI_SMALL_FONT_SIZE + 2, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
+                DrawText(TextFormat("Angle: %.1f | Speed: %.1f | Moving: %s | Frame: %d", playerRotationAngle, GetCurrentPlayerSpeed(), playerIsMoving ? "YES" : "NO", playerAnimFrameCounter), textPadding, debugYOffset + UI_SMALL_FONT_SIZE + 2, UI_SMALL_FONT_SIZE - 2, LIGHTGRAY);
             }
 
             // Game over screen
@@ -1027,7 +1068,7 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
         }
     }
 
-    if (IsMusicStreamPlaying(resources.backgroundMusic)) 
+    if (IsMusicStreamPlaying(resources.backgroundMusic))
         StopMusicStream(resources.backgroundMusic);
 
     UnloadRenderTexture(target);

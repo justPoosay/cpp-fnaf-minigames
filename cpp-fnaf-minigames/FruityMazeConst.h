@@ -235,7 +235,7 @@ const Vector3 ThirdPersonOffset = { 0, 14, -10 };
 
 // **Player**
 const float playerMoveSpeed = 17.5;
-const float playerScale = 2;
+const float playerScale = 0.15;
 const float collisionRadius = 2;
 const float playerRotationSpeed = 180;
 const float mouseSensitivity = 0.2;

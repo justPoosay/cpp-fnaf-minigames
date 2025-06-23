@@ -36,7 +36,7 @@ struct FruityMazeGameResources {
     Vector3 mapModelPosition;
     Color* mapPixels;
 
-	// Textures
+    // Textures
     Texture2D minimapTexture;
     Texture2D cubeWallTexture;
     Texture2D outOfBounds;
@@ -47,6 +47,8 @@ struct FruityMazeGameResources {
     // 3D Models
     Model mazeModel;
     Model playerModel;
+    ModelAnimation* playerAnimations;  // **NEW: Player model animations**
+    int playerAnimationCount;          // **NEW: Number of animations**
     Model cherryModel;
     Model orangeModel;
     Model grapesModel;

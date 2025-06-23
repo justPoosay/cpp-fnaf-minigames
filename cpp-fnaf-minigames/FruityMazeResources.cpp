@@ -59,9 +59,9 @@ void StopAnimation(AnimationData& anim) {
 }
 
 Rectangle GetCurrentAnimationFrame(const AnimationData& anim) {
-    return { 
+    return {
         anim.currentFrame * anim.frameWidth, 0,
-        anim.frameWidth, anim.frameHeight 
+        anim.frameWidth, anim.frameHeight
     };
 }
 
@@ -74,6 +74,8 @@ FruityMazeGameResources LoadFruityMazeResources(GraphicsQuality quality) {
     resources.mapPixels = nullptr;
     resources.mapWidth = 0;
     resources.mapHeight = 0;
+    resources.playerAnimations = nullptr;  // **NEW: Initialize animation pointers**
+    resources.playerAnimationCount = 0;   // **NEW: Initialize animation count**
     int wallPixelCount = 0;
     int pathPixelCount = 0;
 
@@ -137,8 +139,19 @@ FruityMazeGameResources LoadFruityMazeResources(GraphicsQuality quality) {
 
     resources.outOfBounds = LoadTexture("resources/FruityMaze/Textures/outOfBounds.png");
 
-    // Load 3D models
-    resources.playerModel = LoadModel("resources/FruityMaze/Models/freddy.glb");
+    // **UPDATED: Load player model and animations**
+    resources.playerModel = LoadModel("resources/FruityMaze/Models/girl.glb");
+
+    // **NEW: Load player animations using Raylib function**
+    if (resources.playerModel.meshCount > 0) {
+        resources.playerAnimations = LoadModelAnimations("resources/FruityMaze/Models/girl.glb", &resources.playerAnimationCount);
+        TraceLog(LOG_DEBUG, TextFormat("Player model loaded with %d animations", resources.playerAnimationCount));
+
+        // Log animation details
+        for (int i = 0; i < resources.playerAnimationCount; i++) {
+            TraceLog(LOG_DEBUG, TextFormat("Animation %d: %d frames", i, resources.playerAnimations[i].frameCount));
+        }
+    }
 
     resources.cherryModel = LoadModel("resources/FruityMaze/Models/cherry.glb");
     resources.orangeModel = LoadModel("resources/FruityMaze/Models/orange.glb");
@@ -175,6 +188,11 @@ void UnloadFruityMazeResources(FruityMazeGameResources& resources) {
     if (resources.timeIsUpAnim.spriteSheet.id > 0) UnloadTexture(resources.timeIsUpAnim.spriteSheet);
     if (resources.timeExtendedAnim.spriteSheet.id > 0) UnloadTexture(resources.timeExtendedAnim.spriteSheet);
     if (resources.outOfBounds.id > 0) UnloadTexture(resources.outOfBounds);
+
+    // **NEW: Unload player animations**
+    if (resources.playerAnimations && resources.playerAnimationCount > 0) {
+        UnloadModelAnimations(resources.playerAnimations, resources.playerAnimationCount);
+    }
 
     // Unload models
     if (resources.mazeModel.meshCount > 0) UnloadModel(resources.mazeModel);
