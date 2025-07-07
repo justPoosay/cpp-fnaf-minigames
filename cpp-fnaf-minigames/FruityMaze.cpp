@@ -10,7 +10,8 @@ vector<Prop> gameProps;
 PowerUpState powerUps = { false, 0, false, 0, false, 0 };
 GameState gameState = { 60, 0, false, 0, false, -1, false, false };
 TextState textGif = { false, 0, false, 0, false, 0, false };
-int playerAnimFrameCounter = 0;  // **Animation frame counter**
+int playerAnimFrameCounter = 0;
+float cameraPitchAngle = 0;
 
 static Rectangle GetPlayerHitbox(Vector3 playerPos, float rotationAngle) {
     return {
@@ -64,7 +65,7 @@ static void SpawnPropsInMaze(const FruityMazeGameResources& resources) {
             mapZ >= 0 && mapZ < resources.mapHeight &&
             resources.mapPixels[mapZ * resources.mapWidth + mapX].r == 0) {
 
-            Vector3 worldPos = { (resources.mapModelPosition.x + mapX) + 0.5f, 0.25f, (resources.mapModelPosition.z + mapZ) + 0.5f };
+            Vector3 worldPos = { (resources.mapModelPosition.x + mapX) + 0.5, 0.25, (resources.mapModelPosition.z + mapZ) + 0.5 };
 
             PropType powerupType;
             switch (GetRandomValue(0, 2)) {
@@ -78,7 +79,7 @@ static void SpawnPropsInMaze(const FruityMazeGameResources& resources) {
             powerup.position = worldPos;
             powerup.type = powerupType;
             powerup.rotationY = (float)GetRandomValue(0, 360);
-            powerup.bobOffset = (float)GetRandomValue(0, 628) / 100.0f;
+            powerup.bobOffset = (float)GetRandomValue(0, 628) / 100;
             powerup.collected = false;
             powerup.beingAttracted = false;
 
@@ -97,7 +98,7 @@ static void SpawnPropsInMaze(const FruityMazeGameResources& resources) {
             mapZ >= 0 && mapZ < resources.mapHeight &&
             resources.mapPixels[mapZ * resources.mapWidth + mapX].r == 0) {
 
-            Vector3 worldPos = { resources.mapModelPosition.x + mapX + 0.5f, 0.15f, resources.mapModelPosition.z + mapZ + 0.5f };
+            Vector3 worldPos = { resources.mapModelPosition.x + mapX + 0.5, 0.15, resources.mapModelPosition.z + mapZ + 0.5 };
 
             PropType fruitType;
             switch (GetRandomValue(0, 2)) {
@@ -111,7 +112,7 @@ static void SpawnPropsInMaze(const FruityMazeGameResources& resources) {
             fruit.position = worldPos;
             fruit.type = fruitType;
             fruit.rotationY = (float)GetRandomValue(0, 360);
-            fruit.bobOffset = (float)GetRandomValue(0, 628) / 100.0f;
+            fruit.bobOffset = (float)GetRandomValue(0, 628) / 100;
             fruit.collected = false;
             fruit.beingAttracted = false;
 
@@ -399,7 +400,7 @@ static void DrawProps(const FruityMazeGameResources& resources, float time, cons
         // Frustum culling
         Vector3 toProp = Vector3Normalize(Vector3Subtract(prop.position, cameraPos));
         float dot = Vector3DotProduct(forward, toProp);
-        if (dot < -0.3f) continue;
+        if (dot < -0.3) continue;
 
         // Calculate draw position with bobbing
         Vector3 drawPosition = prop.position;
@@ -444,8 +445,8 @@ static void DrawProps(const FruityMazeGameResources& resources, float time, cons
 }
 
 static void DrawTextGif(const FruityMazeGameResources& resources) {
-    float centerX = virtualScreenWidth / 2.0f;
-    float centerY = virtualScreenHeight / 2.0f;
+    float centerX = virtualScreenWidth / 2;
+    float centerY = virtualScreenHeight / 2;
 
     // Time Extended animation
     if (textGif.showTimeExtended && resources.timeExtendedAnim.spriteSheet.id > 0) {
@@ -564,7 +565,7 @@ static float SnapToCardinalDirection(Vector3 moveDirection) {
     if (targetAngle < 0) targetAngle += 360;
 
     // Snap to nearest 90-degree increment (0, 90, 180, 270)
-    float snappedAngle = roundf(targetAngle / 90.0f) * 90.0f;
+    float snappedAngle = roundf(targetAngle / 90) * 90;
     if (snappedAngle >= 360) snappedAngle = 0;
 
     return snappedAngle;
@@ -656,9 +657,15 @@ static void UpdateCamera(Camera& camera, ViewCameraMode currentCameraMode, bool 
     case VIEW_CAMERA_FIRST_PERSON: {
         Matrix playerMat = MatrixRotateY(playerRotationAngle * DEG2RAD);
         Vector3 fppOffsetTransformed = Vector3Transform(FirstPersonOffset, playerMat);
-        Vector3 playerCameraForward = { -sinf(playerRotationAngle * DEG2RAD), 0, -cosf(playerRotationAngle * DEG2RAD) };
         camera.position = Vector3Add(playerPosition, fppOffsetTransformed);
-        camera.target = Vector3Add(camera.position, playerCameraForward);
+
+        float yaw = playerRotationAngle * DEG2RAD;
+        float pitch = cameraPitchAngle * DEG2RAD;
+
+        camera.target.x = camera.position.x - (sinf(yaw) * cosf(pitch));
+        camera.target.y = camera.position.y + sinf(pitch);
+        camera.target.z = camera.position.z - (cosf(yaw) * cosf(pitch));
+
         camera.fovy = 75;
         break;
     }
@@ -818,14 +825,20 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
                 gameState.gameOverTimer >= (gameState.gameWon ? 3 : 4))
                 break;
 
+            // +++ NEW CODE +++
             if (currentCameraMode == VIEW_CAMERA_FIRST_PERSON) {
-                float mouseDeltaX = GetMouseDelta().x;
-                playerRotationAngle -= mouseDeltaX * mouseSensitivity;
+                Vector2 mouseDelta = GetMouseDelta();
 
-                // Normalize angle
+                playerRotationAngle -= mouseDelta.x * mouseSensitivity;
                 while (playerRotationAngle < 0) playerRotationAngle += 360;
                 while (playerRotationAngle >= 360) playerRotationAngle -= 360;
+
+                cameraPitchAngle -= mouseDelta.y * mouseSensitivity;
+
+                if (cameraPitchAngle > 89) cameraPitchAngle = 89;
+                if (cameraPitchAngle < -89) cameraPitchAngle = -89;
             }
+
             HandlePlayerMovement(deltaTime, currentCameraMode, startFound, resources, playerIsMoving);
             UpdateCamera(camera, currentCameraMode, startFound);
 
@@ -836,12 +849,12 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
 
             // Draw environment
             DrawPlane({ resources.mapModelPosition.x + (resources.mapWidth / 2), 0.01, resources.mapModelPosition.z + (resources.mapHeight / 2) }, { resources.mapWidth + 20.0f, resources.mapHeight + 20.0f }, BLACK);
-            DrawModel(resources.mazeModel, resources.mapModelPosition, 1.0f, WHITE);
+            DrawModel(resources.mazeModel, resources.mapModelPosition, 1, WHITE);
 
             // Setup lighting
             Vector3 lightPos = { playerPosition.x, playerPosition.y + 10, playerPosition.z };
-            Vector3 lightColor = { 1.0f, 0.9f, 0.8f };
-            float ambientStrength = 0.3f;
+            Vector3 lightColor = { 1, 0.9, 0.8 };
+            float ambientStrength = 0.3;
 
             SetShaderValue(resources.lightingShader, GetShaderLocation(resources.lightingShader, "lightPos"), &lightPos, SHADER_UNIFORM_VEC3);
             SetShaderValue(resources.lightingShader, GetShaderLocation(resources.lightingShader, "lightColor"), &lightColor, SHADER_UNIFORM_VEC3);
@@ -849,23 +862,23 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
             SetShaderValue(resources.lightingShader, GetShaderLocation(resources.lightingShader, "ambientStrength"), &ambientStrength, SHADER_UNIFORM_FLOAT);
 
             resources.mazeModel.materials[0].shader = resources.lightingShader;
-            resources.playerModel.materials[0].shader = resources.lightingShader;
+
+            for (int i = 0; i < resources.playerModel.materialCount; i++) resources.playerModel.materials[i].shader = resources.lightingShader;
+            for (int i = 0; i < resources.cherryModel.materialCount; i++) resources.cherryModel.materials[i].shader = resources.lightingShader;
+            for (int i = 0; i < resources.orangeModel.materialCount; i++) resources.orangeModel.materials[i].shader = resources.lightingShader;
+            for (int i = 0; i < resources.grapesModel.materialCount; i++) resources.grapesModel.materials[i].shader = resources.lightingShader;
+            for (int i = 0; i < resources.lightningModel.materialCount; i++) resources.lightningModel.materials[i].shader = resources.lightingShader;
+            for (int i = 0; i < resources.gummybearModel.materialCount; i++) resources.gummybearModel.materials[i].shader = resources.lightingShader;
+            for (int i = 0; i < resources.magnetModel.materialCount; i++) resources.magnetModel.materials[i].shader = resources.lightingShader;
 
             // Draw player
-            if (currentCameraMode != VIEW_CAMERA_FIRST_PERSON ||
-                debug) DrawModelEx(resources.playerModel, playerPosition, { 0, 1, 0 }, playerRotationAngle, { playerScale, playerScale, playerScale }, WHITE);
+            if (currentCameraMode != VIEW_CAMERA_FIRST_PERSON || debug) DrawModelEx(resources.playerModel, playerPosition, { 0, 1, 0 }, playerRotationAngle, { playerScale, playerScale, playerScale }, WHITE);
 
             // Draw props
             DrawProps(resources, GetTime(), camera, debug);
 
             // **DEBUG RENDERING**
             if (debug) {
-                if (currentCameraMode == VIEW_CAMERA_FIRST_PERSON) {
-                    Vector3 rayStart = camera.position;
-                    Vector3 rayEnd = Vector3Add(rayStart, Vector3Scale({ -sinf(playerRotationAngle * DEG2RAD), 0, -cosf(playerRotationAngle * DEG2RAD) }, 5));
-                    DrawLine3D(rayStart, rayEnd, RED);
-                }
-
                 if (resources.mapPixels) {
                     int entityCellX = roundf(playerPosition.x - resources.mapModelPosition.x);
                     int entityCellZ = roundf(playerPosition.z - resources.mapModelPosition.z);
@@ -878,17 +891,17 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
                             if (wallCheckMapX >= 0 && wallCheckMapX < resources.mapWidth &&
                                 wallCheckMapZ >= 0 && wallCheckMapZ < resources.mapHeight) {
 
-                                Vector3 cubePos = { resources.mapModelPosition.x + wallCheckMapX, (x == 0 && z == 0) ? -0.4f : -0.45f, resources.mapModelPosition.z + wallCheckMapZ };
+                                Vector3 cubePos = { resources.mapModelPosition.x + wallCheckMapX, -0.4, resources.mapModelPosition.z + wallCheckMapZ };
                                 Color cubeColor = (x == 0 && z == 0) ? BLUE : RED;
 
-                                DrawCubeWires(cubePos, 2, 0.2f, 2, cubeColor);
+                                DrawCubeWires(cubePos, 2, 0.2, 2, cubeColor);
                             }
                         }
                     }
 
                     DrawCubeWires(playerPosition, playerHitboxWidth, 1.5f, playerHitboxDepth, RED);
 
-                    if (powerUps.magnetActive) DrawCylinderWires(playerPosition, magnetRange, magnetRange, 0.1f, 32, BLUE);
+                    if (powerUps.magnetActive) DrawCylinderWires(playerPosition, magnetRange, magnetRange, 0.1, 32, BLUE);
                 }
             }
 
@@ -906,8 +919,8 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
                 DrawTextureEx(resources.minimapTexture, minimapTextureDrawPos, 180, minimapScale, WHITE);
                 DrawRectangleLines(minimapVisualTopLeft.x, minimapVisualTopLeft.y, scaledMapWidth, scaledMapHeight, LIME);
 
-                float playerMapX = (playerPosition.x - resources.mapModelPosition.x + 0.5f);
-                float playerMapZ = (playerPosition.z - resources.mapModelPosition.z + 0.5f);
+                float playerMapX = (playerPosition.x - resources.mapModelPosition.x + 0.5);
+                float playerMapZ = (playerPosition.z - resources.mapModelPosition.z + 0.5);
                 float playerRelXOnMinimap = (resources.mapWidth - playerMapX) * minimapScale;
                 float playerRelZOnMinimap = (resources.mapHeight - playerMapZ) * minimapScale;
 
@@ -918,8 +931,8 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
                 // Draw props on minimap
                 for (const auto& prop : gameProps) {
                     if (!prop.collected) {
-                        float propMapX = (prop.position.x - resources.mapModelPosition.x + 0.5f);
-                        float propMapZ = (prop.position.z - resources.mapModelPosition.z + 0.5f);
+                        float propMapX = (prop.position.x - resources.mapModelPosition.x + 0.5);
+                        float propMapZ = (prop.position.z - resources.mapModelPosition.z + 0.5);
                         float propRelXOnMinimap = (resources.mapWidth - propMapX) * minimapScale;
                         float propRelZOnMinimap = (resources.mapHeight - propMapZ) * minimapScale;
 
@@ -1020,20 +1033,20 @@ int runFruityMaze(GraphicsQuality quality, Shader postProcessingShader, bool app
                     expandedTopLeft.y + expandedHeight
                 };
 
-                DrawTextureEx(resources.minimapTexture, expandedTexturePos, 180, expandedScale, Fade(WHITE, 0.75f));
+                DrawTextureEx(resources.minimapTexture, expandedTexturePos, 180, expandedScale, Fade(WHITE, 0.75));
 
-                float playerMapX = (playerPosition.x - resources.mapModelPosition.x + 0.5f);
-                float playerMapZ = (playerPosition.z - resources.mapModelPosition.z + 0.5f);
+                float playerMapX = (playerPosition.x - resources.mapModelPosition.x + 0.5);
+                float playerMapZ = (playerPosition.z - resources.mapModelPosition.z + 0.5);
                 float playerRelX = (resources.mapWidth - playerMapX) * expandedScale;
                 float playerRelZ = (resources.mapHeight - playerMapZ) * expandedScale;
 
-                DrawCircle(expandedTopLeft.x + playerRelX, expandedTopLeft.y + playerRelZ, 3.0f * expandedScale, RED);
+                DrawCircle(expandedTopLeft.x + playerRelX, expandedTopLeft.y + playerRelZ, 3 * expandedScale, RED);
 
                 // Draw props on expanded minimap
                 for (const auto& prop : gameProps) {
                     if (!prop.collected) {
-                        float propMapX = (prop.position.x - resources.mapModelPosition.x + 0.5f);
-                        float propMapZ = (prop.position.z - resources.mapModelPosition.z + 0.5f);
+                        float propMapX = (prop.position.x - resources.mapModelPosition.x + 0.5);
+                        float propMapZ = (prop.position.z - resources.mapModelPosition.z + 0.5);
                         float propRelXOnMinimap = (resources.mapWidth - propMapX) * expandedScale;
                         float propRelZOnMinimap = (resources.mapHeight - propMapZ) * expandedScale;
 

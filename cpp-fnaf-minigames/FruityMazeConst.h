@@ -229,13 +229,13 @@ struct UILayout {
 // --- CONSTANTS GROUPED BY CATEGORY ---
 // 
 // **Cam Offsets**
-const Vector3 FirstPersonOffset = { 0, 2.25, 0.1 };
+const Vector3 FirstPersonOffset = { 0, 3.5, 0 };
 const Vector3 SecondPersonOffset = { 0, 20, 0 };
-const Vector3 ThirdPersonOffset = { 0, 14, -10 };
+const Vector3 ThirdPersonOffset = { 0, 16, -13 };
 
 // **Player**
 const float playerMoveSpeed = 16;
-const float playerAnimationSpeed = 1.25;
+const float playerAnimationSpeed = 1.4;
 const float playerScale = 1.8;
 const float collisionRadius = 2;
 const float mouseSensitivity = 0.2;
