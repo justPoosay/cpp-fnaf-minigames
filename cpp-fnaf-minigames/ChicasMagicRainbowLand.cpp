@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "raymath.h"
 #include "RainbowLandResources.h"
 #include "RainbowLandConst.h"
 
@@ -69,6 +70,15 @@ struct SunflowerActivationEvent {
     bool hasBeenActivated;
 };
 
+// Structure to define a single blood particle
+struct BloodParticle {
+    Vector2 position;
+    Vector2 velocity;
+    bool active;
+    bool onGround;
+};
+
+
 // Define animations :p
 static void UpdatePlayerAnimation(bool isGrounded, bool isMoving, bool facingRight, Texture2D& currentTexture, int& currentFrame, int animUpdateRate, int maxFrames, int& frameCounter, Texture2D idleRight, Texture2D idleLeft, Texture2D walkRight, Texture2D walkLeft, Texture2D jumpRight, Texture2D jumpLeft)
 {
@@ -104,15 +114,15 @@ static void UpdateButterflyAnimation(Texture2D& currentDisplayTexture, int& curr
 
 static int CalculateEyeIndexForAngle(Vector2 eyePosition, Vector2 targetPosition, int numEyeSprites) {
     if (numEyeSprites <= 0)
-        return 0; 
+        return 0;
 
     float deltaX = targetPosition.x - eyePosition.x;
     float deltaY = targetPosition.y - eyePosition.y;
     float angleRad = atan2f(-deltaY, deltaX);
 
-    if (angleRad < 0) 
+    if (angleRad < 0)
         angleRad += 2 * PI;
-    
+
 
     int index = roundf(angleRad / (2 * PI) * numEyeSprites);
     index = index % numEyeSprites;
@@ -128,20 +138,20 @@ static float MoveTowards(float current, float target, float maxDelta) {
 }
 
 static void DrawProps(const vector<Rectangle>& props, Texture2D texture, float scrollX, float screenWidth) {
-    for (const auto& prop : props) 
-        if (prop.x - scrollX + prop.width > 0 && prop.x - scrollX < screenWidth) 
+    for (const auto& prop : props)
+        if (prop.x - scrollX + prop.width > 0 && prop.x - scrollX < screenWidth)
             DrawTexture(texture, (prop.x - scrollX), prop.y, WHITE);
 }
 
 static void StopAllRainbowLandSounds(RainbowLandGameResources& res) {
 
-    if (IsMusicStreamPlaying(res.backgroundMusic)) 
+    if (IsMusicStreamPlaying(res.backgroundMusic))
         StopMusicStream(res.backgroundMusic);
 
-    for (size_t i = 0; i < res.rbowDialogues.size(); ++i) 
-        if (res.rbowDialogues[i].frameCount > 0 && IsSoundPlaying(res.rbowDialogues[i])) 
+    for (size_t i = 0; i < res.rbowDialogues.size(); ++i)
+        if (res.rbowDialogues[i].frameCount > 0 && IsSoundPlaying(res.rbowDialogues[i]))
             StopSound(res.rbowDialogues[i]);
-        
+
     if (IsSoundPlaying(res.jump)) StopSound(res.jump);
     if (IsSoundPlaying(res.petalShoot)) StopSound(res.petalShoot);
     if (IsSoundPlaying(res.spikesPush)) StopSound(res.spikesPush);
@@ -149,6 +159,59 @@ static void StopAllRainbowLandSounds(RainbowLandGameResources& res) {
     if (IsSoundPlaying(res.death)) StopSound(res.death);
     if (IsSoundPlaying(res.checkpointSound)) StopSound(res.checkpointSound);
     if (IsSoundPlaying(res.rbowYouStillSuck)) StopSound(res.rbowYouStillSuck);
+}
+
+// Centralized function to handle player death and particle spawning
+static void KillPlayerAndSpawnBlood(
+    Vector2 deathPosition,
+    bool& isPlayerRespawning,
+    float& playerRespawnTimer,
+    float respawnDelay,
+    int& currentDialogueIndex,
+    bool buttonCanBeClicked,
+    RainbowLandGameResources& res,
+    vector<BloodParticle>& particles,
+    Vector2& playerVel
+) {
+    if (isPlayerRespawning) return; // Prevent multiple death triggers in one frame
+
+    PlaySound(res.death);
+    playerVel = { 0, 0 }; // Stop player movement immediately
+
+    // Stop any currently playing dialogue
+    if (currentDialogueIndex >= 0 && currentDialogueIndex < (int)res.rbowDialogues.size() && res.rbowDialogues[currentDialogueIndex].frameCount > 0 && IsSoundPlaying(res.rbowDialogues[currentDialogueIndex])) {
+        StopSound(res.rbowDialogues[currentDialogueIndex]);
+    }
+
+    currentDialogueIndex++;
+
+    // Play the next dialogue line or a generic taunt
+    if (buttonCanBeClicked && currentDialogueIndex < (int)res.rbowDialogues.size() && res.rbowDialogues[currentDialogueIndex].frameCount > 0) {
+        PlaySound(res.rbowDialogues[currentDialogueIndex]);
+    }
+    else {
+        PlaySound(res.rbowYouStillSuck);
+    }
+
+    isPlayerRespawning = true;
+    playerRespawnTimer = respawnDelay;
+
+    // Spawn Blood Particles
+    int particleCount = 45; // slightly more particles
+    for (int i = 0; i < particleCount; i++) {
+        BloodParticle p;
+        p.position = { deathPosition.x + playerTextureWidth / 2, deathPosition.y + playerTextureHeight / 2 };
+
+        float angle = ((float)GetRandomValue(-160, -20)) * DEG2RAD;
+        // --- MODIFIED --- Increased particle speed
+        float speed = (float)GetRandomValue(200, 500);
+
+        p.velocity.x = cosf(angle) * speed;
+        p.velocity.y = sinf(angle) * speed;
+        p.active = true;
+        p.onGround = false;
+        particles.push_back(p);
+    }
 }
 
 
@@ -163,14 +226,14 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
     bool showDebugInfo = false; // temporary DEBUG SCREEN
 
-// --------- RESOURCE LOADER ---------
+    // --------- RESOURCE LOADER ---------
     RainbowLandGameResources resources = LoadRainbowLandResources(quality);
     RenderTexture2D target = LoadRenderTexture(virtualScreenWidth, virtualScreenHeight);
     PlayMusicStream(resources.backgroundMusic);
     SetMusicVolume(resources.backgroundMusic, 1);
 
 
-// --- Player ---
+    // --- Player ---
     Vector2 playerPos = { 225, groundLevelY - playerTextureHeight };
     float playerPrevX = playerPos.x;
     Vector2 playerVel = { 0, 0 };
@@ -187,10 +250,9 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
     bool isPlayerRespawning = false;
     float playerRespawnTimer = 0;
-    const float playerRespawnDelay = 1;
 
 
-// --- Rainbow ---
+    // --- Rainbow ---
     Vector2 rainbowPos = { 0, 5 };
     int currentEyeIndex = 0;
     float rainbowTargetX = 0;
@@ -203,9 +265,6 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     vector<RainbowProjectile> activeRainbowProjectiles;
     float rainbowLeftEyeShootTimer = 0;
     float rainbowRightEyeShootTimer = 0;
-    const float rainbowShootDelay = 0.5;
-    const float rainbowProjectileSpeed = 450;
-    const float rainbowProjectileLifetime = 3;
     bool rainbowIsAttacking = false;
 
     float scrollX = 0;
@@ -215,7 +274,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     PlaySound(resources.rbowDialogues[0]);
 
 
-// --- Butterflies ---
+    // --- Butterflies ---
     Texture2D currentButterflySprite;
     int butterflyCurrentAnimFrame = 0;
     int butterflyAnimFrameCounter = 0;
@@ -223,12 +282,12 @@ int runMagicRainbowLand(GraphicsQuality quality) {
     Texture2D butterflySheet = resources.butterfly;
 
 
-// --- Voices button ---
+    // --- Voices button ---
     bool isButtonClicked = false;
     Texture2D currentButtonTexture = resources.buttonVoicesOn;
 
 
-// --- Objects/Props ---
+    // --- Objects/Props ---
     vector<Rectangle> platforms = { // platforms
         { platform1, groundLevelY - 185, platformWidth, platformHeight },
         { platform2, groundLevelY - 100, platformWidth, platformHeight },
@@ -316,13 +375,14 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
     vector<PetalProjectile> activePetals;
     Vector2 playerStartPos = playerPos;
+    vector<BloodParticle> activeBloodParticles; // Vector to store blood particles
 
     vector<ActiveSpikeTrap> activeSpikes;
-    float spikeHeight = 0; 
+    float spikeHeight = 0;
     spikeHeight = resources.spikesUp.height;
 
     Vector2 lastCheckpointPos = playerStartPos;
-    Vector2 checkpointEffectPos = {0, 0};
+    Vector2 checkpointEffectPos = { 0, 0 };
 
     bool touchingAnyCheckpoint = false;
     bool checkpointEffectActive = false;
@@ -334,13 +394,13 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
 
 
-// --------------- MAIN GAME LOOP ---------------
+    // --------------- MAIN GAME LOOP ---------------
     while (!WindowShouldClose()) {
         UpdateMusicStream(resources.backgroundMusic);
         float dt = GetFrameTime();
         bool isTouchingCheckpoint = false;
 
-    // --------- PLAYER INPUT ---------
+        // --------- PLAYER INPUT ---------
         playerVel.x = 0;
         bool isMoving = false;
 
@@ -389,7 +449,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-    // secret konami code
+        // secret konami code
         if (GetKeyPressed() != 0) {
             if (GetKeyPressed() == konamiSequence[konamiCodeProgress]) {
                 konamiCodeProgress++;
@@ -425,12 +485,12 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         Vector2 mousePosWindow = GetMousePosition();
         float scale = min((float)GetScreenWidth() / virtualScreenWidth, (float)GetScreenHeight() / virtualScreenHeight);
 
-        Vector2 virtualMousePos = { 
+        Vector2 virtualMousePos = {
             Clamp(((GetMousePosition().x - ((GetScreenWidth() - virtualScreenWidth * scale) / 2)) / scale), 0, virtualScreenWidth),
             Clamp(((GetMousePosition().y - ((GetScreenHeight() - virtualScreenHeight * scale) / 2)) / scale), 0, virtualScreenHeight)
         };
 
-    // --- Check and Update Respawn Timer ---
+        // --- Check and Update Respawn Timer ---
         if (isPlayerRespawning) {
             playerRespawnTimer -= dt;
 
@@ -448,12 +508,31 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
                 activePetals.clear();
                 activeSpikes.clear();
+                // --- MODIFIED --- The line that cleared blood particles is now REMOVED.
+                // activeBloodParticles.clear(); 
 
                 isPlayerRespawning = false;
-                if (!checkpointFlags.empty()) 
+                if (!checkpointFlags.empty())
                     firstCheckpointReached = checkpointFlags[1].activated;
-                else 
+                else
                     firstCheckpointReached = false;
+            }
+        }
+
+        // Update blood particle physics
+        // --- MODIFIED --- Increased gravity for a faster fall
+        const float particleGravity = 9.8f * 90.0f;
+        for (auto& p : activeBloodParticles) {
+            if (p.active && !p.onGround) {
+                p.velocity.y += particleGravity * dt; // Apply gravity
+                p.position.x += p.velocity.x * dt;    // Update position X
+                p.position.y += p.velocity.y * dt;    // Update position Y
+
+                // Check for collision with the ground
+                if (p.position.y >= groundLevelY - (resources.bloodParticle.height / 2.0f)) {
+                    p.position.y = groundLevelY - (resources.bloodParticle.height / 2.0f);
+                    p.onGround = true; // Particle stops moving
+                }
             }
         }
 
@@ -479,7 +558,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         UpdateButterflyAnimation(currentButterflySprite, butterflyCurrentAnimFrame, butterflyFrameRate, butterflyTotalFrames, butterflyAnimFrameCounter, butterflySheet);
 
 
-    // --- Platform logic ---
+        // --- Platform logic ---
         if (isGrounded) {
             if (IsKeyDown(KEY_Z)) {
                 isGrounded = false;
@@ -510,7 +589,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         bool resolvedY = false;
         isGrounded = false;
 
-    // Platform collision handler
+        // Platform collision handler
         for (const auto& platform : platforms) {
             Rectangle platformRect = platform;
             Rectangle playerNextHitboxYOnly = { playerHitbox.x, potentialY + playerHitboxOffsetY, playerHitboxWidth, playerHitboxHeight };
@@ -539,7 +618,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         }
 
 
-    // Checkpoint collision handler
+        // Checkpoint collision handler
         touchingAnyCheckpoint = false;
         for (auto& flag : checkpointFlags) {
             if (CheckCollisionRecs(playerHitbox, flag.rect)) {
@@ -594,7 +673,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
 
 
-    // Ground collision handler
+        // Ground collision handler
         if (!isGrounded && playerVel.y >= 0) {
             float potentialHitboxBottomY = potentialY + playerHitboxOffsetY + playerHitboxHeight;
             if (potentialHitboxBottomY >= groundLevelY) {
@@ -648,14 +727,14 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             isJumping = false;
 
 
-    // Camera Scroll
+        // Camera Scroll
         float targetScrollX = playerPos.x - playerVirtualScreenX;
         scrollX = fmaxf(0, fminf(targetScrollX, maxScrollX));
 
-    // Background Scroll (Paralax)
+        // Background Scroll (Paralax)
         bgScroll = scrollX * bgScrollFactor;
 
-    // --- Rainbow logic ---
+        // --- Rainbow logic ---
         rainbowTargetX = (playerPos.x + playerTextureWidth / 2) - ((float)resources.rbowBodyTexture.width / 2);
         float diffX = rainbowTargetX - rainbowPos.x;
         float moveAmount = rainbowSpeed;
@@ -682,7 +761,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             currentEyeIndex = currentEyeIndex % resources.numEyeSprites;
         }
 
-    // --- Rainbow attack on mute ---
+        // --- Rainbow attack on mute ---
         if (israinbowInDialogue && !IsSoundPlaying(resources.rbowVoiceOff)) {
             if (!rainbowIsAttacking) {
                 rainbowIsAttacking = true;
@@ -691,7 +770,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
         else rainbowIsAttacking = false;
-        
+
         if (rainbowIsAttacking) {
             rainbowLeftEyeShootTimer -= dt;
             rainbowRightEyeShootTimer -= dt;
@@ -707,7 +786,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
                 RainbowProjectile newProjectile;
                 newProjectile.position = projectileStartPosLeft;
-                newProjectile.velocity = {0, rainbowProjectileSpeed};
+                newProjectile.velocity = { 0, rainbowProjectileSpeed };
                 newProjectile.active = true;
                 newProjectile.lifetime = rainbowProjectileLifetime;
                 activeRainbowProjectiles.push_back(newProjectile);
@@ -728,7 +807,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
                 RainbowProjectile newProjectile;
                 newProjectile.position = projectileStartPosRight;
-                newProjectile.velocity = {0, rainbowProjectileSpeed};
+                newProjectile.velocity = { 0, rainbowProjectileSpeed };
                 newProjectile.active = true;
                 newProjectile.lifetime = rainbowProjectileLifetime;
                 activeRainbowProjectiles.push_back(newProjectile);
@@ -740,7 +819,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-    // Rainbow lasers updater
+        // Rainbow lasers updater
         for (int i = activeRainbowProjectiles.size() - 1; i >= 0; i--) {
             RainbowProjectile& p = activeRainbowProjectiles[i];
             if (p.active) {
@@ -750,27 +829,14 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 p.lifetime -= dt;
 
                 if (p.lifetime <= 0 || p.position.y > virtualScreenHeight + 20) p.active = false;
-                
 
-            // Laser collision with player
+
+                // Laser collision with player
                 Rectangle projectileHitbox = { p.position.x - 2, p.position.y - 2, 4, 4 };
 
                 if (CheckCollisionRecs(playerHitbox, projectileHitbox)) {
                     p.active = false;
-                    PlaySound(resources.death);
-
-                    if (currentDialogueIndex >= 0 && currentDialogueIndex < (int)resources.rbowDialogues.size() && resources.rbowDialogues[currentDialogueIndex].frameCount > 0 && IsSoundPlaying(resources.rbowDialogues[currentDialogueIndex]))
-                        StopSound(resources.rbowDialogues[currentDialogueIndex]);
-
-                    currentDialogueIndex++;
-
-                    if (buttonCanBeClicked && currentDialogueIndex < (int)resources.rbowDialogues.size() && resources.rbowDialogues[currentDialogueIndex].frameCount > 0)
-                        PlaySound(resources.rbowDialogues[currentDialogueIndex]);
-                    else
-                        PlaySound(resources.rbowYouStillSuck);
-
-                    isPlayerRespawning = true;
-                    playerRespawnTimer = playerRespawnDelay;
+                    KillPlayerAndSpawnBlood(playerPos, isPlayerRespawning, playerRespawnTimer, playerRespawnDelay, currentDialogueIndex, buttonCanBeClicked, resources, activeBloodParticles, playerVel);
                 }
             }
             else activeRainbowProjectiles.erase(activeRainbowProjectiles.begin() + i);
@@ -778,7 +844,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         }
 
 
-    // --- Butterfly logic ---
+        // --- Butterfly logic ---
         for (auto& butterfly : butterflies) {
             float currentMovementSpeed = butterflyMovementSpeed + butterfly.movementSpeedOffset;
             butterfly.movementPhase += currentMovementSpeed * dt;
@@ -798,7 +864,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             );
         }
 
-    // --- Petal projectile logic ---
+        // --- Petal projectile logic ---
         bool petalShootSoundPlayedThisFrame = false;
         Rectangle currentWorldPlayerHitboxForEvents = { playerPos.x + playerHitboxOffsetX, playerPos.y + playerHitboxOffsetY, playerHitboxWidth, playerHitboxHeight };
         Rectangle prevWorldPlayerHitboxForEvents = { playerPrevX + playerHitboxOffsetX, playerPos.y + playerHitboxOffsetY, playerHitboxWidth, playerHitboxHeight };
@@ -839,7 +905,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-    // Petal update and collision
+        // Petal update and collision
         for (int i = activePetals.size() - 1; i >= 0; i--) {
             PetalProjectile& currentPetal = activePetals[i];
             if (currentPetal.active) {
@@ -849,28 +915,15 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
                 float petalScreenX = currentPetal.position.x - scrollX;
                 if (currentPetal.lifetime <= 0 || petalScreenX < -20 || petalScreenX > virtualScreenWidth + 20 || currentPetal.position.y < -20 || currentPetal.position.y > virtualScreenHeight + 20) currentPetal.active = false;
-                
 
-            // Petal collision with player
+
+                // Petal collision with player
                 if (currentPetal.active && !showDebugInfo && !isPlayerRespawning) {
                     Rectangle petalHitbox = { currentPetal.position.x, currentPetal.position.y, 8, 8 };
 
                     if (CheckCollisionRecs(playerHitbox, petalHitbox)) {
                         currentPetal.active = false;
-                        PlaySound(resources.death);
-
-                        if (currentDialogueIndex >= 0 && currentDialogueIndex < (int)resources.rbowDialogues.size() && resources.rbowDialogues[currentDialogueIndex].frameCount > 0 && IsSoundPlaying(resources.rbowDialogues[currentDialogueIndex]))
-                            StopSound(resources.rbowDialogues[currentDialogueIndex]);
-
-                        currentDialogueIndex++;
-
-                        if (buttonCanBeClicked && currentDialogueIndex < (int)resources.rbowDialogues.size() && resources.rbowDialogues[currentDialogueIndex].frameCount > 0)
-                            PlaySound(resources.rbowDialogues[currentDialogueIndex]);
-                        else 
-                            PlaySound(resources.rbowYouStillSuck);
-
-                        isPlayerRespawning = true;
-                        playerRespawnTimer = playerRespawnDelay;
+                        KillPlayerAndSpawnBlood(playerPos, isPlayerRespawning, playerRespawnTimer, playerRespawnDelay, currentDialogueIndex, buttonCanBeClicked, resources, activeBloodParticles, playerVel);
                     }
                 }
             }
@@ -879,7 +932,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-    // --- Spike Activation Logic ---
+        // --- Spike Activation Logic ---
         for (auto& event : spikeEvents) {
             if (event.hasBeenActivated) continue;
             float playerRightEdgeX = playerHitbox.x + playerHitbox.width;
@@ -899,15 +952,15 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 }
                 else {
                     newSpike.startBaseY = -newSpike.spikeHeight;
-                    newSpike.targetBaseY = 0; 
+                    newSpike.targetBaseY = 0;
                 }
                 newSpike.currentBaseY = newSpike.startBaseY;
-                newSpike.hitbox = {0, 0, virtualScreenWidth, newSpike.spikeHeight};
+                newSpike.hitbox = { 0, 0, virtualScreenWidth, newSpike.spikeHeight };
                 activeSpikes.push_back(newSpike);
             }
         }
 
-    // --- Spike Update and Collision ---
+        // --- Spike Update and Collision ---
         for (int i = activeSpikes.size() - 1; i >= 0; i--) {
             if (i >= (int)activeSpikes.size()) continue;
             ActiveSpikeTrap& currentSpike = activeSpikes[i];
@@ -931,19 +984,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 Rectangle playerScreenHitbox = { playerScreenX + playerHitboxOffsetX, playerPos.y + playerHitboxOffsetY, playerHitboxWidth, playerHitboxHeight };
 
                 if (CheckCollisionRecs(playerScreenHitbox, currentSpike.hitbox)) {
-                    PlaySound(resources.death);
-                    if (currentDialogueIndex >= 0 && currentDialogueIndex < (int)resources.rbowDialogues.size() && resources.rbowDialogues[currentDialogueIndex].frameCount > 0 && IsSoundPlaying(resources.rbowDialogues[currentDialogueIndex])) 
-                        StopSound(resources.rbowDialogues[currentDialogueIndex]);
-                    
-                    currentDialogueIndex++;
-
-                    if (buttonCanBeClicked && currentDialogueIndex < (int)resources.rbowDialogues.size() && resources.rbowDialogues[currentDialogueIndex].frameCount > 0) 
-                        PlaySound(resources.rbowDialogues[currentDialogueIndex]);
-                    else
-                        PlaySound(resources.rbowYouStillSuck);
-                    
-                    isPlayerRespawning = true;
-                    playerRespawnTimer = playerRespawnDelay;
+                    KillPlayerAndSpawnBlood(playerPos, isPlayerRespawning, playerRespawnTimer, playerRespawnDelay, currentDialogueIndex, buttonCanBeClicked, resources, activeBloodParticles, playerVel);
                     break;
                 }
             }
@@ -975,14 +1016,14 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         BeginTextureMode(target);
         ClearBackground(RAYWHITE);
 
-    // --- Bg Draw ---
+        // --- Bg Draw ---
         float bgX = -fmodf(bgScroll, resources.bg.width);
         DrawTextureEx(resources.bg, { bgX , 0 }, 0, 1, WHITE);
         DrawTextureEx(resources.bg, { bgX + resources.bg.width, 0 }, 0, 1, WHITE);
         if (bgX + 2 * resources.bg.width < virtualScreenWidth)
             DrawTextureEx(resources.bg, { bgX + 2 * resources.bg.width, 0 }, 0, 1, WHITE);
 
-    // --- Rainbow draw ---
+        // --- Rainbow draw ---
         Vector2 rainbowDrawPos = { rainbowPos.x - scrollX, rainbowPos.y };
         if (rainbowDrawPos.x + resources.rbowBodyTexture.width > 0 && rainbowDrawPos.x < virtualScreenWidth) {
             Texture2D bodyToDraw = israinbowInDialogue ? resources.rbowVoiceOffBodyTexture : resources.rbowBodyTexture;
@@ -992,22 +1033,22 @@ int runMagicRainbowLand(GraphicsQuality quality) {
 
             DrawTextureV(bodyToDraw, rainbowDrawPos, WHITE);
 
-        // --- Rainbow Eyes draw ---
-            if (!israinbowInDialogue && resources.numEyeSprites > 0) { 
+            // --- Rainbow Eyes draw ---
+            if (!israinbowInDialogue && resources.numEyeSprites > 0) {
                 Vector2 playerCenter = { playerPos.x + playerTextureWidth / 2, playerPos.y + playerTextureHeight / 2 };
                 Vector2 leftEyeWorldPos = { rainbowPos.x + rainbowLeftEyeOffsetX, rainbowPos.y + rainbowLeftEyeOffsetY };
                 Vector2 rightEyeWorldPos = { rainbowPos.x + rainbowRightEyeOffsetX, rainbowPos.y + rainbowRightEyeOffsetY };
                 int leftEyeTargetIndex = CalculateEyeIndexForAngle(leftEyeWorldPos, playerCenter, resources.numEyeSprites);
                 int rightEyeTargetIndex = CalculateEyeIndexForAngle(rightEyeWorldPos, playerCenter, resources.numEyeSprites);
 
-            // --- Squint Logic ---
+                // --- Squint Logic ---
                 const int straightAheadIndex = resources.numEyeSprites / 2;
                 const int squintTriggerRange = 1;
                 bool useSquintTexture = false;
 
                 if (abs(leftEyeTargetIndex - straightAheadIndex) <= squintTriggerRange && abs(rightEyeTargetIndex - straightAheadIndex) <= squintTriggerRange)
                     useSquintTexture = true;
-                 
+
                 int finalLeftEyeIndex = leftEyeTargetIndex;
                 int finalRightEyeIndex = rightEyeTargetIndex;
 
@@ -1029,7 +1070,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-    // --- Ground tiles draw ---
+        // --- Ground tiles draw ---
         float startTileX = -fmodf(scrollX, resources.tile.width);
         int tilesToDraw = (virtualScreenWidth / resources.tile.width) + 2;
         for (int i = 0; i < tilesToDraw; i++) {
@@ -1039,7 +1080,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         }
 
 
-    // --- Props draw ---
+        // --- Props draw ---
         for (const auto& fence : fenceProps)
             if (fence.x - scrollX + fence.width > 0 && fence.x - scrollX < virtualScreenWidth)
                 DrawTexture(resources.fenceProp, (fence.x - scrollX), fence.y, WHITE);
@@ -1060,23 +1101,33 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             if (platform.x - scrollX + platform.width > 0 && platform.x - scrollX < virtualScreenWidth)
                 DrawTexture(resources.platformTexture, (platform.x - scrollX), platform.y, WHITE);
 
+        // Draw blood particles
+        for (const auto& p : activeBloodParticles) {
+            if (p.active) {
+                Vector2 particleDrawPos = {
+                    p.position.x - scrollX - (resources.bloodParticle.width / 2.0f),
+                    p.position.y - (resources.bloodParticle.height / 2.0f)
+                };
+                DrawTextureV(resources.bloodParticle, particleDrawPos, WHITE);
+            }
+        }
 
-    // --- Player draw ---
+        // --- Player draw ---
         if (!isPlayerRespawning) {
-            Rectangle sourceRect = {currentFrame * playerTextureWidth, 0, playerTextureWidth, playerTextureHeight};
+            Rectangle sourceRect = { currentFrame * playerTextureWidth, 0, playerTextureWidth, playerTextureHeight };
 
             if (playerDrawVirtualPos.x + playerTextureWidth > 0 && playerDrawVirtualPos.x < virtualScreenWidth)
                 DrawTextureRec(currentTexture, sourceRect, playerDrawVirtualPos, WHITE);
         }
 
 
-    // --- Sunflowers draw ---
+        // --- Sunflowers draw ---
         for (const auto& sunflowers : deadlySunflowers)
             if (sunflowers.x - scrollX + sunflowers.width > 0 && sunflowers.x - scrollX < virtualScreenWidth)
                 DrawTexture(resources.sunflower, (sunflowers.x - scrollX), sunflowers.y, WHITE);
 
 
-    // --- Butterflies draw ---
+        // --- Butterflies draw ---
         for (const auto& butterfly : butterflies) {
             int butterflyFrameActualWidth = resources.butterfly.width / butterflyTotalFrames;
             int butterflyFrameActualHeight = resources.butterfly.height;
@@ -1091,7 +1142,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 DrawTextureRec(resources.butterfly, butterflySourceRect, butterflyDrawPos, WHITE);
         }
 
-    // Petals draw
+        // Petals draw
         for (const auto& petal : activePetals) {
             if (petal.active) {
                 if (petal.textureIndex >= 0 && petal.textureIndex < 8) {
@@ -1106,15 +1157,15 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-    // Rysowanie pocisków têczy
+        // Rysowanie pocisków têczy
         for (const auto& p : activeRainbowProjectiles) {
             if (p.active) {
-                Vector2 laserDrawPos = {(p.position.x - scrollX) - (resources.laserBeamFrame.width) / 2, p.position.y};
+                Vector2 laserDrawPos = { (p.position.x - scrollX) - (resources.laserBeamFrame.width) / 2, p.position.y };
                 DrawTextureV(resources.laserBeamFrame, laserDrawPos, WHITE);
             }
         }
 
-    // --- Spikes Draw ---
+        // --- Spikes Draw ---
         for (const auto& spike : activeSpikes) {
             if (spike.state != SPIKE_IDLE) {
                 Texture2D currentSpikeTexture = spike.directionUp ? resources.spikesUp : resources.spikesDown;
@@ -1122,12 +1173,12 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 DrawTexture(currentSpikeTexture, drawPosX, spike.currentBaseY, WHITE);
             }
         }
-       
-    //--- Control keys info draw ---
+
+        //--- Control keys info draw ---
         if (!firstCheckpointReached) DrawTexture(resources.controlKeysInfo, 10, 10, WHITE);
 
 
-    // ------- DEBUG DRAW -------
+        // ------- DEBUG DRAW -------
         if (showDebugInfo) {
             const int gridSpacing = 100;
             const int labelFontSize = 10;
@@ -1157,19 +1208,19 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             DrawRectangle(0, 0, 140, 180, BLACK);
             int textY = 10;
             int lineHeight = 10;
-            DrawText(TextFormat("Position: (%, %)", playerPos.x, playerPos.y), 10, textY, lineHeight, LIME); textY += lineHeight;
+            DrawText(TextFormat("Position: (%.1f, %.1f)", playerPos.x, playerPos.y), 10, textY, lineHeight, LIME); textY += lineHeight;
 
-            DrawText(TextFormat("P.Vel Y: %", playerVel.y), 10, textY, lineHeight, LIME); textY += lineHeight;
-            DrawText(TextFormat("ScrollX (Cam): %", scrollX), 10, textY, lineHeight, LIME); textY += lineHeight;
-            DrawText(TextFormat("MaxScrollX: %", maxScrollX), 10, textY, lineHeight, ORANGE); textY += lineHeight;
-            DrawText(TextFormat("BGScroll: %", bgScroll), 10, textY, lineHeight, SKYBLUE); textY += lineHeight;
-            DrawText(TextFormat("LevelWidth: %", levelLogicalWidth), 10, textY, lineHeight, SKYBLUE); textY += lineHeight;
+            DrawText(TextFormat("P.Vel Y: %.2f", playerVel.y), 10, textY, lineHeight, LIME); textY += lineHeight;
+            DrawText(TextFormat("ScrollX (Cam): %.2f", scrollX), 10, textY, lineHeight, LIME); textY += lineHeight;
+            DrawText(TextFormat("MaxScrollX: %.2f", maxScrollX), 10, textY, lineHeight, ORANGE); textY += lineHeight;
+            DrawText(TextFormat("BGScroll: %.2f", bgScroll), 10, textY, lineHeight, SKYBLUE); textY += lineHeight;
+            DrawText(TextFormat("LevelWidth: %.1f", levelLogicalWidth), 10, textY, lineHeight, SKYBLUE); textY += lineHeight;
             DrawText(TextFormat("Grounded: %s", isGrounded ? "True" : "False"), 10, textY, lineHeight, LIME); textY += lineHeight;
             DrawText(TextFormat("Jumping(Up): %s", isJumping ? "True" : "False"), 10, textY, lineHeight, YELLOW); textY += lineHeight;
             DrawText(TextFormat("Button Clicked: %s", isButtonClicked ? "Yes" : "No"), 10, textY, lineHeight, YELLOW); textY += lineHeight;
-            DrawText(TextFormat("rainbow Pos X: %", rainbowPos.x), 10, textY, lineHeight, BLUE); textY += lineHeight;
-            DrawText(TextFormat("rainbow Pos Y: %", rainbowPos.y), 10, textY, lineHeight, BLUE); textY += lineHeight;
-            DrawText(TextFormat("rainbow Target X: %", rainbowTargetX), 10, textY, lineHeight, MAGENTA); textY += lineHeight;
+            DrawText(TextFormat("rainbow Pos X: %.2f", rainbowPos.x), 10, textY, lineHeight, BLUE); textY += lineHeight;
+            DrawText(TextFormat("rainbow Pos Y: %.2f", rainbowPos.y), 10, textY, lineHeight, BLUE); textY += lineHeight;
+            DrawText(TextFormat("rainbow Target X: %.2f", rainbowTargetX), 10, textY, lineHeight, MAGENTA); textY += lineHeight;
             DrawText(TextFormat("rainbow Eye Idx: %d", currentEyeIndex), 10, textY, lineHeight, WHITE); textY += lineHeight;
             DrawText(TextFormat("rainbow In Dialog: %s", israinbowInDialogue ? "Yes" : "No"), 10, textY, lineHeight, PINK); textY += lineHeight;
             DrawText(TextFormat("Konami code: %s", isSecretActivated ? "On" : "Off"), 10, textY, lineHeight, PINK); textY += lineHeight;
@@ -1183,7 +1234,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
                 {
                     DrawRectangleLinesEx(platformDrawRect, 1, VIOLET);
 
-                    const char* coordText = TextFormat("X:%, Y:%", platform.x, platform.y);
+                    const char* coordText = TextFormat("X:%.0f, Y:%.0f", platform.x, platform.y);
                     int coordFontSize = 10;
                     Color coordTextColor = WHITE;
                     Color coordBgColor = Fade(BLACK, 0.6);
@@ -1221,7 +1272,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             DrawRectangleRec(feetCheckRectDraw, YELLOW);
         }
 
-    // Triggers draw (debug/godmode)
+        // Triggers draw (debug/godmode)
         if (showDebugInfo || isSecretActivated) {
             for (const auto& event : sunflowerEvents) {
                 if (event.hasBeenActivated) continue;
@@ -1251,10 +1302,10 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             }
         }
 
-    // --- Voice Button draw ---
+        // --- Voice Button draw ---
         DrawTextureV(currentButtonTexture, buttonPos, WHITE);
 
-    // --- Checkpoint draw ---
+        // --- Checkpoint draw ---
         if (checkpointEffectActive) {
             int frameWidth = resources.checkpoint.width / 4;
             Rectangle src = { checkpointEffectFrame * frameWidth, 0, frameWidth, resources.checkpoint.height };
@@ -1262,7 +1313,7 @@ int runMagicRainbowLand(GraphicsQuality quality) {
             DrawTextureRec(resources.checkpoint, src, drawPos, WHITE);
         }
 
-    //--- Cursor draw ---
+        //--- Cursor draw ---
         float scaledCursorWidth = resources.cursor.width / 1.5;
         float scaledCursorHeight = resources.cursor.height / 1.5;
         Rectangle cursorDestRect = { virtualMousePos.x, virtualMousePos.y, scaledCursorWidth, scaledCursorHeight };
@@ -1276,9 +1327,9 @@ int runMagicRainbowLand(GraphicsQuality quality) {
         float finalScale = min((float)GetScreenWidth() / virtualScreenWidth, (float)GetScreenHeight() / virtualScreenHeight);
         float finalOffsetX = ((float)GetScreenWidth() - (virtualScreenWidth * finalScale)) / 2;
         float finalOffsetY = ((float)GetScreenHeight() - (virtualScreenHeight * finalScale)) / 2;
-        Rectangle src = {0, 0, target.texture.width, -target.texture.height};
-        Rectangle dst = {finalOffsetX, finalOffsetY, virtualScreenWidth * finalScale, virtualScreenHeight * finalScale};
-        DrawTexturePro(target.texture, src, dst, {0, 0}, 0, WHITE);
+        Rectangle src = { 0, 0, target.texture.width, -target.texture.height };
+        Rectangle dst = { finalOffsetX, finalOffsetY, virtualScreenWidth * finalScale, virtualScreenHeight * finalScale };
+        DrawTexturePro(target.texture, src, dst, { 0, 0 }, 0, WHITE);
         EndDrawing();
     }
     StopAllRainbowLandSounds(resources);
